@@ -8,7 +8,7 @@ btmesh-device = { path = "../../drogue-iot/btmesh/btmesh-device" }
 btmesh-macro = { path = "../../drogue-iot/btmesh/btmesh-macro" }
 
 btmesh-models = { path = "../../drogue-iot/btmesh/btmesh-models" }
-btmesh-nrf-softdevice = { path = "../../drogue-iot/btmesh/btmesh-nrf-softdevice", default-features = false, features = ["defmt", "nrf52833", "relay", "proxy"] }
+btmesh-nrf-softdevice = { path = "../../drogue-iot/btmesh/btmesh-nrf-softdevice", default-features = false, features = ["defmt", "nrf52833", "relay"] }
 cortex-m-rt = "0.7"
 
 defmt = "0.3"

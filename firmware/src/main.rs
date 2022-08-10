@@ -53,7 +53,7 @@ async fn main(s: Spawner, p: Peripherals) {
 
     let mut driver = Driver::new("drogue", unsafe { &__storage as *const u8 as u32 }, 100);
 
-    let mut device = Device::new(board.display, board.btn_a);
+    let mut device = Device::new(board.btn_a, board.btn_b);
     driver.run(&mut device).await.unwrap();
 }
 
@@ -64,74 +64,38 @@ pub struct Device {
 
 #[element(location = "left")]
 struct ElementZero {
-    led: MyOnOffServerHandler,
-    button: MyOnOffClientHandler,
+    btn_a: ButtonOnOff,
+    btn_b: ButtonOnOff,
 }
 
 impl Device {
-    pub fn new(led: LedMatrix, button: ButtonA) -> Self {
+    pub fn new(btn_a: Button, btn_b: Button) -> Self {
         Self {
-            zero: ElementZero::new(led, button),
+            zero: ElementZero::new(btn_a, btn_b),
         }
     }
 }
 
 impl ElementZero {
-    fn new(led: LedMatrix, button: ButtonA) -> Self {
+    fn new(btn_a: Button, btn_b: Button) -> Self {
         Self {
-            led: MyOnOffServerHandler::new(led),
-            button: MyOnOffClientHandler::new(button),
+            btn_a: ButtonOnOff::new(btn_a),
+            btn_b: ButtonOnOff::new(btn_b),
         }
     }
 }
 
-struct MyOnOffServerHandler {
-    display: LedMatrix,
+struct ButtonOnOff {
+    button: Input<'static, AnyPin>,
 }
 
-impl MyOnOffServerHandler {
-    fn new(display: LedMatrix) -> Self {
-        Self { display }
-    }
-}
-
-impl BluetoothMeshModel<GenericOnOffServer> for MyOnOffServerHandler {
-    type RunFuture<'f, C> = impl Future<Output=Result<(), ()>> + 'f
-    where
-        Self: 'f,
-        C: BluetoothMeshModelContext<GenericOnOffServer> + 'f;
-
-    fn run<'run, C: BluetoothMeshModelContext<GenericOnOffServer> + 'run>(
-        &'run mut self,
-        ctx: C,
-    ) -> Self::RunFuture<'_, C> {
-        async move {
-            loop {
-                let (message, meta) = ctx.receive().await;
-                match message {
-                    GenericOnOffMessage::Get => {}
-                    GenericOnOffMessage::Set(val) => {}
-                    GenericOnOffMessage::SetUnacknowledged(val) => {}
-                    GenericOnOffMessage::Status(_) => {
-                        // not applicable
-                    }
-                }
-            }
-        }
-    }
-}
-
-struct MyOnOffClientHandler {
-    button: ButtonA,
-}
-
-impl MyOnOffClientHandler {
-    fn new(button: ButtonA) -> Self {
+impl ButtonOnOff {
+    fn new(button: Input<'static, AnyPin>) -> Self {
         Self { button }
     }
 }
 
-impl BluetoothMeshModel<GenericOnOffClient> for MyOnOffClientHandler {
+impl BluetoothMeshModel<GenericOnOffClient> for ButtonOnOff {
     type RunFuture<'f, C> = impl Future<Output=Result<(), ()>> + 'f
     where
         Self: 'f,
