@@ -6,6 +6,11 @@
 #![allow(unused_imports)]
 #![allow(unused_variables)]
 
+use btmesh_device::{BluetoothMeshModel, BluetoothMeshModelContext};
+use btmesh_macro::{device, element};
+use btmesh_models::generic::onoff::{GenericOnOffClient, GenericOnOffMessage, GenericOnOffServer};
+use btmesh_nrf_softdevice::*;
+use core::{cell::RefCell, future::Future};
 use embassy_executor::{
     executor::Spawner,
     time::{Delay, Duration, Ticker, Timer},
@@ -14,6 +19,7 @@ use embassy_microbit::*;
 use embassy_nrf::{
     buffered_uarte::{BufferedUarte, State},
     config::Config,
+    gpio::{AnyPin, Input, Level, Output, OutputDrive, Pull},
     interrupt,
     interrupt::Priority,
     peripherals::{TIMER0, UARTE0},
@@ -26,19 +32,12 @@ use nrf_softdevice::{
     raw, temperature_celsius, Flash, Softdevice,
 };
 
+extern "C" {
+    static __storage: u8;
+}
+
 use defmt_rtt as _;
 use panic_probe as _;
-
-#[nrf_softdevice::gatt_server]
-pub struct Server {
-    bas: BatteryService,
-}
-
-#[nrf_softdevice::gatt_service(uuid = "180f")]
-pub struct BatteryService {
-    #[characteristic(uuid = "2a19", read, notify)]
-    battery_level: u8,
-}
 
 // Application must run at a lower priority than softdevice
 fn config() -> Config {
@@ -52,115 +51,102 @@ fn config() -> Config {
 async fn main(s: Spawner, p: Peripherals) {
     let board = Microbit::new(p);
 
-    // Spawn the underlying softdevice task
-    let sd = enable_softdevice("Embassy Microbit");
+    let mut driver = Driver::new("drogue", unsafe { &__storage as *const u8 as u32 }, 100);
 
-    // Create a BLE GATT server and make it static
-    static SERVER: Forever<Server> = Forever::new();
-    let server = SERVER.put(Server::new(sd).unwrap());
-
-    s.spawn(softdevice_task(sd)).unwrap();
-
-    // Starts the bluetooth advertisement and GATT server
-    s.spawn(advertiser_task(s, sd, server, "Embassy Microbit"))
-        .unwrap();
+    let mut device = Device::new(board.display, board.btn_a);
+    driver.run(&mut device).await.unwrap();
 }
 
-// Up to 2 connections
-#[embassy_executor::task(pool_size = "2")]
-pub async fn gatt_server_task(sd: &'static Softdevice, conn: Connection, server: &'static Server) {
-    match gatt_server::run(&conn, server, |e| match e {
-        ServerEvent::Bas(e) => match e {
-            BatteryServiceEvent::BatteryLevelCccdWrite { notifications } => {
-                defmt::info!("battery notifications: {}", notifications)
+#[device(cid = 0x0003, pid = 0x0001, vid = 0x0001)]
+pub struct Device {
+    zero: ElementZero,
+}
+
+#[element(location = "left")]
+struct ElementZero {
+    led: MyOnOffServerHandler,
+    button: MyOnOffClientHandler,
+}
+
+impl Device {
+    pub fn new(led: LedMatrix, button: ButtonA) -> Self {
+        Self {
+            zero: ElementZero::new(led, button),
+        }
+    }
+}
+
+impl ElementZero {
+    fn new(led: LedMatrix, button: ButtonA) -> Self {
+        Self {
+            led: MyOnOffServerHandler::new(led),
+            button: MyOnOffClientHandler::new(button),
+        }
+    }
+}
+
+struct MyOnOffServerHandler {
+    display: LedMatrix,
+}
+
+impl MyOnOffServerHandler {
+    fn new(display: LedMatrix) -> Self {
+        Self { display }
+    }
+}
+
+impl BluetoothMeshModel<GenericOnOffServer> for MyOnOffServerHandler {
+    type RunFuture<'f, C> = impl Future<Output=Result<(), ()>> + 'f
+    where
+        Self: 'f,
+        C: BluetoothMeshModelContext<GenericOnOffServer> + 'f;
+
+    fn run<'run, C: BluetoothMeshModelContext<GenericOnOffServer> + 'run>(
+        &'run mut self,
+        ctx: C,
+    ) -> Self::RunFuture<'_, C> {
+        async move {
+            loop {
+                let (message, meta) = ctx.receive().await;
+                match message {
+                    GenericOnOffMessage::Get => {}
+                    GenericOnOffMessage::Set(val) => {}
+                    GenericOnOffMessage::SetUnacknowledged(val) => {}
+                    GenericOnOffMessage::Status(_) => {
+                        // not applicable
+                    }
+                }
             }
-        },
-    })
-    .await
-    {
-        Ok(_) => {
-            defmt::info!("connection closed");
-        }
-        Err(e) => {
-            defmt::warn!("connection error: {:?}", e);
         }
     }
 }
 
-#[embassy_executor::task]
-pub async fn advertiser_task(
-    spawner: Spawner,
-    sd: &'static Softdevice,
-    server: &'static Server,
-    name: &'static str,
-) {
-    let mut adv_data: Vec<u8, 31> = Vec::new();
-    #[rustfmt::skip]
-    adv_data.extend_from_slice(&[
-        0x02, 0x01, raw::BLE_GAP_ADV_FLAGS_LE_ONLY_GENERAL_DISC_MODE as u8,
-        0x03, 0x03, 0x09, 0x18,
-        (1 + name.len() as u8), 0x09]).unwrap();
+struct MyOnOffClientHandler {
+    button: ButtonA,
+}
 
-    adv_data.extend_from_slice(name.as_bytes()).ok().unwrap();
-
-    #[rustfmt::skip]
-    let scan_data = &[
-        0x03, 0x03, 0x09, 0x18,
-    ];
-
-    loop {
-        let config = peripheral::Config::default();
-        let adv = peripheral::ConnectableAdvertisement::ScannableUndirected {
-            adv_data: &adv_data[..],
-            scan_data,
-        };
-        defmt::debug!("advertising");
-        let conn = peripheral::advertise_connectable(sd, adv, &config)
-            .await
-            .unwrap();
-
-        defmt::debug!("connection established");
-        if let Err(e) = spawner.spawn(gatt_server_task(sd, conn, server)) {
-            defmt::warn!("Error spawning gatt task: {:?}", e);
-        }
+impl MyOnOffClientHandler {
+    fn new(button: ButtonA) -> Self {
+        Self { button }
     }
 }
 
-fn enable_softdevice(name: &'static str) -> &'static mut Softdevice {
-    let config = nrf_softdevice::Config {
-        clock: Some(raw::nrf_clock_lf_cfg_t {
-            source: raw::NRF_CLOCK_LF_SRC_RC as u8,
-            rc_ctiv: 4,
-            rc_temp_ctiv: 2,
-            accuracy: 7,
-        }),
-        conn_gap: Some(raw::ble_gap_conn_cfg_t {
-            conn_count: 2,
-            event_length: 24,
-        }),
-        conn_gatt: Some(raw::ble_gatt_conn_cfg_t { att_mtu: 128 }),
-        gatts_attr_tab_size: Some(raw::ble_gatts_cfg_attr_tab_size_t {
-            attr_tab_size: 32768,
-        }),
-        gap_role_count: Some(raw::ble_gap_cfg_role_count_t {
-            adv_set_count: 1,
-            periph_role_count: 3,
-        }),
-        gap_device_name: Some(raw::ble_gap_cfg_device_name_t {
-            p_value: name.as_ptr() as *const u8 as _,
-            current_len: name.len() as u16,
-            max_len: name.len() as u16,
-            write_perm: unsafe { core::mem::zeroed() },
-            _bitfield_1: raw::ble_gap_cfg_device_name_t::new_bitfield_1(
-                raw::BLE_GATTS_VLOC_STACK as u8,
-            ),
-        }),
-        ..Default::default()
-    };
-    Softdevice::enable(&config)
-}
+impl BluetoothMeshModel<GenericOnOffClient> for MyOnOffClientHandler {
+    type RunFuture<'f, C> = impl Future<Output=Result<(), ()>> + 'f
+    where
+        Self: 'f,
+        C: BluetoothMeshModelContext<GenericOnOffClient> + 'f;
 
-#[embassy_executor::task]
-async fn softdevice_task(sd: &'static Softdevice) {
-    sd.run().await;
+    #[allow(clippy::await_holding_refcell_ref)]
+    fn run<'run, C: BluetoothMeshModelContext<GenericOnOffClient> + 'run>(
+        &'run mut self,
+        ctx: C,
+    ) -> Self::RunFuture<'_, C> {
+        async move {
+            loop {
+                self.button.wait_for_falling_edge().await;
+                defmt::info!("** button pushed");
+            }
+        }
+    }
 }
