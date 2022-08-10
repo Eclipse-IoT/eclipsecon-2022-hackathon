@@ -36,7 +36,7 @@ element 2:
         ```
 
 element 3:
-    SensorServer
+    SensorSetupServer
         Status:
             Temperature:
                 Property ID: 0x4F
