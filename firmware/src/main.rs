@@ -66,21 +66,23 @@ pub struct Device {
 struct ElementZero {
     btn_a: ButtonOnOff,
     btn_b: ButtonOnOff,
+    display: DisplayOnOff,
 }
 
 impl Device {
-    pub fn new(btn_a: Button, btn_b: Button) -> Self {
+    pub fn new(btn_a: Button, btn_b: Button, display: LedMatrix) -> Self {
         Self {
-            zero: ElementZero::new(btn_a, btn_b),
+            zero: ElementZero::new(btn_a, btn_b, display),
         }
     }
 }
 
 impl ElementZero {
-    fn new(btn_a: Button, btn_b: Button) -> Self {
+    fn new(btn_a: Button, btn_b: Button, display: LedMatrix) -> Self {
         Self {
             btn_a: ButtonOnOff::new(btn_a),
             btn_b: ButtonOnOff::new(btn_b),
+            display: DisplayOnOff::new(display),
         }
     }
 }
@@ -108,6 +110,36 @@ impl BluetoothMeshModel<GenericOnOffClient> for ButtonOnOff {
     ) -> Self::RunFuture<'_, C> {
         async move {
             loop {
+                self.button.wait_for_falling_edge().await;
+                defmt::info!("** button pushed");
+            }
+        }
+    }
+}
+
+struct DisplayOnOff {
+    display: LedMatrix,
+}
+
+impl DisplayOnOff {
+    fn new(display: LedMatrix) -> Self {
+        Self { display }
+    }
+}
+
+impl BluetoothMeshModel<GenericOnOffServer> for DisplayOnOff {
+    type RunFuture<'f, C> = impl Future<Output=Result<(), ()>> + 'f
+    where
+        Self: 'f,
+        C: BluetoothMeshModelContext<GenericOnOffServer> + 'f;
+
+    fn run<'run, C: BluetoothMeshModelContext<GenericOnOffServer> + 'run>(
+        &'run mut self,
+        ctx: C,
+    ) -> Self::RunFuture<'_, C> {
+        async move {
+            loop {
+                let _ = ctx.
                 self.button.wait_for_falling_edge().await;
                 defmt::info!("** button pushed");
             }
