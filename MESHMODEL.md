@@ -1,86 +1,136 @@
 # Mesh models
 
-The mesh models for the micro:bit and the JSON messages converted for each model:
+The mesh models for the micro:bit and the JSON representation for each model message.
+
+
+### Elements
+
+#### 0
+
+Model: GenericOnOffClient
+
+For button 'A' on the micro:bit
+
+#### 1
+
+Model: GenericOnOffClient
+
+For button 'B' on the micro:bit
+
+#### 2
+
+Model: GenericOnOffServer
+
+For LED matrix. The behavior when on is defined by the application.
+
+#### 3
+
+Model: GenericBatteryServer
+
+For measuring the battery level
+
+#### 4
+
+Model: SensorSetupServer
+
+For reporting sensor data from peripherals
+
+
+#### 5 
+
+Model: GenericManufacturerPropertyServer
+
+For reporting firmware and hardware revisions
+
+## Messages
+
+The JSON representation of the different BT mesh message types:
+
+
+### GenericOnOffSet
+
+    {
+        "on": bool,
+    } 
+
+### GenericOnOffStatus
+
+    {
+        "on": bool,
+    }
+
+### GenericBatteryStatus
+
+    {
+        "level": u8,
+        "flags": {
+            "presence": "NotPresent" | "PresentRemovable",
+        }
+    }
+
+### SensorStatus
+
+Properties:
+
+* Temperature
+  * Property ID: 0x4F
+  * Value: Temperature 8
+* Noise
+  * Property ID: 0x79
+  * Value: Generic Level
+
+* Motion Sensed
+  * Property ID: 0x42
+  * Value: Percentage 8
+  
 
 ```
-element 0:
-    GenericBatteryServer
-        For measuring the battery level
-        json:
-        {
-            "level": u8,
-            "flags": {
-                "presence": "NotPresent" | "PresentRemovable",
-            }
-        }
-
-element 1:
-    GenericOnOffClient
-        For button 'A' on the micro:bit
-        json:
-        {
-            "pressed": bool,
-        } 
-
-element 2:
-    GenericOnOffClient
-        For button 'B' on the micro:bit
-
-        json:
-        {
-            "pressed": bool,
-        } 
-
-element 3:
-    SensorSetupServer
-        Status:
-            Temperature:
-                Property ID: 0x4F
-                Value: 
-            Noise:
-                Property ID: 0x79
-                Value: Generic Level
-            Motion Sensed:
-                Property ID: 0x42
-                Value: Percentage 8
-        json:
-        {
-            "temperature": {
-                "value": u8
-            },
-            "noise": {
-                "value": u8
-            }
-            "motion": {
-                "sensed": u8
-            }
-        }
+{
+    "temperature": {
+        "value": u8
+    },
+    "noise": {
+        "value": u8
+    }
+    "motion": {
+        "sensed": u8
+    }
+}
+```        
         
-        SettingSet: 
-            Motion Threshold:
-                Property ID: 0x43
-                Value: Percentage 8
-        json:
-        {
-            "motion": {
-                "threshold": u8
-            }
-        }
+### SensorSettingSet
 
-element 4:
-    GenericManufacturerPropertyServer
-        Properties:
-            DeviceSerialNumber:
-                Property ID: 0x19
-                Value: Fixed String 16
-            DeviceFirmwareRevision:
-                Property ID: 0x0E
-                Value: Fixed String 8
-         json:
-        {
-            "device": {
-                "serialNumber": "1234",
-                "firmwareRevision": "a",
-            }
-        }
+Properties:
+
+* Motion Threshold
+  * Property ID: 0x43
+  * Value: Percentage 8
+
+
+```        
+{
+    "motion": {
+        "threshold": u8
+    }
+}
+```        
+
+### GenericManufacturerPropertyStatus
+
+Properties:
+
+* DeviceSerialNumber
+  * Property ID: 0x19
+  * Value: Fixed String 16
+* DeviceFirmwareRevision
+  * Property ID: 0x0E
+  * Value: Fixed String 8
+
+```
+{
+    "properties": {
+        "serialNumber": "1234",
+        "firmwareRevision": "a",
+    }
+}
 ```
