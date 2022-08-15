@@ -6,9 +6,19 @@
 #![allow(unused_imports)]
 #![allow(unused_variables)]
 
-use btmesh_device::{BluetoothMeshModel, BluetoothMeshModelContext};
+use btmesh_common::ParseError;
+use btmesh_device::{BluetoothMeshModel, BluetoothMeshModelContext, InsufficientBuffer};
 use btmesh_macro::{device, element};
-use btmesh_models::generic::onoff::{GenericOnOffClient, GenericOnOffMessage, GenericOnOffServer};
+use btmesh_models::{
+    generic::{
+        battery::{GenericBatteryMessage, GenericBatteryServer},
+        onoff::{GenericOnOffClient, GenericOnOffMessage, GenericOnOffServer},
+    },
+    sensor::{
+        CadenceDescriptor, PropertyId, SensorConfig, SensorData, SensorDescriptor,
+        SensorSetupConfig, SensorSetupMessage, SensorSetupServer, SettingDescriptor,
+    },
+};
 use btmesh_nrf_softdevice::*;
 use core::{cell::RefCell, future::Future};
 use embassy_executor::{
@@ -53,36 +63,52 @@ async fn main(s: Spawner, p: Peripherals) {
 
     let mut driver = Driver::new("drogue", unsafe { &__storage as *const u8 as u32 }, 100);
 
-    let mut device = Device::new(board.btn_a, board.btn_b);
+    let mut device = Device::new(board.btn_a, board.btn_b, board.display);
+
+    // Give flash some time before accessing
+    Timer::after(Duration::from_millis(100)).await;
+
     driver.run(&mut device).await.unwrap();
 }
 
 #[device(cid = 0x0003, pid = 0x0001, vid = 0x0001)]
 pub struct Device {
     zero: ElementZero,
+    btn_a: ButtonA,
+    btn_b: ButtonB,
+}
+
+#[element(location = "front")]
+struct ElementZero {
+    display: DisplayOnOff,
+    battery: Battery,
+    sensor: Sensor,
 }
 
 #[element(location = "left")]
-struct ElementZero {
-    btn_a: ButtonOnOff,
-    btn_b: ButtonOnOff,
-    display: DisplayOnOff,
+struct ButtonA {
+    button: ButtonOnOff,
+}
+
+#[element(location = "right")]
+struct ButtonB {
+    button: ButtonOnOff,
 }
 
 impl Device {
     pub fn new(btn_a: Button, btn_b: Button, display: LedMatrix) -> Self {
         Self {
-            zero: ElementZero::new(btn_a, btn_b, display),
-        }
-    }
-}
-
-impl ElementZero {
-    fn new(btn_a: Button, btn_b: Button, display: LedMatrix) -> Self {
-        Self {
-            btn_a: ButtonOnOff::new(btn_a),
-            btn_b: ButtonOnOff::new(btn_b),
-            display: DisplayOnOff::new(display),
+            zero: ElementZero {
+                display: DisplayOnOff::new(display),
+                battery: Battery::new(),
+                sensor: Sensor::new(),
+            },
+            btn_a: ButtonA {
+                button: ButtonOnOff::new(btn_a),
+            },
+            btn_b: ButtonB {
+                button: ButtonOnOff::new(btn_b),
+            },
         }
     }
 }
@@ -103,7 +129,6 @@ impl BluetoothMeshModel<GenericOnOffClient> for ButtonOnOff {
         Self: 'f,
         C: BluetoothMeshModelContext<GenericOnOffClient> + 'f;
 
-    #[allow(clippy::await_holding_refcell_ref)]
     fn run<'run, C: BluetoothMeshModelContext<GenericOnOffClient> + 'run>(
         &'run mut self,
         ctx: C,
@@ -139,9 +164,113 @@ impl BluetoothMeshModel<GenericOnOffServer> for DisplayOnOff {
     ) -> Self::RunFuture<'_, C> {
         async move {
             loop {
-                let _ = ctx.
-                self.button.wait_for_falling_edge().await;
-                defmt::info!("** button pushed");
+                let (message, meta) = ctx.receive().await;
+                match message {
+                    GenericOnOffMessage::Get => {}
+                    GenericOnOffMessage::Set(val) => {
+                        if val.on_off != 0 {
+                            self.display.scroll("ON").await;
+                        }
+                    }
+                    GenericOnOffMessage::SetUnacknowledged(val) => {
+                        if val.on_off != 0 {
+                            self.display.scroll("OFF").await;
+                        }
+                    }
+                    GenericOnOffMessage::Status(_) => {
+                        // not applicable
+                    }
+                }
+            }
+        }
+    }
+}
+
+struct Battery {}
+
+impl Battery {
+    pub fn new() -> Self {
+        Self {}
+    }
+}
+
+impl BluetoothMeshModel<GenericBatteryServer> for Battery {
+    type RunFuture<'f, C> = impl Future<Output=Result<(), ()>> + 'f
+    where
+        Self: 'f,
+        C: BluetoothMeshModelContext<GenericBatteryServer> + 'f;
+
+    fn run<'run, C: BluetoothMeshModelContext<GenericBatteryServer> + 'run>(
+        &'run mut self,
+        ctx: C,
+    ) -> Self::RunFuture<'_, C> {
+        async move {
+            loop {
+                let (message, meta) = ctx.receive().await;
+                match message {
+                    GenericBatteryMessage::Get => {}
+                    GenericBatteryMessage::Status(_) => {}
+                }
+            }
+        }
+    }
+}
+
+#[derive(defmt::Format, Debug, Clone)]
+struct MicrobitSensorConfig;
+
+#[derive(Default, defmt::Format)]
+struct SensorPayload;
+
+impl SensorData for SensorPayload {
+    fn decode(&mut self, _: PropertyId, _: &[u8]) -> Result<(), ParseError> {
+        todo!()
+    }
+
+    fn encode<const N: usize>(
+        &self,
+        property: PropertyId,
+        xmit: &mut Vec<u8, N>,
+    ) -> Result<(), InsufficientBuffer> {
+        todo!()
+    }
+}
+
+impl SensorConfig for MicrobitSensorConfig {
+    type Data = SensorPayload;
+
+    const DESCRIPTORS: &'static [SensorDescriptor] = &[SensorDescriptor::new(PropertyId(0x4F), 1)];
+}
+
+impl SensorSetupConfig for MicrobitSensorConfig {
+    const CADENCE_DESCRIPTORS: &'static [CadenceDescriptor] = &[];
+    const SETTING_DESCRIPTORS: &'static [SettingDescriptor] = &[];
+}
+
+type SensorServer = SensorSetupServer<MicrobitSensorConfig, 1, 1>;
+
+struct Sensor {}
+
+impl Sensor {
+    pub fn new() -> Self {
+        Self {}
+    }
+}
+
+impl BluetoothMeshModel<SensorServer> for Sensor {
+    type RunFuture<'f, C> = impl Future<Output=Result<(), ()>> + 'f
+    where
+        Self: 'f,
+        C: BluetoothMeshModelContext<SensorServer> + 'f;
+
+    fn run<'run, C: BluetoothMeshModelContext<SensorServer> + 'run>(
+        &'run mut self,
+        ctx: C,
+    ) -> Self::RunFuture<'_, C> {
+        async move {
+            loop {
+                let (message, meta) = ctx.receive().await;
+                defmt::info!("Got sensor message: {:?}", message);
             }
         }
     }

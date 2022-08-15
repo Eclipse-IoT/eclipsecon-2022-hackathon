@@ -7,6 +7,7 @@ edition = "2021"
 btmesh-device = { git = "https://github.com/drogue-iot/btmesh.git", branch = "main" }
 btmesh-macro = { git = "https://github.com/drogue-iot/btmesh.git", branch = "main" }
 
+btmesh-common = { git = "https://github.com/drogue-iot/btmesh.git", branch = "main" }
 btmesh-models = { git = "https://github.com/drogue-iot/btmesh.git", branch = "main" }
 btmesh-nrf-softdevice = { git = "https://github.com/drogue-iot/btmesh.git", branch = "main", default-features = false, features = ["defmt", "nrf52833", "relay"] }
 cortex-m-rt = "0.7"
@@ -21,7 +22,7 @@ embassy-util = { version = "0.1.0", default-features = false }
 
 heapless = "0.7"
 
-nrf-softdevice = { version = "0.1.0", features = ["ble-peripheral", "ble-central", "ble-gatt-server", "s140", "nrf52833", "critical-section-impl", "defmt"] }
+nrf-softdevice = { version = "0.1.0", features = ["ble-peripheral", "ble-central", "ble-gatt-server", "s140", "nrf52833", "critical-section-impl"] }
 nrf-softdevice-s140 = { version = "0.1.0" }
 panic-probe = { version = "0.3", features = ["print-defmt"] }
 
@@ -48,3 +49,14 @@ embassy-util = { git = "https://github.com/embassy-rs/embassy.git", branch = "ma
 nrf-softdevice = { git = "https://github.com/embassy-rs/nrf-softdevice.git", branch = "master" }
 nrf-softdevice-macro = { git = "https://github.com/embassy-rs/nrf-softdevice.git", branch = "master" }
 nrf-softdevice-s140 = { git = "https://github.com/embassy-rs/nrf-softdevice.git", branch = "master" }
+
+[patch."https://github.com/lulf/embassy-microbit.git"]
+embassy-microbit = { path = "../../embassy-microbit/microbit" }
+
+[patch."https://github.com/drogue-iot/btmesh.git"]
+btmesh-device = { path = "../../drogue-iot/btmesh/btmesh-device" }
+btmesh-macro = { path = "../../drogue-iot/btmesh/btmesh-macro" }
+btmesh-common = { path = "../../drogue-iot/btmesh/btmesh-common" }
+btmesh-models = { path = "../../drogue-iot/btmesh/btmesh-models" }
+btmesh-driver = { path = "../../drogue-iot/btmesh/btmesh-driver" }
+btmesh-nrf-softdevice = { path = "../../drogue-iot/btmesh/btmesh-nrf-softdevice" }

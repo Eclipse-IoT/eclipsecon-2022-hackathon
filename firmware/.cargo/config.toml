@@ -1,6 +1,6 @@
 [unstable]
-build-std = ["core", "compiler_builtins"]
-build-std-features = ["panic_immediate_abort", "compiler-builtins-mem"]
+build-std = ["core"]
+build-std-features = ["panic_immediate_abort"]
 
 [target.'cfg(all(target_arch = "arm", target_os = "none"))']
 runner = "probe-run --chip nrf52833_xxAA"
@@ -17,4 +17,4 @@ rustflags = [
 target = "thumbv7em-none-eabihf"
 
 [env]
-DEFMT_LOG = "debug"
+DEFMT_LOG = "info"
