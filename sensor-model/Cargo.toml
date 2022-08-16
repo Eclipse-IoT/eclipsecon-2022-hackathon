@@ -1,0 +1,17 @@
+[package]
+name = "sensor-model"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+btmesh-models = { git = "https://github.com/drogue-iot/btmesh.git", branch = "main" }
+defmt = { version = "0.3", optional = true }
+heapless = "0.7"
+
+[features]
+defmt = [
+      "dep:defmt"
+]
+
+[patch."https://github.com/drogue-iot/btmesh.git"]
+btmesh-models = { path = "../../drogue-iot/btmesh/btmesh-models" }

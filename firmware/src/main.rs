@@ -41,6 +41,7 @@ use nrf_softdevice::{
     ble::{gatt_server, peripheral, Connection},
     raw, temperature_celsius, Flash, Softdevice,
 };
+use sensor_model::*;
 
 extern "C" {
     static __storage: u8;
@@ -214,37 +215,6 @@ impl BluetoothMeshModel<GenericBatteryServer> for Battery {
             }
         }
     }
-}
-
-#[derive(defmt::Format, Debug, Clone)]
-struct MicrobitSensorConfig;
-
-#[derive(Default, defmt::Format)]
-struct SensorPayload;
-
-impl SensorData for SensorPayload {
-    fn decode(&mut self, _: PropertyId, _: &[u8]) -> Result<(), ParseError> {
-        todo!()
-    }
-
-    fn encode<const N: usize>(
-        &self,
-        property: PropertyId,
-        xmit: &mut Vec<u8, N>,
-    ) -> Result<(), InsufficientBuffer> {
-        todo!()
-    }
-}
-
-impl SensorConfig for MicrobitSensorConfig {
-    type Data = SensorPayload;
-
-    const DESCRIPTORS: &'static [SensorDescriptor] = &[SensorDescriptor::new(PropertyId(0x4F), 1)];
-}
-
-impl SensorSetupConfig for MicrobitSensorConfig {
-    const CADENCE_DESCRIPTORS: &'static [CadenceDescriptor] = &[];
-    const SETTING_DESCRIPTORS: &'static [SettingDescriptor] = &[];
 }
 
 type SensorServer = SensorSetupServer<MicrobitSensorConfig, 1, 1>;

@@ -26,6 +26,8 @@ nrf-softdevice = { version = "0.1.0", features = ["ble-peripheral", "ble-central
 nrf-softdevice-s140 = { version = "0.1.0" }
 panic-probe = { version = "0.3", features = ["print-defmt"] }
 
+sensor-model = { path = "../sensor-model", features = ["defmt"] }
+
 [profile.dev]
 debug = 2
 debug-assertions = true
