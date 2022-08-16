@@ -1,0 +1,12 @@
+[workspace]
+# NOTE: firmware is not part of it since it is not std-compatible
+members = [
+  "gateway",
+  "sensor-model",
+  "simulator",
+]
+
+[patch.crates-io]
+bluer = { git = "https://github.com/dejanb/bluer.git", branch = "mesh" }
+btmesh-common = { git = "https://github.com/drogue-iot/btmesh.git", branch = "main" }
+btmesh-models = { git = "https://github.com/drogue-iot/btmesh.git", branch = "main" }

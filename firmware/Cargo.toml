@@ -3,6 +3,8 @@ name = "eclipsecon-device"
 version = "0.1.0"
 edition = "2021"
 
+[workspace]
+
 [dependencies]
 btmesh-device = { git = "https://github.com/drogue-iot/btmesh.git", branch = "main" }
 btmesh-macro = { git = "https://github.com/drogue-iot/btmesh.git", branch = "main" }

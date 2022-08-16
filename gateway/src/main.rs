@@ -8,9 +8,9 @@ use btmesh_models::{
 use clap::Parser;
 use dbus::Path;
 use futures::{pin_mut, StreamExt};
+use sensor_model::*;
 use std::{sync::Arc, time::Duration};
 use tokio::{signal, time::sleep};
-use sensor_model::*;
 
 #[derive(Parser)]
 #[clap(author, version, about, long_about = None)]
@@ -37,7 +37,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         path: app_path,
         elements: vec![Element {
             path: element_path,
-            models: vec![Arc::new(FromDrogue::new(SensorClient::<MicrobitSensorConfig, 1, 1>::new()))],
+            models: vec![Arc::new(FromDrogue::new(SensorClient::<
+                MicrobitSensorConfig,
+                1,
+                1,
+            >::new()))],
             control_handle: Some(element_handle),
         }],
         ..Default::default()

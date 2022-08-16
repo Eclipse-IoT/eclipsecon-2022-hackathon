@@ -15,7 +15,3 @@ defmt = [
       "dep:defmt"
 ]
 std = []
-
-[patch."https://github.com/drogue-iot/btmesh.git"]
-btmesh-common = { path = "../../drogue-iot/btmesh/btmesh-common" }
-btmesh-models = { path = "../../drogue-iot/btmesh/btmesh-models" }
