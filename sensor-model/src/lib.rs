@@ -12,21 +12,38 @@ use heapless::Vec;
 #[cfg_attr(feature = "defmt", derive(defmt::Format))]
 pub struct MicrobitSensorConfig;
 
-#[derive(Default)]
+#[derive(Debug)]
 #[cfg_attr(feature = "defmt", derive(defmt::Format))]
-pub struct SensorPayload;
+pub struct SensorPayload {
+    pub temperature: i8,
+}
+
+impl Default for SensorPayload {
+    fn default() -> Self {
+        Self { temperature: 0 }
+    }
+}
 
 impl SensorData for SensorPayload {
-    fn decode(&mut self, _: PropertyId, _: &[u8]) -> Result<(), ParseError> {
-        todo!()
+    fn decode(&mut self, id: PropertyId, params: &[u8]) -> Result<(), ParseError> {
+        if id.0 == 0x4F {
+            self.temperature = params[0] as i8;
+            Ok(())
+        } else {
+            Err(ParseError::InvalidValue)
+        }
     }
 
     fn encode<const N: usize>(
         &self,
-        _property: PropertyId,
-        _xmit: &mut Vec<u8, N>,
+        property: PropertyId,
+        xmit: &mut Vec<u8, N>,
     ) -> Result<(), InsufficientBuffer> {
-        todo!()
+        if property == PropertyId(0x4F) {
+            xmit.extend_from_slice(&self.temperature.to_le_bytes())
+                .map_err(|_| InsufficientBuffer)?;
+        }
+        Ok(())
     }
 }
 

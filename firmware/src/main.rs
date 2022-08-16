@@ -3,44 +3,30 @@
 #![macro_use]
 #![feature(generic_associated_types)]
 #![feature(type_alias_impl_trait)]
-#![allow(unused_imports)]
-#![allow(unused_variables)]
 
-use btmesh_common::ParseError;
-use btmesh_device::{BluetoothMeshModel, BluetoothMeshModelContext, InsufficientBuffer};
+use btmesh_device::{BluetoothMeshModel, BluetoothMeshModelContext};
 use btmesh_macro::{device, element};
 use btmesh_models::{
     generic::{
         battery::{GenericBatteryMessage, GenericBatteryServer},
         onoff::{GenericOnOffClient, GenericOnOffMessage, GenericOnOffServer},
     },
-    sensor::{
-        CadenceDescriptor, PropertyId, SensorConfig, SensorData, SensorDescriptor,
-        SensorSetupConfig, SensorSetupMessage, SensorSetupServer, SettingDescriptor,
-    },
+    sensor::{SensorSetupMessage, SensorSetupServer},
 };
 use btmesh_nrf_softdevice::*;
-use core::{cell::RefCell, future::Future};
+use core::future::Future;
 use embassy_executor::{
     executor::Spawner,
-    time::{Delay, Duration, Ticker, Timer},
+    time::{Duration, Timer},
 };
 use embassy_microbit::*;
 use embassy_nrf::{
-    buffered_uarte::{BufferedUarte, State},
     config::Config,
-    gpio::{AnyPin, Input, Level, Output, OutputDrive, Pull},
-    interrupt,
+    gpio::{AnyPin, Input},
     interrupt::Priority,
-    peripherals::{TIMER0, UARTE0},
-    uarte, Peripherals,
+    Peripherals,
 };
-use embassy_util::{select, Either, Forever};
-use heapless::Vec;
-use nrf_softdevice::{
-    ble::{gatt_server, peripheral, Connection},
-    raw, temperature_celsius, Flash, Softdevice,
-};
+use nrf_softdevice::{temperature_celsius, Softdevice};
 use sensor_model::*;
 
 extern "C" {
@@ -59,12 +45,15 @@ fn config() -> Config {
 }
 
 #[embassy_executor::main(config = "config()")]
-async fn main(s: Spawner, p: Peripherals) {
+async fn main(_s: Spawner, p: Peripherals) {
     let board = Microbit::new(p);
 
     let mut driver = Driver::new("drogue", unsafe { &__storage as *const u8 as u32 }, 100);
 
-    let mut device = Device::new(board.btn_a, board.btn_b, board.display);
+    let sd = driver.softdevice();
+    let sensor = Sensor::new(Duration::from_secs(5), sd);
+
+    let mut device = Device::new(board.btn_a, board.btn_b, board.display, sensor);
 
     // Give flash some time before accessing
     Timer::after(Duration::from_millis(100)).await;
@@ -97,12 +86,12 @@ struct ButtonB {
 }
 
 impl Device {
-    pub fn new(btn_a: Button, btn_b: Button, display: LedMatrix) -> Self {
+    pub fn new(btn_a: Button, btn_b: Button, display: LedMatrix, sensor: Sensor) -> Self {
         Self {
             zero: ElementZero {
                 display: DisplayOnOff::new(display),
                 battery: Battery::new(),
-                sensor: Sensor::new(),
+                sensor,
             },
             btn_a: ButtonA {
                 button: ButtonOnOff::new(btn_a),
@@ -132,7 +121,7 @@ impl BluetoothMeshModel<GenericOnOffClient> for ButtonOnOff {
 
     fn run<'run, C: BluetoothMeshModelContext<GenericOnOffClient> + 'run>(
         &'run mut self,
-        ctx: C,
+        _: C,
     ) -> Self::RunFuture<'_, C> {
         async move {
             loop {
@@ -165,7 +154,7 @@ impl BluetoothMeshModel<GenericOnOffServer> for DisplayOnOff {
     ) -> Self::RunFuture<'_, C> {
         async move {
             loop {
-                let (message, meta) = ctx.receive().await;
+                let (message, _meta) = ctx.receive().await;
                 match message {
                     GenericOnOffMessage::Get => {}
                     GenericOnOffMessage::Set(val) => {
@@ -207,7 +196,7 @@ impl BluetoothMeshModel<GenericBatteryServer> for Battery {
     ) -> Self::RunFuture<'_, C> {
         async move {
             loop {
-                let (message, meta) = ctx.receive().await;
+                let (message, _meta) = ctx.receive().await;
                 match message {
                     GenericBatteryMessage::Get => {}
                     GenericBatteryMessage::Status(_) => {}
@@ -219,11 +208,21 @@ impl BluetoothMeshModel<GenericBatteryServer> for Battery {
 
 type SensorServer = SensorSetupServer<MicrobitSensorConfig, 1, 1>;
 
-struct Sensor {}
+pub struct Sensor {
+    interval: Duration,
+    sd: &'static Softdevice,
+}
 
 impl Sensor {
-    pub fn new() -> Self {
-        Self {}
+    pub fn new(interval: Duration, sd: &'static Softdevice) -> Self {
+        Self { interval, sd }
+    }
+
+    async fn read(&mut self) -> Result<SensorPayload, ()> {
+        let temperature: i8 = temperature_celsius(self.sd).map_err(|_| ())?.to_num();
+        Ok(SensorPayload {
+            temperature: temperature * 2,
+        })
     }
 }
 
@@ -235,12 +234,20 @@ impl BluetoothMeshModel<SensorServer> for Sensor {
 
     fn run<'run, C: BluetoothMeshModelContext<SensorServer> + 'run>(
         &'run mut self,
-        ctx: C,
+        _ctx: C,
     ) -> Self::RunFuture<'_, C> {
         async move {
             loop {
-                let (message, meta) = ctx.receive().await;
-                defmt::info!("Got sensor message: {:?}", message);
+                Timer::after(self.interval).await;
+
+                match self.read().await {
+                    Ok(result) => {
+                        defmt::info!("Read sensor data: {:?}", result);
+                    }
+                    Err(e) => {
+                        defmt::warn!("Error reading sensor data: {:?}", e);
+                    }
+                }
             }
         }
     }
