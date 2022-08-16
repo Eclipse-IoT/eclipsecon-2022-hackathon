@@ -1,4 +1,4 @@
-#![no_std]
+#![cfg_attr(not(feature = "std"), no_std)]
 use btmesh_models::{
     sensor::{
         CadenceDescriptor, PropertyId, SensorConfig, SensorData, SensorDescriptor,
@@ -56,4 +56,12 @@ impl SensorConfig for MicrobitSensorConfig {
 impl SensorSetupConfig for MicrobitSensorConfig {
     const CADENCE_DESCRIPTORS: &'static [CadenceDescriptor] = &[];
     const SETTING_DESCRIPTORS: &'static [SettingDescriptor] = &[];
+}
+
+/// RawMessage contains the opcode and message payload
+#[cfg(feature = "std")]
+#[derive(serde::Serialize, serde::Deserialize)]
+pub struct RawMessage {
+    opcode: std::vec::Vec<u8>,
+    message: std::vec::Vec<u8>,
 }
