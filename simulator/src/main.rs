@@ -44,9 +44,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let root_path = Path::from("/simulator");
     let app_path = Path::from(format!("{}/{}", root_path.clone(), "application"));
 
-    let front = Path::from(format!("{}/{}", root_path.clone(), "00"));
-    let left = Path::from(format!("{}/{}", root_path.clone(), "01"));
-    let right = Path::from(format!("{}/{}", root_path.clone(), "02"));
+    let front = Path::from(format!("{}/ele{}", root_path.clone(), "00"));
+    let left = Path::from(format!("{}/ele{}", root_path.clone(), "01"));
+    let right = Path::from(format!("{}/ele{}", root_path.clone(), "02"));
     let sim = Application {
         path: app_path,
         elements: vec![
