@@ -397,11 +397,12 @@ class Application(dbus.service.Object):
 class Element(dbus.service.Object):
 	PATH_BASE = '/simulator/'
 
-	def __init__(self, bus, index):
+	def __init__(self, bus, index, location):
 		self.path = self.PATH_BASE + format(index, '02x')
 		self.models = []
 		self.bus = bus
 		self.index = index
+		self.location = location
 		dbus.service.Object.__init__(self, bus, self.path)
 
 	def _get_sig_models(self):
@@ -434,6 +435,7 @@ class Element(dbus.service.Object):
 		props['Models'] = dbus.Array(sig_models, signature='(qa{sv})')
 		props['VendorModels'] = dbus.Array(vendor_models,
 							signature='(qqa{sv})')
+		props['Location'] = dbus.UInt16(self.location)
 		return { MESH_ELEMENT_IFACE: props }
 
 	def add_model(self, model):
