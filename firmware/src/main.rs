@@ -4,7 +4,7 @@
 #![feature(generic_associated_types)]
 #![feature(type_alias_impl_trait)]
 
-use btmesh_device::{BluetoothMeshModel, BluetoothMeshModelContext};
+use btmesh_device::{location::Location, BluetoothMeshModel, BluetoothMeshModelContext};
 use btmesh_macro::{device, element};
 use btmesh_models::{
     generic::{
@@ -64,12 +64,16 @@ async fn main(_s: Spawner, p: Peripherals) {
 #[device(cid = 0x0003, pid = 0x0001, vid = 0x0001)]
 pub struct Device {
     zero: ElementZero,
+    front: Front,
     btn_a: ButtonA,
     btn_b: ButtonB,
 }
 
+#[element(location = 0)]
+struct ElementZero {}
+
 #[element(location = "front")]
-struct ElementZero {
+struct Front {
     display: DisplayOnOff,
     battery: Battery,
     sensor: Sensor,
@@ -88,7 +92,8 @@ struct ButtonB {
 impl Device {
     pub fn new(btn_a: Button, btn_b: Button, display: LedMatrix, sensor: Sensor) -> Self {
         Self {
-            zero: ElementZero {
+            zero: ElementZero {},
+            front: Front {
                 display: DisplayOnOff::new(display),
                 battery: Battery::new(),
                 sensor,
