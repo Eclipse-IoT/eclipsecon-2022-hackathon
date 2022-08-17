@@ -395,7 +395,7 @@ class Application(dbus.service.Object):
 
 
 class Element(dbus.service.Object):
-	def __init__(self, path_base, bus, index, location):
+	def __init__(self, bus, path_base, index, location):
 		self.path = path_base + format(index, '02x')
 		self.models = []
 		self.bus = bus
