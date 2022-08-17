@@ -17,6 +17,8 @@ pin-project = { version = "1", optional = true }
 tokio = { version = "1", features = ["io-std", "io-util", "rt-multi-thread", "signal"] }
 tokio-stream = { version = "0.1", optional = true }
 hex = { version = "0.4" }
-clap = { version = "3", features = ["derive"] }
+clap = { version = "3", features = ["derive", "env", "default"] }
 env_logger = "0.9"
 sensor-model = { path = "../sensor-model", features = ["std"] }
+paho-mqtt = { version = "0.11.1", features = ["ssl"] }
+log = "0.4"

@@ -4,8 +4,8 @@ use btmesh_models::{
         CadenceDescriptor, PropertyId, SensorConfig, SensorData, SensorDescriptor,
         SensorSetupConfig, SettingDescriptor,
     },
-    InsufficientBuffer, ParseError,
 };
+use btmesh_common::{InsufficientBuffer, ParseError,};
 use heapless::Vec;
 
 #[derive(Debug, Clone)]
