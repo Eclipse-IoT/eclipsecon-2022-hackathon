@@ -23,20 +23,20 @@ def main():
 
 	blemesh.mesh_net.connect_to_signal('InterfacesRemoved', blemesh.interfaces_removed_cb)
 
-	blemesh.app = blemesh.Application(blemesh.bus)
+	blemesh.app = blemesh.Application(blemesh.bus, '/simulator/application')
 
 	# Provisioning agent
 	blemesh.app.set_agent(blemesh.Agent(blemesh.bus))
 
-	first_ele = blemesh.Element(blemesh.bus, 0x00, 0x0100)
+	first_ele = blemesh.Element(blemesh.bus, '/simulator/ele', 0x00, 0x0100)
 	first_ele.add_model(blemesh.Model(0x1000))
 	first_ele.add_model(blemesh.Model(0x100C))
 	first_ele.add_model(blemesh.Model(0x1101))
 
-	second_ele = blemesh.Element(blemesh.bus, 0x01, 0x010D)
+	second_ele = blemesh.Element(blemesh.bus, '/simulator/ele', 0x01, 0x010D)
 	second_ele.add_model(blemesh.Model(0x1001))
 
-	third_ele = blemesh.Element(blemesh.bus, 0x02, 0x010E)
+	third_ele = blemesh.Element(blemesh.bus, '/simulator/ele', 0x02, 0x010E)
 	third_ele.add_model(blemesh.Model(0x1001))
 
 	blemesh.app.add_element(first_ele)

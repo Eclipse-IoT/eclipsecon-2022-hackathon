@@ -338,8 +338,8 @@ class Agent(dbus.service.Object):
 
 class Application(dbus.service.Object):
 
-	def __init__(self, bus):
-		self.path = '/simulator/application'
+	def __init__(self, bus, path):
+		self.path = path
 		self.agent = None
 		self.elements = []
 		dbus.service.Object.__init__(self, bus, self.path)
@@ -395,10 +395,8 @@ class Application(dbus.service.Object):
 
 
 class Element(dbus.service.Object):
-	PATH_BASE = '/simulator/ele'
-
-	def __init__(self, bus, index, location):
-		self.path = self.PATH_BASE + format(index, '02x')
+	def __init__(self, path_base, bus, index, location):
+		self.path = path_base + format(index, '02x')
 		self.models = []
 		self.bus = bus
 		self.index = index

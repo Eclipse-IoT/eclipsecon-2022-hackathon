@@ -50,7 +50,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let (element_control, element_handle) = element_control();
 
-    let root_path = Path::from("/mesh_client");
+    let root_path = Path::from("/gateway");
     let app_path = Path::from(format!("{}/{}", root_path.clone(), "application"));
 
     let front = Path::from(format!("{}/ele{}", root_path.clone(), "00"));
