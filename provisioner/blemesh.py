@@ -307,9 +307,9 @@ class Agent(dbus.service.Object):
 	def get_properties(self):
 		caps = []
 		oob = []
-		caps.append('out-numeric')
-		caps.append('static-oob')
-		oob.append('other')
+		# caps.append('out-numeric')
+		# caps.append('static-oob')
+		# oob.append('other')
 		return {
 			AGENT_IFACE: {
 				'Capabilities': dbus.Array(caps, 's'),
