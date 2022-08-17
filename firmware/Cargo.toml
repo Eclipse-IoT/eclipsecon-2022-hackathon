@@ -54,13 +54,13 @@ nrf-softdevice = { git = "https://github.com/embassy-rs/nrf-softdevice.git", bra
 nrf-softdevice-macro = { git = "https://github.com/embassy-rs/nrf-softdevice.git", branch = "master" }
 nrf-softdevice-s140 = { git = "https://github.com/embassy-rs/nrf-softdevice.git", branch = "master" }
 
-[patch."https://github.com/lulf/embassy-microbit.git"]
-embassy-microbit = { path = "../../embassy-microbit/microbit" }
+#[patch."https://github.com/lulf/embassy-microbit.git"]
+#embassy-microbit = { path = "../../embassy-microbit/microbit" }
 
-[patch."https://github.com/drogue-iot/btmesh.git"]
-btmesh-device = { path = "../../drogue-iot/btmesh/btmesh-device" }
-btmesh-macro = { path = "../../drogue-iot/btmesh/btmesh-macro" }
-btmesh-common = { path = "../../drogue-iot/btmesh/btmesh-common" }
-btmesh-models = { path = "../../drogue-iot/btmesh/btmesh-models" }
-btmesh-driver = { path = "../../drogue-iot/btmesh/btmesh-driver" }
-btmesh-nrf-softdevice = { path = "../../drogue-iot/btmesh/btmesh-nrf-softdevice" }
+#[patch."https://github.com/drogue-iot/btmesh.git"]
+#btmesh-device = { path = "../../drogue-iot/btmesh/btmesh-device" }
+#btmesh-macro = { path = "../../drogue-iot/btmesh/btmesh-macro" }
+#btmesh-common = { path = "../../drogue-iot/btmesh/btmesh-common" }
+#btmesh-models = { path = "../../drogue-iot/btmesh/btmesh-models" }
+#btmesh-driver = { path = "../../drogue-iot/btmesh/btmesh-driver" }
+#btmesh-nrf-softdevice = { path = "../../drogue-iot/btmesh/btmesh-nrf-softdevice" }

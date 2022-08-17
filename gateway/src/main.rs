@@ -153,16 +153,19 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             evt = element_control.next() => {
                 match evt {
                     Some(msg) => {
+                        println!("Received message with opcode {:?} and {} parameter bytes!", msg.opcode, msg.parameters.len());
                         match SensorClient::<MicrobitSensorConfig, 1, 1>::parse(msg.opcode, &msg.parameters).map_err(|_| std::fmt::Error)? {
                             Some(message) => {
-                                match message {
-                                    SensorMessage::Status(status) => {
-                                        println!("Received {:?}", status.data);
-                                    },
-                                    _ => todo!(),
-                                }
+                                println!("Received {:?}", message);
                             },
-                            None => todo!()
+                            None => {}
+                        }
+
+                        match GenericBatteryClient ::parse(msg.opcode, &msg.parameters).map_err(|_| std::fmt::Error)? {
+                            Some(message) => {
+                                println!("Received {:?}", message);
+                            },
+                            None => {}
                         }
                         let mut opcode: heapless::Vec<u8, 16> = heapless::Vec::new();
                         msg.opcode.emit(&mut opcode).map_err(|_| std::fmt::Error)?;
@@ -176,7 +179,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                         let data = serde_json::to_string(&message)?;
 
                         let src = msg.src.as_bytes();
-                        let topic = format!("{:x}{:x}", src[0], src[1]);
+                        let topic = format!("sensor/{:02x}{:02x}", src[0], src[1]);
 
                         let message = mqtt::Message::new(topic, data.as_bytes(), 1);
                         if let Err(e) = mqtt_client.publish(message).await {
