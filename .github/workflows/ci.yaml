@@ -19,6 +19,9 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - name: Install dependencies
+        run: sudo apt install libdbus-1-dev pkg-config
+
       - name: Build
         run: cargo build --release
 
