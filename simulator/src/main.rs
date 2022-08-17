@@ -52,6 +52,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         elements: vec![
             Element {
                 path: front.clone(),
+                location: Some(0x0100),
                 models: vec![
                     Arc::new(FromDrogue::new(GenericOnOffServer)),
                     Arc::new(FromDrogue::new(GenericBatteryServer)),
@@ -61,11 +62,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             },
             Element {
                 path: left,
+                location: Some(0x010D),
                 models: vec![Arc::new(FromDrogue::new(GenericOnOffClient))],
                 control_handle: Some(element_handle.clone()),
             },
             Element {
                 path: right,
+                location: Some(0x010E),
                 models: vec![Arc::new(FromDrogue::new(GenericOnOffClient))],
                 control_handle: Some(element_handle),
             },
