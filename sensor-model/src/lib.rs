@@ -1,11 +1,9 @@
 #![cfg_attr(not(feature = "std"), no_std)]
-use btmesh_models::{
-    sensor::{
-        CadenceDescriptor, PropertyId, SensorConfig, SensorData, SensorDescriptor,
-        SensorSetupConfig, SettingDescriptor,
-    },
+use btmesh_common::{InsufficientBuffer, ParseError};
+use btmesh_models::sensor::{
+    CadenceDescriptor, PropertyId, SensorConfig, SensorData, SensorDescriptor, SensorSetupConfig,
+    SettingDescriptor,
 };
-use btmesh_common::{InsufficientBuffer, ParseError,};
 use heapless::Vec;
 
 #[derive(Debug, Clone)]
@@ -62,6 +60,6 @@ impl SensorSetupConfig for MicrobitSensorConfig {
 #[cfg(feature = "std")]
 #[derive(serde::Serialize, serde::Deserialize)]
 pub struct RawMessage {
-    opcode: std::vec::Vec<u8>,
-    message: std::vec::Vec<u8>,
+    pub opcode: std::vec::Vec<u8>,
+    pub parameters: std::vec::Vec<u8>,
 }

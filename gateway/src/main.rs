@@ -2,6 +2,10 @@
 
 use bluer::mesh::{application::Application, element::*};
 use btmesh_models::{
+    generic::{
+        battery::GenericBatteryClient,
+        onoff::{GenericOnOffClient, GenericOnOffServer},
+    },
     sensor::{SensorClient, SensorMessage},
     Model,
 };
@@ -34,6 +38,8 @@ struct Args {
     insecure_tls: bool,
 }
 
+type Sensor = SensorClient<MicrobitSensorConfig, 1, 1>;
+
 #[tokio::main(flavor = "current_thread")]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     env_logger::init();
@@ -46,19 +52,37 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let root_path = Path::from("/mesh_client");
     let app_path = Path::from(format!("{}/{}", root_path.clone(), "application"));
-    let element_path = Path::from(format!("{}/{}", root_path.clone(), "ele00"));
+
+    let front = Path::from(format!("{}/ele{}", root_path.clone(), "00"));
+    let left = Path::from(format!("{}/ele{}", root_path.clone(), "01"));
+    let right = Path::from(format!("{}/ele{}", root_path.clone(), "02"));
 
     let sim = Application {
         path: app_path,
-        elements: vec![Element {
-            path: element_path,
-            models: vec![Arc::new(FromDrogue::new(SensorClient::<
-                MicrobitSensorConfig,
-                1,
-                1,
-            >::new()))],
-            control_handle: Some(element_handle),
-        }],
+        elements: vec![
+            Element {
+                path: front.clone(),
+                location: Some(0x0100),
+                models: vec![
+                    Arc::new(FromDrogue::new(GenericOnOffClient)),
+                    Arc::new(FromDrogue::new(GenericBatteryClient)),
+                    Arc::new(FromDrogue::new(Sensor::new())),
+                ],
+                control_handle: Some(element_handle.clone()),
+            },
+            Element {
+                path: left,
+                location: Some(0x010D),
+                models: vec![Arc::new(FromDrogue::new(GenericOnOffServer))],
+                control_handle: Some(element_handle.clone()),
+            },
+            Element {
+                path: right,
+                location: Some(0x010E),
+                models: vec![Arc::new(FromDrogue::new(GenericOnOffServer))],
+                control_handle: Some(element_handle),
+            },
+        ],
         ..Default::default()
     };
 
@@ -73,7 +97,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .client_id("btmesh-gateway")
         .persistence(mqtt::PersistenceType::None)
         .finalize();
-    let mut mqtt_client = mqtt::AsyncClient::new(mqtt_opts)?;
+    let mqtt_client = mqtt::AsyncClient::new(mqtt_opts)?;
 
     let mut conn_opts = mqtt::ConnectOptionsBuilder::new();
     conn_opts.user_name(format!(
@@ -103,7 +127,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     mqtt_client.set_disconnected_callback(|c, _, _| {
         log::info!("Disconnected");
         let t = c.reconnect();
-        if let Err(e) = t.wait_for(Duration::from_secs(10)) {
+        if let Err(_e) = t.wait_for(Duration::from_secs(10)) {
             //log::warn!("Error reconnecting to broker ({:?}), exiting", e);
             std::process::exit(1);
         }
@@ -140,6 +164,28 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                             },
                             None => todo!()
                         }
+                        let mut opcode: heapless::Vec<u8, 16> = heapless::Vec::new();
+                        msg.opcode.emit(&mut opcode).map_err(|_| std::fmt::Error)?;
+
+                        let mut parameters = Vec::new();
+                        parameters.extend_from_slice(&msg.parameters);
+                        let message = RawMessage {
+                            opcode: opcode.to_vec(),
+                            parameters,
+                        };
+                        let data = serde_json::to_string(&message)?;
+
+                        let src = msg.src.as_bytes();
+                        let topic = format!("{:x}{:x}", src[0], src[1]);
+
+                        let message = mqtt::Message::new(topic, data.as_bytes(), 1);
+                        if let Err(e) = mqtt_client.publish(message).await {
+                            log::warn!(
+                                "Error publishing command back to device: {:?}",
+                                e
+                            );
+                        }
+
                     },
                     None => break,
                 }

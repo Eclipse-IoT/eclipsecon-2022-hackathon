@@ -4,8 +4,8 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-btmesh-models = { git = "https://github.com/drogue-iot/btmesh.git", branch = "main" }
-btmesh-common = { git = "https://github.com/drogue-iot/btmesh.git", branch = "main" }
+btmesh-common = { version = "0.1.0" }
+btmesh-models = { version = "0.1.0" }
 defmt = { version = "0.3", optional = true }
 heapless = "0.7"
 serde = { version = "1.0", default-features = false, features = ["derive"] }
