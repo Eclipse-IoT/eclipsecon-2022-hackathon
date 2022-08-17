@@ -53,6 +53,8 @@ embassy-util = { git = "https://github.com/embassy-rs/embassy.git", branch = "ma
 nrf-softdevice = { git = "https://github.com/embassy-rs/nrf-softdevice.git", branch = "master" }
 nrf-softdevice-macro = { git = "https://github.com/embassy-rs/nrf-softdevice.git", branch = "master" }
 nrf-softdevice-s140 = { git = "https://github.com/embassy-rs/nrf-softdevice.git", branch = "master" }
+btmesh-common = { git = "https://github.com/drogue-iot/btmesh.git", branch = "main" }
+btmesh-models = { git = "https://github.com/drogue-iot/btmesh.git", branch = "main" }
 
 #[patch."https://github.com/lulf/embassy-microbit.git"]
 #embassy-microbit = { path = "../../embassy-microbit/microbit" }
