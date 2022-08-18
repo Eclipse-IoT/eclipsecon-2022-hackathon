@@ -23,5 +23,5 @@ dependencies:
     version: "0.6.0-alpha1"
   - name: drogue-cloud-twin
     alias: drogueCloudTwin
-    repository: file://../external/drogue-cloud-helm-charts/charts/drogue-cloud-core
+    repository: file://../external/drogue-cloud-helm-charts/charts/drogue-cloud-twin
     version: "0.6.0-alpha1"
