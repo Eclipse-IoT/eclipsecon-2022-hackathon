@@ -11,7 +11,7 @@ use btmesh_models::{
         battery::{GenericBatteryMessage, GenericBatteryServer},
         onoff::{GenericOnOffClient, GenericOnOffMessage, GenericOnOffServer},
     },
-    sensor::{SensorSetupMessage, SensorSetupServer},
+    sensor::{SensorMessage, SensorSetupMessage, SensorSetupServer, SensorStatus},
 };
 use btmesh_nrf_softdevice::*;
 use core::future::Future;
@@ -226,7 +226,7 @@ impl BluetoothMeshModel<SensorServer> for Sensor {
 
     fn run<'run, C: BluetoothMeshModelContext<SensorServer> + 'run>(
         &'run mut self,
-        _ctx: C,
+        ctx: C,
     ) -> Self::RunFuture<'_, C> {
         async move {
             loop {
@@ -235,6 +235,17 @@ impl BluetoothMeshModel<SensorServer> for Sensor {
                 match self.read().await {
                     Ok(result) => {
                         defmt::info!("Read sensor data: {:?}", result);
+                        let message = SensorSetupMessage::Sensor(SensorMessage::Status(
+                            SensorStatus::new(result),
+                        ));
+                        match ctx.publish(message).await {
+                            Ok(_) => {
+                                defmt::info!("Published sensor reading");
+                            }
+                            Err(e) => {
+                                defmt::warn!("Error publishing sensor reading: {:?}", e);
+                            }
+                        }
                     }
                     Err(e) => {
                         defmt::warn!("Error reading sensor data: {:?}", e);
