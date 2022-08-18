@@ -1,0 +1,9 @@
+dependencies:
+- name: drogue-cloud-common
+  repository: file://../external/drogue-cloud-helm-charts/charts/drogue-cloud-common
+  version: 0.6.0-alpha1
+- name: drogue-cloud-twin
+  repository: file://../external/drogue-cloud-helm-charts/charts/drogue-cloud-core
+  version: 0.6.0-alpha1
+digest: sha256:9510e11d3cd05b3880475e5ce9feecf66c4c6811e0cb402a17bab88c40aab498
+generated: "2022-08-18T17:02:56.0001496+02:00"
