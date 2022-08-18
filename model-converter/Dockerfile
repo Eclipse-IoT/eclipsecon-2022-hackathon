@@ -2,7 +2,7 @@ FROM ghcr.io/drogue-iot/builder:0.1.20 as builder
 
 RUN mkdir /build
 ADD . /build
-WORKDIR /build/api
+WORKDIR /build/model-converter
 
 RUN cargo build --release
 
