@@ -13,18 +13,20 @@ btmesh-common = { git = "https://github.com/drogue-iot/btmesh.git", branch = "ma
 btmesh-models = { git = "https://github.com/drogue-iot/btmesh.git", branch = "main" }
 btmesh-nrf-softdevice = { git = "https://github.com/drogue-iot/btmesh.git", branch = "main", default-features = false, features = ["defmt", "nrf52833", "relay"] }
 cortex-m-rt = "0.7"
+cortex-m = { version = "0.7.6", features = ["critical-section-single-core"] }
 
 defmt = "0.3"
 defmt-rtt = "0.3"
-embassy-executor = { version = "0.1.0", default-features = false, features = ["time", "defmt-timestamp-uptime", "defmt", "nightly"] }
-embassy-microbit = { git = "https://github.com/lulf/embassy-microbit.git", branch = "main" }
+embassy-executor = { version = "0.1.0", default-features = false, features = ["integrated-timers", "nightly"] }
+embassy-time = { version = "0.1.0", default-features = false, features = ["defmt-timestamp-uptime", "defmt"] }
+microbit-async = { git = "https://github.com/lulf/microbit-async.git", branch = "main" }
 
 embassy-nrf = { version = "0.1.0", default-features = false, features = ["nrf52833", "gpiote", "time-driver-rtc1", "nightly", "unstable-traits"] }
 embassy-util = { version = "0.1.0", default-features = false }
 
 heapless = "0.7"
 
-nrf-softdevice = { version = "0.1.0", features = ["ble-peripheral", "ble-central", "ble-gatt-server", "s140", "nrf52833", "critical-section-impl"] }
+nrf-softdevice = { version = "0.1.0", features = ["ble-peripheral", "ble-central", "ble-gatt-server", "s140", "nrf52833"] }
 nrf-softdevice-s140 = { version = "0.1.0" }
 panic-probe = { version = "0.3", features = ["print-defmt"] }
 
@@ -48,6 +50,7 @@ overflow-checks = false
 
 [patch.crates-io]
 embassy-executor = { git = "https://github.com/embassy-rs/embassy.git", branch = "master" }
+embassy-time = { git = "https://github.com/embassy-rs/embassy.git", branch = "master" }
 embassy-nrf = { git = "https://github.com/embassy-rs/embassy.git", branch = "master" }
 embassy-util = { git = "https://github.com/embassy-rs/embassy.git", branch = "master" }
 nrf-softdevice = { git = "https://github.com/embassy-rs/nrf-softdevice.git", branch = "master" }
@@ -56,8 +59,8 @@ nrf-softdevice-s140 = { git = "https://github.com/embassy-rs/nrf-softdevice.git"
 btmesh-common = { git = "https://github.com/drogue-iot/btmesh.git", branch = "main" }
 btmesh-models = { git = "https://github.com/drogue-iot/btmesh.git", branch = "main" }
 
-#[patch."https://github.com/lulf/embassy-microbit.git"]
-#embassy-microbit = { path = "../../embassy-microbit/microbit" }
+#[patch."https://github.com/lulf/microbit-async.git"]
+#microbit-async = { path = "../../microbit-async/microbit" }
 
 #[patch."https://github.com/drogue-iot/btmesh.git"]
 #btmesh-device = { path = "../../drogue-iot/btmesh/btmesh-device" }

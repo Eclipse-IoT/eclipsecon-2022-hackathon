@@ -6,7 +6,7 @@ use btmesh_models::{
         battery::GenericBatteryClient,
         onoff::{GenericOnOffClient, GenericOnOffServer},
     },
-    sensor::{SensorClient, SensorMessage},
+    sensor::{SensorClient},
     Model,
 };
 use clap::Parser;

@@ -4,7 +4,7 @@
 #![feature(generic_associated_types)]
 #![feature(type_alias_impl_trait)]
 
-use btmesh_device::{location::Location, BluetoothMeshModel, BluetoothMeshModelContext};
+use btmesh_device::{BluetoothMeshModel, BluetoothMeshModelContext};
 use btmesh_macro::{device, element};
 use btmesh_models::{
     generic::{
@@ -15,17 +15,9 @@ use btmesh_models::{
 };
 use btmesh_nrf_softdevice::*;
 use core::future::Future;
-use embassy_executor::{
-    executor::Spawner,
-    time::{Duration, Timer},
-};
-use embassy_microbit::*;
-use embassy_nrf::{
-    config::Config,
-    gpio::{AnyPin, Input},
-    interrupt::Priority,
-    Peripherals,
-};
+use embassy_executor::Spawner;
+use embassy_time::{Duration, Timer};
+use microbit_async::*;
 use nrf_softdevice::{temperature_celsius, Softdevice};
 use sensor_model::*;
 
@@ -44,9 +36,9 @@ fn config() -> Config {
     config
 }
 
-#[embassy_executor::main(config = "config()")]
-async fn main(_s: Spawner, p: Peripherals) {
-    let board = Microbit::new(p);
+#[embassy_executor::main]
+async fn main(_s: Spawner) {
+    let board = Microbit::new(config());
 
     let mut driver = Driver::new("drogue", unsafe { &__storage as *const u8 as u32 }, 100);
 
@@ -104,11 +96,11 @@ impl Device {
 }
 
 struct ButtonOnOff {
-    button: Input<'static, AnyPin>,
+    button: Button,
 }
 
 impl ButtonOnOff {
-    fn new(button: Input<'static, AnyPin>) -> Self {
+    fn new(button: Button) -> Self {
         Self { button }
     }
 }
