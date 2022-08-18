@@ -87,7 +87,7 @@ Properties:
 ```
 {
     "temperature": {
-        "value": u8
+        "value": i8
     },
     "noise": {
         "value": u8

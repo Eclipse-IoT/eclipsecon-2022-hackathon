@@ -3,7 +3,7 @@ use btmesh_common::opcode::Opcode;
 use btmesh_models::{
     generic::{
         battery::{GenericBatteryClient, GenericBatteryFlagsPresence, GenericBatteryMessage},
-        onoff::{GenericOnOffClient, GenericOnOffServer},
+        onoff::{GenericOnOffClient, GenericOnOffMessage, GenericOnOffServer},
     },
     sensor::{SensorClient, SensorMessage},
     Model,
@@ -18,8 +18,14 @@ async fn convert_event(mut event: Event) -> Event {
     if let Some(Data::Json(data)) = event.data() {
         if let Ok(data) = serde_json::from_value(data.clone()) {
             let converted = convert_message(data).await;
-            if let Some(converted) = converted {
-                event.set_data("application/json", converted);
+            if let Some(state) = converted {
+                event.set_data(
+                    "application/json",
+                    json!({
+                        "state": state,
+                        "partial": false,
+                    }),
+                );
             }
         }
     }
@@ -29,40 +35,43 @@ async fn convert_event(mut event: Event) -> Event {
 async fn convert_message(msg: RawMessage) -> Option<Value> {
     let (opcode, _) = Opcode::split(&msg.opcode[..]).unwrap();
     let parameters = &msg.parameters[..];
-    match SensorClient::<MicrobitSensorConfig, 1, 1>::parse(opcode, parameters) {
-        Ok(Some(SensorMessage::Status(status))) => {
-            println!("Received sensor status {:?}", status);
-            return Some(json!( {
-                "state": {
-                    "sensor": serde_json::to_value(&status.data).unwrap(),
-                },
-                "partial": false,
-            }));
-        }
-        _ => {}
+
+    if let Ok(Some(GenericOnOffMessage::Set(set))) = GenericOnOffServer::parse(opcode, parameters) {
+        return Some(json!({ "button": {"on": set.on_off == 1 }}));
     }
 
-    match GenericBatteryClient::parse(opcode, parameters) {
-        Ok(Some(GenericBatteryMessage::Status(status))) => {
-            println!("Received battery status {:?}", status);
-            return Some(json!( {
-                "state": {
-                    "battery": {
-                        "level": status.battery_level,
-                        "flags": {
-                            "presence": match status.flags.presence {
-                                GenericBatteryFlagsPresence::NotPresent => "NotPresent",
-                                GenericBatteryFlagsPresence::PresentRemovable => "PresentRemovable",
-                                GenericBatteryFlagsPresence::PresentNotRemovable => "PresentNotRemovable",
-                                GenericBatteryFlagsPresence::Unknown => "Unknown",
-                            }
-                        }
+    if let Ok(Some(GenericOnOffMessage::SetUnacknowledged(set))) =
+        GenericOnOffServer::parse(opcode, parameters)
+    {
+        return Some(json!({ "button": {"on": set.on_off == 1 }}));
+    }
+
+    if let Ok(Some(SensorMessage::Status(status))) =
+        SensorClient::<MicrobitSensorConfig, 1, 1>::parse(opcode, parameters)
+    {
+        println!("Received sensor status {:?}", status);
+        return Some(json!( {
+            "sensor": serde_json::to_value(&status.data).unwrap(),
+        }));
+    }
+
+    if let Ok(Some(GenericBatteryMessage::Status(status))) =
+        GenericBatteryClient::parse(opcode, parameters)
+    {
+        println!("Received battery status {:?}", status);
+        return Some(json!( {
+            "battery": {
+                "level": status.battery_level,
+                "flags": {
+                    "presence": match status.flags.presence {
+                        GenericBatteryFlagsPresence::NotPresent => "NotPresent",
+                        GenericBatteryFlagsPresence::PresentRemovable => "PresentRemovable",
+                        GenericBatteryFlagsPresence::PresentNotRemovable => "PresentNotRemovable",
+                        GenericBatteryFlagsPresence::Unknown => "Unknown",
                     }
-                },
-                "partial": false,
-            }));
-        }
-        _ => {}
+                }
+            },
+        }));
     }
 
     None
