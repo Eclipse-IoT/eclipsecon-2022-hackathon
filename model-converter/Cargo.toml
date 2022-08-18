@@ -1,0 +1,13 @@
+[package]
+name = "eclipsecon-model-converter"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+cloudevents-sdk = { version = "0.5", features = ["actix"] }
+actix-web = "4"
+serde_json = "1"
+env_logger = "0.9"
+btmesh-common = { version = "0.1.0" }
+btmesh-models = { version = "0.1.0" }
+sensor-model = { path = "../sensor-model", features = ["std"] }

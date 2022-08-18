@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: model-converter
+  labels:
+    app.kubernetes.io/name: model-converter
+    app.kubernetes.io/instance: eclipsecon-2022
+    app.kubernetes.io/component: model-converter
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: model-converter
+      app.kubernetes.io/instance: eclipsecon-2022
+      app.kubernetes.io/component: model-converter
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: model-converter
+        app.kubernetes.io/instance: eclipsecon-2022
+        app.kubernetes.io/component: model-converter
+    spec:
+      containers:
+      - name: server
+        image: docker.io/lulf/eclipsecon-model-converter:latest
+        env:
+          - name: RUST_LOG
+            value: info
+        ports:
+        - name: endpoint
+          containerPort: 8080
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8080
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 8080

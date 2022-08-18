@@ -12,6 +12,7 @@ pub struct MicrobitSensorConfig;
 
 #[derive(Debug)]
 #[cfg_attr(feature = "defmt", derive(defmt::Format))]
+#[derive(serde::Serialize, serde::Deserialize)]
 pub struct SensorPayload {
     pub temperature: i8,
 }

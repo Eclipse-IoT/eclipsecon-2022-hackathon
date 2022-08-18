@@ -4,6 +4,7 @@ members = [
   "gateway",
   "sensor-model",
   "simulator",
+  "model-converter",
 ]
 
 [patch.crates-io]

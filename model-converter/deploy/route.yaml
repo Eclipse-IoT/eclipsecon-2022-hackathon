@@ -1,0 +1,16 @@
+kind: Route
+apiVersion: route.openshift.io/v1
+metadata:
+  name: model-converter
+  labels:
+    app.kubernetes.io/name: model-converter
+    app.kubernetes.io/instance: eclipsecon-2022
+    app.kubernetes.io/component: model-converter
+spec:
+  to:
+    kind: Service
+    name: model-converter
+  port:
+    targetPort: endpoint
+  tls:
+    termination: edge
