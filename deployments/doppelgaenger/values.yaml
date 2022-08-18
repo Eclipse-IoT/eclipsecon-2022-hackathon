@@ -37,6 +37,15 @@ drogueCloudTwin:
         annotations:
           route.openshift.io/termination: reencrypt
 
+  configuration:
+    commands:
+      host: mqtt-integration.sandbox.drogue.cloud
+      port: 443
+      clientId: command-sink
+      # username:
+      # password:
+      disableTls: false
+
   kafka:
     kafka:
       replicas: 1
