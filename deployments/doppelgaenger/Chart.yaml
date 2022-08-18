@@ -1,0 +1,27 @@
+apiVersion: v2
+name: eclipsecon-2022-hackathon-doppelgaenger
+description: Install Drogue Doppelgaenger
+keywords:
+  - IoT
+home: https://drogue.io
+icon: https://blog.drogue.io/favicon.svg
+
+maintainers:
+  - name: ctron
+    email: ctron@dentrassi.de
+    url: https://dentrassi.de
+
+type: application
+
+version: 0.1.0
+
+kubeVersion: ">= 1.19.0-0"
+
+dependencies:
+  - name: drogue-cloud-common
+    repository: file://../external/drogue-cloud-helm-charts/charts/drogue-cloud-common
+    version: "0.6.0-alpha1"
+  - name: drogue-cloud-twin
+    alias: drogueCloudTwin
+    repository: file://../external/drogue-cloud-helm-charts/charts/drogue-cloud-core
+    version: "0.6.0-alpha1"
