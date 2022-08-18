@@ -1,3 +1,59 @@
 global:
+  cluster: openshift
+  domain: -eclipsecon-2022.apps.sandbox.drogue.world
+
   drogueCloud:
-    useServiceCa: true
+    jaeger:
+      enabled: false
+
+    useServiceCA: true
+
+    keycloak:
+      # enable keycloak deployment
+      enabled: true
+      # enable secure deployment
+      insecure: false
+      postInstall:
+        image: quay.io/keycloak/keycloak:18.0.1
+
+drogueCloudTwin:
+
+  defaults:
+
+    images:
+      repository: quay.io/ctrontesting
+      pullPolicy: Always
+      tag: latest
+
+    logging:
+      debug: true
+
+  api:
+    ingress: {}
+
+  services:
+    sso:
+      ingress:
+        annotations:
+          route.openshift.io/termination: reencrypt
+
+  kafka:
+    kafka:
+      replicas: 1
+      resources:
+        limits:
+          cpu: 1
+          memory: 1Gi
+        requests:
+          cpu: 250m
+          memory: 1Gi
+
+  keycloak:
+    adminPassword: # see values.secret.yaml
+
+    postInstall:
+      user:
+        password: # see values.secret.yaml
+
+  postgres:
+    password: # see values.secret.yaml
