@@ -1,0 +1,51 @@
+
+Acquire OAuth2 token (refresh every 5m):
+
+[source,shell]
+----
+set -x CLIENT_SECRET $(oc get -n eclipsecon-2022 secret keycloak-client-secret-services -o json | jq -r .data.CLIENT_SECRET | base64 -d)
+set -x HTTP_OPTS -A bearer -a $(http --form POST https://sso-eclipsecon-2022.apps.sandbox.drogue.world/realms/doppelgaenger/protocol/openid-connect/token grant_type=client_credentials client_id=services client_secret=$CLIENT_SECRET | jq -r .access_token)
+----
+
+Test operations:
+
+[source,shell]
+----
+http $HTTP_OPTS POST https://api-eclipsecon-2022.apps.sandbox.drogue.world/api/v1alpha1/things metadata:='{"name": "foo", "application": "default"}'
+----
+
+And get:
+
+[source,shell]
+----
+http $HTTP_OPTS GET https://api-eclipsecon-2022.apps.sandbox.drogue.world/api/v1alpha1/things/default/things/foo
+----
+
+Create thing:
+
+[source,shell]
+----
+# http $HTTP_OPTS POST https://api-eclipsecon-2022.apps.sandbox.drogue.world/api/v1alpha1/things metadata:='{"name": "00aa/sensor", "application": "default"}'
+http $HTTP_OPTS POST https://api-eclipsecon-2022.apps.sandbox.drogue.world/api/v1alpha1/things metadata:='{"application": "default", "name": "00aa/sensor" }' 'reconciliation[changed][hierarchy][javaScript]=@hierarchy.js' 'reconciliation[deleting][hierarchy][javaScript]=@hierarchy.js'
+----
+
+Get:
+
+[source,shell]
+----
+http $HTTP_OPTS GET https://api-eclipsecon-2022.apps.sandbox.drogue.world/api/v1alpha1/things/default/things/00aa%2Fsensor
+----
+
+Delete:
+
+[source,shell]
+----
+http $HTTP_OPTS DELETE https://api-eclipsecon-2022.apps.sandbox.drogue.world/api/v1alpha1/things/default/things/00aa%2Fsensor
+----
+
+Enable hierarchy:
+
+[source,shell]
+----
+http $HTTP_OPTS PUT https://api-eclipsecon-2022.apps.sandbox.drogue.world/api/v1alpha1/things/default/things/00aa/annotations 'io.drogue/group=btmesh/mesh1'
+----
