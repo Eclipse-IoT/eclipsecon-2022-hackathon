@@ -24,3 +24,7 @@ micro:bit.
 ## Model conversion 
 
 The `model-converter` folder contains a HTTP server which is invoked by Drogue Cloud for each sensor event, and will convert data from the Bluetooth Mesh model format to the JSON format described in [MESHMODEL](MESHMODEL.md).
+
+## Digital twin
+
+Should be there soon
