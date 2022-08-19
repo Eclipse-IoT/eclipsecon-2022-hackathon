@@ -16,6 +16,9 @@ global:
       postInstall:
         image: quay.io/keycloak/keycloak:18.0.1
 
+metrics:
+  scrapeInterval: 5s
+
 drogueCloudTwin:
 
   defaults:

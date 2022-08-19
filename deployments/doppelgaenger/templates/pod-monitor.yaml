@@ -1,0 +1,19 @@
+{{- $ref := dict "root" . "name" "doppelgaenger-pod-monitor" "component" "metrics" -}}
+kind: PodMonitor
+apiVersion: monitoring.coreos.com/v1
+metadata:
+  name: doppelgaenger-pod-monitor
+  labels:
+    {{- include "drogue-cloud-twin.labels" $ref | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "drogue-cloud-common.healthSelector" . | nindent 6 }}
+
+  podMetricsEndpoints:
+      - port: health
+        path: /metrics
+        scheme: http
+        {{- with .Values.metrics.scrapeInterval }}
+        interval: {{ . | quote }}
+        {{- end }}
