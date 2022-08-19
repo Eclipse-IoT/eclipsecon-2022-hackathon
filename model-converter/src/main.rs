@@ -23,7 +23,7 @@ async fn convert_event(mut event: Event) -> Event {
                     "application/json",
                     json!({
                         "state": state,
-                        "partial": false,
+                        "partial": true,
                     }),
                 );
             }
