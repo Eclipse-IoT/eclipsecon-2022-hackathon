@@ -1,5 +1,18 @@
 # Bootstrap
 
+## Setup
+
+* https://docs.openshift.com/container-platform/4.10/monitoring/enabling-monitoring-for-user-defined-projects.html
+
+## Operators
+
+Install the following operators:
+
+* Strimzi / Red Hat Integration - AMQ Streams
+* Jaeger / Red Hat OpenShift distributed tracing platform
+
+## CRDs
+
 Install CRDs:
 
 ```shell
@@ -12,4 +25,3 @@ Bootstrap setup:
 ```shell
 oc apply -f bootstrap.yaml 
 ```
-

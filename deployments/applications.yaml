@@ -2,6 +2,24 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
+  name: eclipsecon-2022-sso
+spec:
+  destination:
+    name: in-cluster
+    namespace: eclipsecon-2022
+    server: ''
+  source:
+    path: deployments/sso
+    repoURL: 'https://github.com/ctron/eclipsecon-2022-hackathon/'
+    targetRevision: feature/add_doppelgaenger_1
+  project: eclipsecon-2022
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
   name: eclipsecon-2022-doppelgaenger
 spec:
   destination:
