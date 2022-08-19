@@ -58,6 +58,9 @@ drogueCloudTwin:
         - name: INJECTOR__PAYLOAD_MAPPER__TYPE
           value: simpleState
 
+    debugger:
+      disabled: false
+
   configuration:
     commands:
       host: mqtt-integration.sandbox.drogue.cloud
