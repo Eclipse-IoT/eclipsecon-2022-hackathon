@@ -2,6 +2,8 @@ global:
   cluster: openshift
   domain: -eclipsecon-2022.apps.sandbox.drogue.world
 
+  partOf: drogue-doppelgaenger
+
   drogueCloud:
     jaeger:
       enabled: true
