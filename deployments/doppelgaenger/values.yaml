@@ -4,7 +4,7 @@ global:
 
   drogueCloud:
     jaeger:
-      enabled: false
+      enabled: true
 
     useServiceCA: true
 
@@ -26,7 +26,7 @@ drogueCloudTwin:
       tag: latest
 
     logging:
-      debug: true
+      debug: false
 
   api:
     ingress: {}
@@ -51,7 +51,7 @@ drogueCloudTwin:
         - name: INJECTOR__METADATA_MAPPER__OVERRIDE_APPLICATION
           value: default
         - name: INJECTOR__PAYLOAD_MAPPER__TYPE
-          value: raw
+          value: simpleState
 
   configuration:
     commands:
