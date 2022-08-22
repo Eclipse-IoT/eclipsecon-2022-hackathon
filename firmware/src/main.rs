@@ -16,7 +16,9 @@ use btmesh_models::{
 use btmesh_nrf_softdevice::*;
 use core::future::Future;
 use embassy_executor::Spawner;
-use embassy_time::{Duration, Timer};
+use embassy_time::{Duration, Ticker, Timer};
+use embassy_util::{select, Either};
+use futures::StreamExt;
 use microbit_async::*;
 use nrf_softdevice::{temperature_celsius, Softdevice};
 use sensor_model::*;
@@ -229,27 +231,31 @@ impl BluetoothMeshModel<SensorServer> for Sensor {
         ctx: C,
     ) -> Self::RunFuture<'_, C> {
         async move {
+            let mut tick = Ticker::every(self.interval);
             loop {
-                Timer::after(self.interval).await;
-
-                match self.read().await {
-                    Ok(result) => {
-                        defmt::info!("Read sensor data: {:?}", result);
-                        let message = SensorSetupMessage::Sensor(SensorMessage::Status(
-                            SensorStatus::new(result),
-                        ));
-                        match ctx.publish(message).await {
-                            Ok(_) => {
-                                defmt::info!("Published sensor reading");
-                            }
-                            Err(e) => {
-                                defmt::warn!("Error publishing sensor reading: {:?}", e);
+                match select(ctx.receive(), tick.next()).await {
+                    Either::First(msg) => {
+                        defmt::info!("Received message: {:?}", msg);
+                    }
+                    Either::Second(_) => match self.read().await {
+                        Ok(result) => {
+                            defmt::info!("Read sensor data: {:?}", result);
+                            let message = SensorSetupMessage::Sensor(SensorMessage::Status(
+                                SensorStatus::new(result),
+                            ));
+                            match ctx.publish(message).await {
+                                Ok(_) => {
+                                    defmt::info!("Published sensor reading");
+                                }
+                                Err(e) => {
+                                    defmt::warn!("Error publishing sensor reading: {:?}", e);
+                                }
                             }
                         }
-                    }
-                    Err(e) => {
-                        defmt::warn!("Error reading sensor data: {:?}", e);
-                    }
+                        Err(e) => {
+                            defmt::warn!("Error reading sensor data: {:?}", e);
+                        }
+                    },
                 }
             }
         }

@@ -586,6 +586,7 @@ dependencies = [
  "embassy-nrf",
  "embassy-time",
  "embassy-util",
+ "futures",
  "heapless",
  "microbit-async",
  "nrf-softdevice",

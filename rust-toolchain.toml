@@ -5,4 +5,5 @@ channel = "nightly-2022-08-11"
 components = [ "rust-src", "rustfmt", "llvm-tools-preview" ]
 targets = [
     "thumbv7em-none-eabihf",
+    "wasm32-unknown-unknown",
 ]
