@@ -8,10 +8,13 @@ use btmesh_device::{BluetoothMeshModel, BluetoothMeshModelContext};
 use btmesh_macro::{device, element};
 use btmesh_models::{
     generic::{
-        battery::{GenericBatteryMessage, GenericBatteryServer, Status as BatteryStatus},
+        battery::{
+            GenericBatteryFlags, GenericBatteryFlagsCharging, GenericBatteryFlagsIndicator,
+            GenericBatteryFlagsPresence, GenericBatteryMessage, GenericBatteryServer,
+            Status as BatteryStatus,
+        },
         onoff::{
-            GenericOnOffClient, GenericOnOffMessage, GenericOnOffServer,
-            Status as GenericOnOffStatus,
+            GenericOnOffClient, GenericOnOffMessage, GenericOnOffServer, Set as GenericOnOffSet,
         },
     },
     sensor::{SensorMessage, SensorSetupMessage, SensorSetupServer, SensorStatus},
@@ -49,8 +52,9 @@ async fn main(_s: Spawner) {
 
     let sd = driver.softdevice();
     let sensor = Sensor::new(Duration::from_secs(5), sd);
+    let battery = Battery::new(Duration::from_secs(5));
 
-    let mut device = Device::new(board.btn_a, board.btn_b, board.display, sensor);
+    let mut device = Device::new(board.btn_a, board.btn_b, board.display, battery, sensor);
 
     // Give flash some time before accessing
     Timer::after(Duration::from_millis(100)).await;
@@ -83,11 +87,17 @@ struct ButtonB {
 }
 
 impl Device {
-    pub fn new(btn_a: Button, btn_b: Button, display: LedMatrix, sensor: Sensor) -> Self {
+    pub fn new(
+        btn_a: Button,
+        btn_b: Button,
+        display: LedMatrix,
+        battery: Battery,
+        sensor: Sensor,
+    ) -> Self {
         Self {
             front: Front {
                 display: DisplayOnOff::new(display),
-                battery: Battery::new(),
+                battery,
                 sensor,
             },
             btn_a: ButtonA {
@@ -118,24 +128,17 @@ impl BluetoothMeshModel<GenericOnOffClient> for ButtonOnOff {
 
     fn run<'run, C: BluetoothMeshModelContext<GenericOnOffClient> + 'run>(
         &'run mut self,
-        _: C,
+        ctx: C,
     ) -> Self::RunFuture<'_, C> {
         async move {
             loop {
                 self.button.wait_for_any_edge().await;
-                let message = if self.button.is_low() {
-                    GenericOnOffMessage::Set(GenericOnOffStatus {
-                        present_on_off: true,
-                        target_on_off: true,
-                        remaining_time: 0,
-                    })
-                } else {
-                    GenericOnOffMessage::Set(GenericOnOffStatus {
-                        present_on_off: false,
-                        target_on_off: false,
-                        remaining_time: 0,
-                    })
-                };
+                let message = GenericOnOffMessage::Set(GenericOnOffSet {
+                    on_off: if self.button.is_low() { 1 } else { 0 },
+                    tid: 0,
+                    transition_time: None,
+                    delay: None,
+                });
                 match ctx.publish(message).await {
                     Ok(_) => {
                         defmt::info!("Published button status ");
@@ -193,24 +196,26 @@ impl BluetoothMeshModel<GenericOnOffServer> for DisplayOnOff {
     }
 }
 
-struct Battery {}
+pub struct Battery {
+    interval: Duration,
+}
 
 impl Battery {
-    pub fn new() -> Self {
-        Self {}
+    pub fn new(interval: Duration) -> Self {
+        Self { interval }
     }
 
     async fn read(&mut self) -> BatteryStatus {
-        BatteryStatus {
-            battery_level: 0,
-            time_to_discharge: 0,
-            time_to_charge: u32,
-            flags: GenericBatteryFlags {
+        BatteryStatus::new(
+            0,
+            0,
+            0,
+            GenericBatteryFlags {
                 presence: GenericBatteryFlagsPresence::Unknown,
                 indicator: GenericBatteryFlagsIndicator::Unknown,
                 charging: GenericBatteryFlagsCharging::Unknown,
             },
-        }
+        )
     }
 }
 
@@ -228,11 +233,11 @@ impl BluetoothMeshModel<GenericBatteryServer> for Battery {
             let mut tick = Ticker::every(self.interval);
             loop {
                 match select(ctx.receive(), tick.next()).await {
-                    Either::First((meta, message)) => {
-                        defmt::info!("Received message: {:?}", msg);
+                    Either::First((message, meta)) => {
+                        defmt::info!("Received message: {:?}", message);
                         match message {
                             GenericBatteryMessage::Get => {
-                                let message = GenericBatteryMessage::StatuS(self.read().await);
+                                let message = GenericBatteryMessage::Status(self.read().await);
                                 match ctx.send(message, meta.reply()).await {
                                     Ok(_) => {
                                         defmt::info!("Published battery status ");
@@ -246,7 +251,7 @@ impl BluetoothMeshModel<GenericBatteryServer> for Battery {
                         }
                     }
                     Either::Second(_) => {
-                        let message = GenericBatteryMessage::StatuS(self.read().await);
+                        let message = GenericBatteryMessage::Status(self.read().await);
                         match ctx.publish(message).await {
                             Ok(_) => {
                                 defmt::info!("Published battery status ");
