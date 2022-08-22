@@ -1,0 +1,16 @@
+kind: Route
+apiVersion: route.openshift.io/v1
+metadata:
+  name: web-simulator
+  labels:
+    app.kubernetes.io/name: web-simulator
+    app.kubernetes.io/instance: eclipsecon-2022
+    app.kubernetes.io/component: web-simulator
+spec:
+  to:
+    kind: Service
+    name: web-simulator
+  port:
+    targetPort: endpoint
+  tls:
+    termination: edge

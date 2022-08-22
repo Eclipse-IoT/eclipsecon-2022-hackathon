@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web-simulator
+  labels:
+    app.kubernetes.io/name: web-simulator
+    app.kubernetes.io/instance: eclipsecon-2022
+    app.kubernetes.io/component: web-simulator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: web-simulator
+      app.kubernetes.io/instance: eclipsecon-2022
+      app.kubernetes.io/component: web-simulator
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: web-simulator
+        app.kubernetes.io/instance: eclipsecon-2022
+        app.kubernetes.io/component: web-simulator
+    spec:
+      volumes:
+        - name: run
+          emptyDir: {}
+      containers:
+      - name: server
+        image: docker.io/lulf/web-simulator:latest
+        volumeMounts:
+          - name: run
+            mountPath: /run
+        ports:
+        - name: endpoint
+          containerPort: 8080
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8080
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 8080

@@ -8,8 +8,11 @@ use btmesh_device::{BluetoothMeshModel, BluetoothMeshModelContext};
 use btmesh_macro::{device, element};
 use btmesh_models::{
     generic::{
-        battery::{GenericBatteryMessage, GenericBatteryServer},
-        onoff::{GenericOnOffClient, GenericOnOffMessage, GenericOnOffServer},
+        battery::{GenericBatteryMessage, GenericBatteryServer, Status as BatteryStatus},
+        onoff::{
+            GenericOnOffClient, GenericOnOffMessage, GenericOnOffServer,
+            Status as GenericOnOffStatus,
+        },
     },
     sensor::{SensorMessage, SensorSetupMessage, SensorSetupServer, SensorStatus},
 };
@@ -119,8 +122,28 @@ impl BluetoothMeshModel<GenericOnOffClient> for ButtonOnOff {
     ) -> Self::RunFuture<'_, C> {
         async move {
             loop {
-                self.button.wait_for_falling_edge().await;
-                defmt::info!("** button pushed");
+                self.button.wait_for_any_edge().await;
+                let message = if self.button.is_low() {
+                    GenericOnOffMessage::Set(GenericOnOffStatus {
+                        present_on_off: true,
+                        target_on_off: true,
+                        remaining_time: 0,
+                    })
+                } else {
+                    GenericOnOffMessage::Set(GenericOnOffStatus {
+                        present_on_off: false,
+                        target_on_off: false,
+                        remaining_time: 0,
+                    })
+                };
+                match ctx.publish(message).await {
+                    Ok(_) => {
+                        defmt::info!("Published button status ");
+                    }
+                    Err(e) => {
+                        defmt::warn!("Error publishing button status: {:?}", e);
+                    }
+                }
             }
         }
     }
@@ -176,6 +199,19 @@ impl Battery {
     pub fn new() -> Self {
         Self {}
     }
+
+    async fn read(&mut self) -> BatteryStatus {
+        BatteryStatus {
+            battery_level: 0,
+            time_to_discharge: 0,
+            time_to_charge: u32,
+            flags: GenericBatteryFlags {
+                presence: GenericBatteryFlagsPresence::Unknown,
+                indicator: GenericBatteryFlagsIndicator::Unknown,
+                charging: GenericBatteryFlagsCharging::Unknown,
+            },
+        }
+    }
 }
 
 impl BluetoothMeshModel<GenericBatteryServer> for Battery {
@@ -189,11 +225,37 @@ impl BluetoothMeshModel<GenericBatteryServer> for Battery {
         ctx: C,
     ) -> Self::RunFuture<'_, C> {
         async move {
+            let mut tick = Ticker::every(self.interval);
             loop {
-                let (message, _meta) = ctx.receive().await;
-                match message {
-                    GenericBatteryMessage::Get => {}
-                    GenericBatteryMessage::Status(_) => {}
+                match select(ctx.receive(), tick.next()).await {
+                    Either::First((meta, message)) => {
+                        defmt::info!("Received message: {:?}", msg);
+                        match message {
+                            GenericBatteryMessage::Get => {
+                                let message = GenericBatteryMessage::StatuS(self.read().await);
+                                match ctx.send(message, meta.reply()).await {
+                                    Ok(_) => {
+                                        defmt::info!("Published battery status ");
+                                    }
+                                    Err(e) => {
+                                        defmt::warn!("Error publishing battery status: {:?}", e);
+                                    }
+                                }
+                            }
+                            GenericBatteryMessage::Status(_) => {}
+                        }
+                    }
+                    Either::Second(_) => {
+                        let message = GenericBatteryMessage::StatuS(self.read().await);
+                        match ctx.publish(message).await {
+                            Ok(_) => {
+                                defmt::info!("Published battery status ");
+                            }
+                            Err(e) => {
+                                defmt::warn!("Error publishing battery status: {:?}", e);
+                            }
+                        }
+                    }
                 }
             }
         }

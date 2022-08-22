@@ -17,9 +17,12 @@ The Bluetooth Mesh models supported by the firmware are defined in [MESHMODEL](M
 
 ## BBC micro:bit simulator
 
-The micro:bit simulator can run on any Linux host with bluez, and simulates the exact same models as
-the micro:bit firmware. This can be used to prototype backend applications without running a
-micro:bit.
+There are two simulators: 
+
+* A mesh node simulator that runs on any Linux host with bluez, and simulates the exact same models as
+the micro:bit firmware and sends messages via the gateway. 
+
+* A WASM-based simulator that sends messages directly to Drogue IoT, which can run in any browser. This can be used to prototype backend applications without needing to set up a mesh network. Note this this uses HTTP unlike the gateway which uses MQTT.
 
 ## Model conversion 
 

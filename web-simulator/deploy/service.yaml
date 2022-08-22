@@ -1,0 +1,19 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: web-simulator
+  labels:
+    app.kubernetes.io/name: web-simulator
+    app.kubernetes.io/instance: eclipsecon-2022
+    app.kubernetes.io/component: web-simulator
+spec:
+  selector:
+    app.kubernetes.io/name: web-simulator
+    app.kubernetes.io/instance: eclipsecon-2022
+    app.kubernetes.io/component: web-simulator
+  type: ClusterIP
+  ports:
+    - name: endpoint
+      protocol: TCP
+      port: 8080
+      targetPort: endpoint
