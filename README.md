@@ -24,6 +24,8 @@ the micro:bit firmware and sends messages via the gateway.
 
 * A WASM-based simulator that sends messages directly to Drogue IoT, which can run in any browser. This can be used to prototype backend applications without needing to set up a mesh network. Note this this uses HTTP unlike the gateway which uses MQTT.
 
+You can try the WASM-based simulator by entering https://web-simulator-eclipsecon-2022.apps.sandbox.drogue.world in your browser, configure the parameters and press 'Run'.
+
 ## Model conversion 
 
 The `model-converter` folder contains a HTTP server which is invoked by Drogue Cloud for each sensor event, and will convert data from the Bluetooth Mesh model format to the JSON format described in [MESHMODEL](MESHMODEL.md).
