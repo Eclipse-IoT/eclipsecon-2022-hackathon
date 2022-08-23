@@ -17,5 +17,7 @@ wasm-logger = "0.2"
 log = "0.4"
 sensor-model = { path = "../sensor-model", features = ["std"] }
 heapless = "0.7"
+rand = "0.8"
+getrandom = { version = "0.2", features = ["js"] }
 btmesh-common = { version = "0.1.0" }
 btmesh-models = { version = "0.1.0" }

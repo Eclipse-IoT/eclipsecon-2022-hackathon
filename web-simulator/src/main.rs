@@ -8,6 +8,7 @@ use btmesh_models::{
 };
 use gloo_timers::callback::Interval;
 use gloo_utils::document;
+use rand::prelude::random;
 use sensor_model::*;
 use wasm_bindgen::JsCast;
 use web_sys::HtmlInputElement as InputElement;
@@ -74,7 +75,8 @@ fn app() -> Html {
                         let u = url.clone();
                         let user = username.clone();
                         let pass = password.clone();
-                        let _battery = Interval::new(interval * 1000, move || {
+                        let rand: u8 = random();
+                        let _battery = Interval::new(rand as u32 + (interval * 1000), move || {
                             let u = u.clone();
                             let user = user.clone();
                             let pass = pass.clone();
@@ -100,7 +102,8 @@ fn app() -> Html {
                         let u = url.clone();
                         let user = username.clone();
                         let pass = password.clone();
-                        let _sensor = Interval::new(interval * 1000, move || {
+                        let rand: u8 = random();
+                        let _sensor = Interval::new(rand as u32 + (interval * 1000), move || {
                             let u = u.clone();
                             let user = user.clone();
                             let pass = pass.clone();
