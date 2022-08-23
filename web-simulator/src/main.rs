@@ -75,63 +75,58 @@ fn app() -> Html {
                         let u = url.clone();
                         let user = username.clone();
                         let pass = password.clone();
-                        let start_rand: u8 = random();
-                        let interval_rand: u8 = random();
-                        let _battery = Interval::new(
-                            start_rand as u32 + ((interval + interval_rand as u32) * 1000),
-                            move || {
-                                let u = u.clone();
-                                let user = user.clone();
-                                let pass = pass.clone();
-                                wasm_bindgen_futures::spawn_local(async move {
-                                    let battery =
-                                        GenericBatteryMessage::Status(GenericBatteryStatus::new(
-                                            0,
-                                            0,
-                                            0,
-                                            GenericBatteryFlags {
-                                                presence: GenericBatteryFlagsPresence::NotPresent,
-                                                indicator: GenericBatteryFlagsIndicator::Unknown,
-                                                charging:
-                                                    GenericBatteryFlagsCharging::NotChargeable,
-                                            },
-                                        ));
-                                    match publish(&battery, &u, &user, &pass).await {
-                                        Ok(_) => log::info!("Published battery data"),
-                                        Err(e) => {
-                                            log::warn!("Error publishing battery data: {:?}", e)
-                                        }
+                        let start_rand: u32 = random::<u32>() % 2000;
+                        let send_interval = start_rand + (interval * 1000);
+                        log::info!("Publishing battery data at interval {} ms", send_interval);
+                        let _battery = Interval::new(send_interval, move || {
+                            let u = u.clone();
+                            let user = user.clone();
+                            let pass = pass.clone();
+                            wasm_bindgen_futures::spawn_local(async move {
+                                let battery =
+                                    GenericBatteryMessage::Status(GenericBatteryStatus::new(
+                                        0,
+                                        0,
+                                        0,
+                                        GenericBatteryFlags {
+                                            presence: GenericBatteryFlagsPresence::NotPresent,
+                                            indicator: GenericBatteryFlagsIndicator::Unknown,
+                                            charging: GenericBatteryFlagsCharging::NotChargeable,
+                                        },
+                                    ));
+                                match publish(&battery, &u, &user, &pass).await {
+                                    Ok(_) => log::info!("Published battery data"),
+                                    Err(e) => {
+                                        log::warn!("Error publishing battery data: {:?}", e)
                                     }
-                                });
-                            },
-                        );
+                                }
+                            });
+                        });
 
                         let u = url.clone();
                         let user = username.clone();
                         let pass = password.clone();
-                        let start_rand: u8 = random();
-                        let interval_rand: u8 = random();
-                        let _sensor = Interval::new(
-                            start_rand as u32 + ((interval + interval_rand as u32) * 1000),
-                            move || {
-                                let u = u.clone();
-                                let user = user.clone();
-                                let pass = pass.clone();
-                                wasm_bindgen_futures::spawn_local(async move {
-                                    let sensor: SensorSetupMessage<MicrobitSensorConfig, 1, 1> =
-                                        SensorSetupMessage::Sensor(SensorMessage::Status(
-                                            SensorStatus::new(SensorPayload { temperature: 22 }),
-                                        ));
+                        let start_rand: u32 = random::<u32>() % 2000;
+                        let send_interval = start_rand + (interval * 1000);
+                        log::info!("Publishing sensor data at interval {} ms", send_interval);
+                        let _sensor = Interval::new(send_interval, move || {
+                            let u = u.clone();
+                            let user = user.clone();
+                            let pass = pass.clone();
+                            wasm_bindgen_futures::spawn_local(async move {
+                                let sensor: SensorSetupMessage<MicrobitSensorConfig, 1, 1> =
+                                    SensorSetupMessage::Sensor(SensorMessage::Status(
+                                        SensorStatus::new(SensorPayload { temperature: 22 }),
+                                    ));
 
-                                    match publish(&sensor, &u, &user, &pass).await {
-                                        Ok(_) => log::info!("Published sensor data"),
-                                        Err(e) => {
-                                            log::warn!("Error publishing sensor data: {:?}", e)
-                                        }
+                                match publish(&sensor, &u, &user, &pass).await {
+                                    Ok(_) => log::info!("Published sensor data"),
+                                    Err(e) => {
+                                        log::warn!("Error publishing sensor data: {:?}", e)
                                     }
-                                });
-                            },
-                        );
+                                }
+                            });
+                        });
                         let sim = Simulator { _battery, _sensor };
                         state.set(SimulatorState::Running(sim));
                     }
