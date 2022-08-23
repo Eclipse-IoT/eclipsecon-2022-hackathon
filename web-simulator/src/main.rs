@@ -1,10 +1,14 @@
+use btmesh_common::opcode::Opcode;
 use btmesh_models::{
-    generic::battery::{
-        GenericBatteryFlags, GenericBatteryFlagsCharging, GenericBatteryFlagsIndicator,
-        GenericBatteryFlagsPresence, GenericBatteryMessage, Status as GenericBatteryStatus,
+    generic::{
+        battery::{
+            GenericBatteryFlags, GenericBatteryFlagsCharging, GenericBatteryFlagsIndicator,
+            GenericBatteryFlagsPresence, GenericBatteryMessage, Status as GenericBatteryStatus,
+        },
+        onoff::{GenericOnOffMessage, GenericOnOffServer},
     },
     sensor::{SensorMessage, SensorSetupMessage, SensorStatus},
-    Message,
+    Message, Model,
 };
 use gloo_timers::callback::Interval;
 use gloo_utils::document;
@@ -24,6 +28,11 @@ pub enum SimulatorState {
     Stopped,
 }
 
+pub struct MatrixState {
+    on: bool,
+    brightness: u8,
+}
+
 impl core::fmt::Display for SimulatorState {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> Result<(), core::fmt::Error> {
         match self {
@@ -35,9 +44,14 @@ impl core::fmt::Display for SimulatorState {
 
 #[function_component(App)]
 fn app() -> Html {
+    let matrix = use_state(|| MatrixState {
+        on: false,
+        brightness: 128,
+    });
     let state = use_state(|| SimulatorState::Stopped);
     let onclick = {
         let state = state.clone();
+        let matrix = matrix.clone();
         Callback::from(move |_| {
             let url = "https://web-simulator-eclipsecon-2022.apps.sandbox.drogue.world";
             //let url = "http://localhost:8088";
@@ -71,17 +85,23 @@ fn app() -> Html {
                         let url = reqwest::Url::parse(&format!("{}/v1/sensor", url,)).unwrap();
                         let username = format!("{}@{}", device, application);
 
+                        // Battery
                         let interval = interval.parse::<u32>().unwrap();
                         let u = url.clone();
                         let user = username.clone();
                         let pass = password.clone();
                         let start_rand: u32 = random::<u32>() % 2000;
                         let send_interval = start_rand + (interval * 1000);
-                        log::info!("Publishing battery data at interval {} ms", send_interval);
+                        let m = matrix.clone();
+                        log::info!(
+                            "Publishing battery data at interval {} ms",
+                            send_interval / 1000
+                        );
                         let _battery = Interval::new(send_interval, move || {
                             let u = u.clone();
                             let user = user.clone();
                             let pass = pass.clone();
+                            let m = m.clone();
                             wasm_bindgen_futures::spawn_local(async move {
                                 let battery =
                                     GenericBatteryMessage::Status(GenericBatteryStatus::new(
@@ -94,8 +114,27 @@ fn app() -> Html {
                                             charging: GenericBatteryFlagsCharging::NotChargeable,
                                         },
                                     ));
-                                match publish(&battery, &u, &user, &pass).await {
-                                    Ok(_) => log::info!("Published battery data"),
+                                match publish(&battery, &u, &user, &pass, send_interval / 1000)
+                                    .await
+                                {
+                                    Ok(command) => {
+                                        if let Some(command) = command {
+                                            let (opcode, _) =
+                                                Opcode::split(&command.opcode[..]).unwrap();
+                                            if let Ok(Some(GenericOnOffMessage::Set(msg))) =
+                                                GenericOnOffServer::parse(
+                                                    opcode,
+                                                    &command.parameters,
+                                                )
+                                            {
+                                                m.set(MatrixState {
+                                                    on: msg.on_off == 1,
+                                                    brightness: m.brightness,
+                                                });
+                                            }
+                                        }
+                                        log::info!("Published battery data");
+                                    }
                                     Err(e) => {
                                         log::warn!("Error publishing battery data: {:?}", e)
                                     }
@@ -103,6 +142,8 @@ fn app() -> Html {
                             });
                         });
 
+                        // Sensor
+                        let m = matrix.clone();
                         let u = url.clone();
                         let user = username.clone();
                         let pass = password.clone();
@@ -113,20 +154,39 @@ fn app() -> Html {
                             let u = u.clone();
                             let user = user.clone();
                             let pass = pass.clone();
+                            let m = m.clone();
                             wasm_bindgen_futures::spawn_local(async move {
                                 let sensor: SensorSetupMessage<MicrobitSensorConfig, 1, 1> =
                                     SensorSetupMessage::Sensor(SensorMessage::Status(
                                         SensorStatus::new(SensorPayload { temperature: 22 }),
                                     ));
 
-                                match publish(&sensor, &u, &user, &pass).await {
-                                    Ok(_) => log::info!("Published sensor data"),
+                                match publish(&sensor, &u, &user, &pass, send_interval).await {
+                                    Ok(command) => {
+                                        if let Some(command) = command {
+                                            let (opcode, _) =
+                                                Opcode::split(&command.opcode[..]).unwrap();
+                                            if let Ok(Some(GenericOnOffMessage::Set(msg))) =
+                                                GenericOnOffServer::parse(
+                                                    opcode,
+                                                    &command.parameters,
+                                                )
+                                            {
+                                                m.set(MatrixState {
+                                                    on: msg.on_off == 1,
+                                                    brightness: m.brightness,
+                                                });
+                                            }
+                                        }
+                                        log::info!("Published sensor data");
+                                    }
                                     Err(e) => {
                                         log::warn!("Error publishing sensor data: {:?}", e)
                                     }
                                 }
                             });
                         });
+
                         let sim = Simulator { _battery, _sensor };
                         state.set(SimulatorState::Running(sim));
                     }
@@ -137,6 +197,14 @@ fn app() -> Html {
             }
         })
     };
+
+    let dotcolor = if matrix.on { "doton" } else { "dotoff" };
+    let opacity = if matrix.on {
+        matrix.brightness as f32 / 255.0
+    } else {
+        1.0
+    };
+    let style = format!("opacity:{}", opacity);
 
     html! {
         <>
@@ -157,6 +225,38 @@ fn app() -> Html {
             SimulatorState::Running(_) => "Stop",
             SimulatorState::Stopped => "Run",
         }}</button>
+        <br />
+        <h2>{"Display"}</h2>
+            <span id="0x0" class={dotcolor} style={style.clone()}/>
+            <span id="0x1" class={dotcolor} style={style.clone()}/>
+            <span id="0x2" class={dotcolor} style={style.clone()}/>
+            <span id="0x3" class={dotcolor} style={style.clone()}/>
+            <span id="0x4" class={dotcolor} style={style.clone()}/>
+        <br />
+            <span id="1x0" class={dotcolor} style={style.clone()} />
+            <span id="1x1" class={dotcolor} style={style.clone()} />
+            <span id="1x2" class={dotcolor} style={style.clone()} />
+            <span id="1x3" class={dotcolor} style={style.clone()} />
+            <span id="1x4" class={dotcolor} style={style.clone()} />
+        <br />
+            <span id="2x0" class={dotcolor} style={style.clone()} />
+            <span id="2x1" class={dotcolor} style={style.clone()} />
+            <span id="2x2" class={dotcolor} style={style.clone()} />
+            <span id="2x3" class={dotcolor} style={style.clone()} />
+            <span id="2x4" class={dotcolor} style={style.clone()} />
+        <br />
+            <span id="3x0" class={dotcolor} style={style.clone()} />
+            <span id="3x1" class={dotcolor} style={style.clone()} />
+            <span id="3x2" class={dotcolor} style={style.clone()} />
+            <span id="3x3" class={dotcolor} style={style.clone()} />
+            <span id="3x4" class={dotcolor} style={style.clone()} />
+        <br />
+            <span id="4x0" class={dotcolor} style={style.clone()} />
+            <span id="4x1" class={dotcolor} style={style.clone()} />
+            <span id="4x2" class={dotcolor} style={style.clone()} />
+            <span id="4x3" class={dotcolor} style={style.clone()} />
+            <span id="4x4" class={dotcolor} style={style.clone()} />
+        <br />
         </>
     }
 }
@@ -166,7 +266,8 @@ async fn publish<M: Message>(
     url: &reqwest::Url,
     username: &str,
     password: &str,
-) -> Result<(), std::fmt::Error> {
+    timeout: u32,
+) -> Result<Option<RawMessage>, std::fmt::Error> {
     let mut opcode: heapless::Vec<u8, 16> = heapless::Vec::new();
     msg.opcode()
         .emit(&mut opcode)
@@ -182,14 +283,19 @@ async fn publish<M: Message>(
     let data = serde_json::to_string(&message).map_err(|_| std::fmt::Error)?;
 
     let client = reqwest::Client::new();
-    client
+    let response = client
         .post(url.clone())
+        .query(&["ct", &format!("{}", timeout)])
         .basic_auth(username, Some(password))
         .body(data)
         .send()
-        .await
-        .map_err(|_| std::fmt::Error)?;
-    Ok(())
+        .await;
+    if let Ok(response) = response {
+        if let Ok(response) = response.json::<RawMessage>().await {
+            return Ok(Some(response));
+        }
+    }
+    Ok(None)
 }
 
 fn main() {
