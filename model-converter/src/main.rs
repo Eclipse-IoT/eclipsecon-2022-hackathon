@@ -12,12 +12,12 @@ use cloudevents::{Data, Event};
 use sensor_model::*;
 use serde_json::{json, Value};
 
-#[post("/")]
-async fn convert_event(mut event: Event) -> Event {
+#[post("/telemetry")]
+async fn convert_telemetry(mut event: Event) -> Event {
     println!("Received Event: {:?}", event);
     if let Some(Data::Json(data)) = event.data() {
         if let Ok(data) = serde_json::from_value(data.clone()) {
-            let converted = convert_message(data).await;
+            let converted = telemetry2json(data).await;
             if let Some(state) = converted {
                 event.set_data(
                     "application/json",
@@ -32,7 +32,20 @@ async fn convert_event(mut event: Event) -> Event {
     event
 }
 
-async fn convert_message(msg: RawMessage) -> Option<Value> {
+#[post("/command")]
+async fn convert_command(mut event: Event) -> Event {
+    println!("Received Event: {:?}", event);
+    if let Some(Data::Json(data)) = event.data() {
+        println!("GOT COMMAND DATA: {:?}", data);
+    }
+    event
+}
+
+async fn json2command(data: Value) -> Option<RawMessage> {
+    todo!()
+}
+
+async fn telemetry2json(msg: RawMessage) -> Option<Value> {
     let (opcode, _) = Opcode::split(&msg.opcode[..]).unwrap();
     let parameters = &msg.parameters[..];
 
@@ -90,7 +103,8 @@ async fn main() -> std::io::Result<()> {
         App::new()
             .wrap(actix_web::middleware::Logger::default())
             .service(health)
-            .service(convert_event)
+            .service(convert_telemetry)
+            .service(convert_command)
     })
     .bind("0.0.0.0:8080")?
     .workers(1)

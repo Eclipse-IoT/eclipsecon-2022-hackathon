@@ -6,7 +6,7 @@ use btmesh_models::{
         battery::{
             GenericBatteryFlags, GenericBatteryFlagsCharging, GenericBatteryFlagsIndicator,
             GenericBatteryFlagsPresence, GenericBatteryMessage, GenericBatteryServer,
-            Status as GenericBatteryStatus,
+            GenericBatteryStatus,
         },
         onoff::{GenericOnOffClient, GenericOnOffMessage, GenericOnOffServer},
     },
