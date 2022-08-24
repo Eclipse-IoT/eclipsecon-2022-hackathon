@@ -25,7 +25,7 @@ spec:
           emptyDir: {}
       containers:
       - name: server
-        image: docker.io/lulf/web-simulator:latest
+        image: docker.io/lulf/eclipsecon-web-simulator:latest
         volumeMounts:
           - name: run
             mountPath: /run

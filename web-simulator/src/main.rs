@@ -93,10 +93,7 @@ fn app() -> Html {
                         let start_rand: u32 = random::<u32>() % 2000;
                         let send_interval = start_rand + (interval * 1000);
                         let m = matrix.clone();
-                        log::info!(
-                            "Publishing battery data at interval {} ms",
-                            send_interval / 1000
-                        );
+                        log::info!("Publishing battery data at interval {} ms", send_interval);
                         let _battery = Interval::new(send_interval, move || {
                             let u = u.clone();
                             let user = user.clone();
@@ -285,7 +282,7 @@ async fn publish<M: Message>(
     let client = reqwest::Client::new();
     let response = client
         .post(url.clone())
-        .query(&["ct", &format!("{}", timeout)])
+        // .query(&["ct", &format!("{}", timeout)])
         .basic_auth(username, Some(password))
         .body(data)
         .send()
