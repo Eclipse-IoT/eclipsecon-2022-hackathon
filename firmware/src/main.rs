@@ -11,7 +11,7 @@ use btmesh_models::{
         battery::{
             GenericBatteryFlags, GenericBatteryFlagsCharging, GenericBatteryFlagsIndicator,
             GenericBatteryFlagsPresence, GenericBatteryMessage, GenericBatteryServer,
-            Status as BatteryStatus,
+            GenericBatteryStatus,
         },
         onoff::{
             GenericOnOffClient, GenericOnOffMessage, GenericOnOffServer, Set as GenericOnOffSet,
@@ -22,8 +22,8 @@ use btmesh_models::{
 use btmesh_nrf_softdevice::*;
 use core::future::Future;
 use embassy_executor::Spawner;
+use embassy_futures::{select, Either};
 use embassy_time::{Duration, Ticker, Timer};
-use embassy_util::{select, Either};
 use futures::StreamExt;
 use microbit_async::*;
 use nrf_softdevice::{temperature_celsius, Softdevice};
@@ -205,8 +205,8 @@ impl Battery {
         Self { interval }
     }
 
-    async fn read(&mut self) -> BatteryStatus {
-        BatteryStatus::new(
+    async fn read(&mut self) -> GenericBatteryStatus {
+        GenericBatteryStatus::new(
             0,
             0,
             0,
