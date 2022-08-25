@@ -24,7 +24,7 @@ async fn convert_telemetry(mut event: Event) -> Event {
                     "state": {},
                     "partial": true,
                 });
-                let location = format!("{}", location);
+                let location = format!("{:x}", location);
                 output["state"][location] = state;
                 event.set_data("application/json", output);
             }
