@@ -1,12 +1,15 @@
 #![feature(generic_associated_types)]
 
-use bluer::mesh::{application::Application, element::*};
+use bluer::mesh::{
+    application::{Application, ApplicationMessage},
+    element::*,
+};
 use btmesh_models::{
     generic::{
         battery::GenericBatteryClient,
         onoff::{GenericOnOffClient, GenericOnOffServer},
     },
-    sensor::{SensorClient},
+    sensor::SensorClient,
     Model,
 };
 use clap::Parser;
@@ -15,7 +18,7 @@ use futures::{pin_mut, StreamExt};
 use paho_mqtt as mqtt;
 use sensor_model::*;
 use std::{sync::Arc, time::Duration};
-use tokio::{signal, time::sleep};
+use tokio::{signal, sync::mpsc, time::sleep};
 
 #[derive(Parser)]
 #[clap(author, version, about, long_about = None)]
@@ -49,6 +52,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mesh = session.mesh().await?;
 
     let (element_control, element_handle) = element_control();
+    let (app_tx, mut app_rx) = mpsc::channel(1);
 
     let root_path = Path::from("/gateway");
     let app_path = Path::from(format!("{}/{}", root_path.clone(), "application"));
@@ -83,7 +87,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 control_handle: Some(element_handle),
             },
         ],
-        ..Default::default()
+        events_tx: app_tx,
+        provisioner: None,
     };
 
     let registered = mesh.application(root_path.clone(), sim).await?;
@@ -97,7 +102,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .client_id("btmesh-gateway")
         .persistence(mqtt::PersistenceType::None)
         .finalize();
-    let mqtt_client = mqtt::AsyncClient::new(mqtt_opts)?;
+    let mut mqtt_client = mqtt::AsyncClient::new(mqtt_opts)?;
 
     let mut conn_opts = mqtt::ConnectOptionsBuilder::new();
     conn_opts.user_name(format!(
@@ -147,6 +152,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("Gateway ready. Press Ctrl+C to quit.");
     pin_mut!(element_control);
 
+    let mut commands = mqtt_client.get_stream(100);
+    mqtt_client.subscribe("command/inbox/#", 1).await?;
+
     loop {
         tokio::select! {
             _ = signal::ctrl_c() => break,
@@ -193,6 +201,25 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     None => break,
                 }
             },
+            app_evt = app_rx.recv() => match app_evt {
+                Some(msg) => {
+                    match msg {
+                        ApplicationMessage::JoinComplete(token) => {
+                            println!("Joined with token {:016x}", token);
+                            println!("Attaching");
+                            let _node = mesh.attach(root_path.clone(), &format!("{:016x}", token)).await?;
+                        },
+                        ApplicationMessage::JoinFailed(reason) => {
+                            println!("Failed to join: {}", reason);
+                            break;
+                        },
+                    }
+                },
+                None => break,
+            },
+            command = commands.next() => {
+                println!("Received command: {:?}", command);
+            }
         }
     }
 

@@ -1,6 +1,9 @@
 #![feature(generic_associated_types)]
 
-use bluer::mesh::{application::Application, element::*};
+use bluer::mesh::{
+    application::{Application, ApplicationMessage},
+    element::*,
+};
 use btmesh_models::{
     generic::{
         battery::{
@@ -18,7 +21,7 @@ use dbus::Path;
 use futures::StreamExt;
 use sensor_model::*;
 use std::{sync::Arc, time::Duration};
-use tokio::{signal, time::sleep};
+use tokio::{signal, sync::mpsc, time::sleep};
 
 #[derive(Parser)]
 #[clap(author, version, about, long_about = None)]
@@ -40,6 +43,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mesh = session.mesh().await?;
 
     let (mut element_control, element_handle) = element_control();
+    let (app_tx, mut app_rx) = mpsc::channel(1);
 
     let root_path = Path::from("/simulator");
     let app_path = Path::from(format!("{}/{}", root_path.clone(), "application"));
@@ -73,7 +77,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 control_handle: Some(element_handle),
             },
         ],
-        ..Default::default()
+        events_tx: app_tx,
+        provisioner: None,
     };
 
     let registered = mesh.application(root_path.clone(), sim).await?;
@@ -118,6 +123,22 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     None => break,
                 }
                 println!("Got message?!");
+            }
+            app_evt = app_rx.recv() => match app_evt {
+                Some(msg) => {
+                    match msg {
+                        ApplicationMessage::JoinComplete(token) => {
+                            println!("Joined with token {:016x}", token);
+                            println!("Attaching");
+                            let _node = mesh.attach(root_path.clone(), &format!("{:016x}", token)).await?;
+                        },
+                        ApplicationMessage::JoinFailed(reason) => {
+                            println!("Failed to join: {}", reason);
+                            break;
+                        },
+                    }
+                },
+                None => break,
             }
         }
     }
