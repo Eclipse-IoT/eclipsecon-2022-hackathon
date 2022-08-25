@@ -1,0 +1,12 @@
+kind: Service
+apiVersion: v1
+
+metadata:
+  name: quarkus-mqtt-integration-example
+spec:
+  selector:
+    deployment: quarkus-mqtt-integration-example
+  ports:
+    - port: 8080
+      name: http
+      targetPort: http

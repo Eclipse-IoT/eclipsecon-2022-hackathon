@@ -1,0 +1,19 @@
+---
+kind: Secret
+apiVersion: v1
+metadata:
+  name: credentials
+stringData:
+  MP_MESSAGING_INCOMING_TELEMETRY_USERNAME: "me"
+  MP_MESSAGING_INCOMING_TELEMETRY_PASSWORD: "my-secret"
+  MP_MESSAGING_OUTGOING_COMMANDS_USERNAME: "me"
+  MP_MESSAGING_OUTGOING_COMMANDS_PASSWORD: "my-secret"
+---
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: configuration
+data:
+  DROGUE_INTEGRATION_MQTT_HOST: mqtt-integration-drogue-dev.apps.wonderful.iot-playground.org
+  DROGUE_INTEGRATION_MQTT_PORT: "443"
+  DROGUE_APPLICATION_NAME: ctron-ttn2 # change this to your application

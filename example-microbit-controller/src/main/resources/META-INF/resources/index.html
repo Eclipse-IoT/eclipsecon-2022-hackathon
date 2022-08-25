@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Drogue IoT meets Quarkus!</title>
+    <style>
+        h1, h2, h3, h4, h5, h6 {
+            margin-bottom: 0.5rem;
+            font-weight: 400;
+            line-height: 1.5;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+        }
+
+        h2 {
+            font-size: 2rem
+        }
+
+        h3 {
+            font-size: 1.75rem
+
+        }
+
+        h4 {
+            font-size: 1.5rem
+        }
+
+        h5 {
+            font-size: 1.25rem
+        }
+
+        h6 {
+            font-size: 1rem
+        }
+
+        .lead {
+            font-weight: 300;
+            font-size: 2rem;
+        }
+
+        .banner {
+            font-size: 2.7rem;
+            margin: 0;
+            padding: 2rem 1rem;
+            background-color: #0d1c2c;
+            color: white;
+        }
+
+        body {
+            margin: 0;
+            font-family: -apple-system, system-ui, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+        }
+
+        code {
+            font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            font-size: 87.5%;
+            color: #e83e8c;
+            word-break: break-word;
+        }
+
+        .left-column {
+            padding: .75rem;
+            max-width: 75%;
+            min-width: 55%;
+        }
+
+        .right-column {
+            padding: .75rem;
+            max-width: 25%;
+        }
+
+        .container {
+            display: flex;
+            width: 100%;
+        }
+
+        li {
+            margin: 0.75rem;
+        }
+
+        .right-section {
+            margin-left: 1rem;
+            padding-left: 0.5rem;
+        }
+
+        .right-section h3 {
+            padding-top: 0;
+            font-weight: 200;
+        }
+
+        .right-section ul {
+            border-left: 0.3rem solid #71aeef;
+            list-style-type: none;
+            padding-left: 0;
+        }
+
+        .example-code h3 {
+            font-weight: 200;
+        }
+
+        .row {
+            display: flex;
+        }
+
+        .row > div {
+            padding-right: 2rem;
+            flex-grow: 1;
+            flex-basis: 0;
+        }
+
+        .description {
+            padding-left: 2em;
+            max-width: 50em;
+        }
+
+    </style>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+
+<div class="banner lead">
+    Drogue IoT meets Quarkus!
+</div>
+
+<div class="container">
+    <div class="left-column">
+
+        <h2>Device events</h2>
+
+        <div class="description">
+            <p>
+                This page shows the events, sent by a device publishing to The Things Network, processed and
+                received from Drogue IoT through its MQTT integration.
+            </p>
+
+            <p>
+                When you press the blue button on the device, it will publish a message, which you can see on the left
+                side.
+                The Quarkus application will then send back the response, and show what was sent on the right hand side.
+            </p>
+
+            <p>
+                The default response is <code>pong</code>. However, you can change it to <code>led:on</code> to switch on
+                the
+                blue LED. With <code>led:off</code> you can turn it off again.
+            </p>
+
+            <p>
+                As LoRa is a low-power technology, the device will only receive shortly after it has sent some data. So
+                changing the response here will not send out a change immediately. The next time the device sends some
+                data, it will receive the new command.
+            </p>
+        </div>
+
+        <div class="row">
+            <div>
+                <h3>Latest message</h3>
+                <dl>
+                    <dt>Device ID</dt>
+                    <dd>
+                        <pre><code><span id="device_id">&nbsp;</span></code></pre>
+                    </dd>
+                    <dt>Timestamp</dt>
+                    <dd>
+                        <pre><code><span id="timestamp">&nbsp;</span></code></pre>
+                    </dd>
+                    <dt>Payload</dt>
+                    <dd>
+                        <pre><code><span id="payload">&nbsp;</span></code></pre>
+                    </dd>
+                </dl>
+            </div>
+
+            <div>
+                <h3>Response</h3>
+                <dl>
+                    <dt>Current response</dt>
+                    <dd>
+                        <pre><code><span id="response">&nbsp;</span></code></pre>
+                    </dd>
+                </dl>
+                <dl>
+                    <dt><label for="new-response">New response</label></dt>
+                    <dd>
+                        <input type="text" name="response" id="new-response">
+                    </dd>
+                </dl>
+                <button onclick="set_response();">Set response</button>
+            </div>
+
+            <div>
+                <h3>Latest command</h3>
+                <dl>
+                    <dt>Device ID</dt>
+                    <dd>
+                        <pre><code><span id="cmd_device_id">&nbsp;</span></code></pre>
+                    </dd>
+                    <dt>Payload</dt>
+                    <dd>
+                        <pre><code><span id="cmd_payload">&nbsp;</span></code></pre>
+                    </dd>
+                </dl>
+            </div>
+
+        </div>
+
+    </div>
+    <div class="right-column">
+        <div class="right-section">
+            <h3>Do you like Drogue IoT cloud?</h3>
+            <ul>
+                <li>Go give it a star on <a href="https://github.com/drogue-iot/drogue-cloud">GitHub</a>.</li>
+            </ul>
+        </div>
+        <div class="right-section">
+            <h3>Source code</h3>
+            <ul>
+                <li><a href="https://github.com/drogue-iot/quarkus-mqtt-integration-example"
+                       target="_blank">This example</a></li>
+                <li><a href="https://github.com/drogue-iot/drogue-device/tree/main/examples/stm32l0/lora-discovery"
+                       target="_blank">Device firmware</a></li>
+            </ul>
+        </div>
+        <div class="right-section">
+            <h3>More reading</h3>
+            <ul>
+                <li><a href="https://drogue.io" target="_blank">Drogue IoT</a></li>
+                <li><a href="https://sandbox.drogue.cloud" target="_blank">Public sandbox</a></li>
+                <li><a href="https://github.com/drogue-iot" target="_blank">GitHub organization</a></li>
+                <li><a href="https://matrix.to/#/#drogue-iot:matrix.org" target="_blank">Matrix chat channel</a></li>
+            </ul>
+        </div>
+    </div>
+</div>
+</body>
+
+<script>
+    const device_events = new EventSource("/events/stream");
+    device_events.onmessage = function (event) {
+        console.log("SEE: ", event);
+        const obj = JSON.parse(event.data);
+        console.log("Device: ", obj)
+        document.getElementById("device_id").innerText = obj.deviceId;
+        document.getElementById("timestamp").innerText = obj.timestamp;
+        document.getElementById("payload").innerText = obj.payload;
+    };
+    const response_events = new EventSource("/events/response");
+    response_events.onmessage = function (event) {
+        console.log("SEE: ", event);
+        document.getElementById("response").innerText = event.data;
+    };
+    const command_events = new EventSource("/events/commands");
+    command_events.onmessage = function (event) {
+        console.log("SEE: ", event);
+        const obj = JSON.parse(event.data);
+        console.log("Command: ", obj)
+        document.getElementById("cmd_device_id").innerText = obj.deviceId;
+        document.getElementById("cmd_payload").innerText = obj.payload;
+    };
+
+    function set_response() {
+        const response = document.getElementById("new-response").value;
+        console.log("Setting new response: ", response);
+        const req = new XMLHttpRequest();
+        req.open("POST", "/response");
+        req.send(response);
+    }
+</script>
+
+</html>
