@@ -3,10 +3,10 @@ use btmesh_common::opcode::Opcode;
 use btmesh_models::{
     generic::{
         battery::{GenericBatteryClient, GenericBatteryFlagsPresence, GenericBatteryMessage},
-        onoff::{GenericOnOffClient, GenericOnOffMessage, GenericOnOffServer},
+        onoff::{GenericOnOffMessage, GenericOnOffServer, Set as GenericOnOffSet},
     },
     sensor::{SensorClient, SensorMessage},
-    Model,
+    Message, Model,
 };
 use cloudevents::{Data, Event};
 use sensor_model::*;
@@ -16,16 +16,17 @@ use serde_json::{json, Value};
 async fn convert_telemetry(mut event: Event) -> Event {
     println!("Received Event: {:?}", event);
     if let Some(Data::Json(data)) = event.data() {
-        if let Ok(data) = serde_json::from_value(data.clone()) {
+        if let Ok(data) = serde_json::from_value::<RawMessage>(data.clone()) {
+            let element = data.element;
             let converted = telemetry2json(data).await;
             if let Some(state) = converted {
-                event.set_data(
-                    "application/json",
-                    json!({
-                        "state": state,
-                        "partial": true,
-                    }),
-                );
+                let mut output = json!({
+                    "state": {},
+                    "partial": true,
+                });
+                let element = format!("{}", element);
+                output["state"][element] = state;
+                event.set_data("application/json", output);
             }
         }
     }
@@ -36,13 +37,42 @@ async fn convert_telemetry(mut event: Event) -> Event {
 async fn convert_command(mut event: Event) -> Event {
     println!("Received Event: {:?}", event);
     if let Some(Data::Json(data)) = event.data() {
-        println!("GOT COMMAND DATA: {:?}", data);
+        if let Some(output) = json2command(data) {
+            let output = serde_json::to_value(output).unwrap();
+            event.set_data("application/json", output);
+        }
     }
     event
 }
 
-async fn json2command(data: Value) -> Option<RawMessage> {
-    todo!()
+fn json2command(data: &Value) -> Option<RawMessage> {
+    if let Value::Object(data) = data {
+        for (element, value) in data.iter() {
+            if let Some(Value::Object(state)) = value.get("button") {
+                let on = state["on"].as_bool().unwrap_or(false);
+                let set = GenericOnOffSet {
+                    on_off: if on { 1 } else { 0 },
+                    tid: 0,
+                    transition_time: None,
+                    delay: None,
+                };
+                let msg = GenericOnOffMessage::Set(set);
+
+                let mut opcode: heapless::Vec<u8, 16> = heapless::Vec::new();
+                msg.opcode().emit(&mut opcode).unwrap();
+
+                let mut parameters: heapless::Vec<u8, 386> = heapless::Vec::new();
+                msg.emit_parameters(&mut parameters).unwrap();
+                let message = RawMessage {
+                    element: element.parse::<u16>().unwrap(),
+                    opcode: opcode.to_vec(),
+                    parameters: parameters.to_vec(),
+                };
+                return Some(message);
+            }
+        }
+    }
+    None
 }
 
 async fn telemetry2json(msg: RawMessage) -> Option<Value> {
