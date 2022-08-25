@@ -274,6 +274,7 @@ async fn publish<M: Message>(
     msg.emit_parameters(&mut parameters)
         .map_err(|_| std::fmt::Error)?;
     let message = RawMessage {
+        location: 0,
         opcode: opcode.to_vec(),
         parameters: parameters.to_vec(),
     };
