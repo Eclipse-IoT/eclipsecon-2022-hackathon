@@ -5,42 +5,38 @@ The mesh models for the micro:bit and the JSON representation for each model mes
 
 ### Elements
 
-#### 0
-
-Model: GenericOnOffClient
-
-For button 'A' on the micro:bit
-
-#### 1
-
-Model: GenericOnOffClient
-
-For button 'B' on the micro:bit
-
-#### 2
+#### front
 
 Model: GenericOnOffServer
 
 For LED matrix. The behavior when on is defined by the application.
 
-#### 3
-
 Model: GenericBatteryServer
 
 For measuring the battery level
 
-#### 4
 
 Model: SensorSetupServer
 
 For reporting sensor data from peripherals
 
 
-#### 5 
-
 Model: GenericManufacturerPropertyServer
 
 For reporting firmware and hardware revisions
+
+#### left
+
+Model: GenericOnOffClient
+
+For button 'A' on the micro:bit
+
+#### right
+
+Model: GenericOnOffClient
+
+For button 'B' on the micro:bit
+
 
 ## Messages
 
