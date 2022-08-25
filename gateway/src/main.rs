@@ -181,6 +181,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                         let mut parameters = Vec::new();
                         parameters.extend_from_slice(&msg.parameters);
                         let message = RawMessage {
+                            location: msg.location.unwrap(),
                             opcode: opcode.to_vec(),
                             parameters,
                         };

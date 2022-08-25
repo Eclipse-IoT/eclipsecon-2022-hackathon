@@ -17,15 +17,15 @@ async fn convert_telemetry(mut event: Event) -> Event {
     println!("Received Event: {:?}", event);
     if let Some(Data::Json(data)) = event.data() {
         if let Ok(data) = serde_json::from_value::<RawMessage>(data.clone()) {
-            let element = data.element;
+            let location = data.location;
             let converted = telemetry2json(data).await;
             if let Some(state) = converted {
                 let mut output = json!({
                     "state": {},
                     "partial": true,
                 });
-                let element = format!("{}", element);
-                output["state"][element] = state;
+                let location = format!("{}", location);
+                output["state"][location] = state;
                 event.set_data("application/json", output);
             }
         }
@@ -47,7 +47,7 @@ async fn convert_command(mut event: Event) -> Event {
 
 fn json2command(data: &Value) -> Option<RawMessage> {
     if let Value::Object(data) = data {
-        for (element, value) in data.iter() {
+        for (location, value) in data.iter() {
             if let Some(Value::Object(state)) = value.get("button") {
                 let on = state["on"].as_bool().unwrap_or(false);
                 let set = GenericOnOffSet {
@@ -64,7 +64,7 @@ fn json2command(data: &Value) -> Option<RawMessage> {
                 let mut parameters: heapless::Vec<u8, 386> = heapless::Vec::new();
                 msg.emit_parameters(&mut parameters).unwrap();
                 let message = RawMessage {
-                    element: element.parse::<u16>().unwrap(),
+                    location: location.parse::<u16>().unwrap(),
                     opcode: opcode.to_vec(),
                     parameters: parameters.to_vec(),
                 };
