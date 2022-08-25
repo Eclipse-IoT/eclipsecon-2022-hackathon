@@ -17,15 +17,12 @@ async fn convert_telemetry(mut event: Event) -> Event {
     println!("Received Event: {:?}", event);
     if let Some(Data::Json(data)) = event.data() {
         if let Ok(data) = serde_json::from_value::<RawMessage>(data.clone()) {
-            let location = data.location;
             let converted = telemetry2json(data).await;
             if let Some(state) = converted {
-                let mut output = json!({
-                    "state": {},
+                let output = json!({
+                    "state": state,
                     "partial": true,
                 });
-                let location = format!("{:x}", location);
-                output["state"][location] = state;
                 event.set_data("application/json", output);
             }
         }
@@ -47,29 +44,28 @@ async fn convert_command(mut event: Event) -> Event {
 
 fn json2command(data: &Value) -> Option<RawMessage> {
     if let Value::Object(data) = data {
-        for (location, value) in data.iter() {
-            if let Some(Value::Object(state)) = value.get("button") {
-                let on = state["on"].as_bool().unwrap_or(false);
-                let set = GenericOnOffSet {
-                    on_off: if on { 1 } else { 0 },
-                    tid: 0,
-                    transition_time: None,
-                    delay: None,
-                };
-                let msg = GenericOnOffMessage::Set(set);
+        if let Some(Value::Object(state)) = data.get("button") {
+            let location = state["location"].as_u64().unwrap_or(0);
+            let on = state["on"].as_bool().unwrap_or(false);
+            let set = GenericOnOffSet {
+                on_off: if on { 1 } else { 0 },
+                tid: 0,
+                transition_time: None,
+                delay: None,
+            };
+            let msg = GenericOnOffMessage::Set(set);
 
-                let mut opcode: heapless::Vec<u8, 16> = heapless::Vec::new();
-                msg.opcode().emit(&mut opcode).unwrap();
+            let mut opcode: heapless::Vec<u8, 16> = heapless::Vec::new();
+            msg.opcode().emit(&mut opcode).unwrap();
 
-                let mut parameters: heapless::Vec<u8, 386> = heapless::Vec::new();
-                msg.emit_parameters(&mut parameters).unwrap();
-                let message = RawMessage {
-                    location: location.parse::<u16>().unwrap(),
-                    opcode: opcode.to_vec(),
-                    parameters: parameters.to_vec(),
-                };
-                return Some(message);
-            }
+            let mut parameters: heapless::Vec<u8, 386> = heapless::Vec::new();
+            msg.emit_parameters(&mut parameters).unwrap();
+            let message = RawMessage {
+                location: location as u16,
+                opcode: opcode.to_vec(),
+                parameters: parameters.to_vec(),
+            };
+            return Some(message);
         }
     }
     None
@@ -78,15 +74,16 @@ fn json2command(data: &Value) -> Option<RawMessage> {
 async fn telemetry2json(msg: RawMessage) -> Option<Value> {
     let (opcode, _) = Opcode::split(&msg.opcode[..]).unwrap();
     let parameters = &msg.parameters[..];
+    let location = msg.location;
 
     if let Ok(Some(GenericOnOffMessage::Set(set))) = GenericOnOffServer::parse(opcode, parameters) {
-        return Some(json!({ "button": {"on": set.on_off == 1 }}));
+        return Some(json!({ "button": {"on": set.on_off == 1, "location": location }}));
     }
 
     if let Ok(Some(GenericOnOffMessage::SetUnacknowledged(set))) =
         GenericOnOffServer::parse(opcode, parameters)
     {
-        return Some(json!({ "button": {"on": set.on_off == 1 }}));
+        return Some(json!({ "button": {"on": set.on_off == 1, "location": location }}));
     }
 
     if let Ok(Some(SensorMessage::Status(status))) =
@@ -95,6 +92,7 @@ async fn telemetry2json(msg: RawMessage) -> Option<Value> {
         println!("Received sensor status {:?}", status);
         return Some(json!( {
             "sensor": serde_json::to_value(&status.data).unwrap(),
+            "location": location
         }));
     }
 
@@ -112,7 +110,8 @@ async fn telemetry2json(msg: RawMessage) -> Option<Value> {
                         GenericBatteryFlagsPresence::PresentNotRemovable => "PresentNotRemovable",
                         GenericBatteryFlagsPresence::Unknown => "Unknown",
                     }
-                }
+                },
+                "location": location
             },
         }));
     }

@@ -40,19 +40,21 @@ For button 'B' on the micro:bit
 
 ## Messages
 
-The JSON representation of the different BT mesh message types:
+The JSON representation of the different BT mesh message types follows. The "location" field matches the BT mesh location of the element for the model.
 
 
 ### GenericOnOffSet
 
     {
         "on": bool,
+        "location": 0,
     } 
 
 ### GenericOnOffStatus
 
     {
         "on": bool,
+        "location": 0,
     }
 
 ### GenericBatteryStatus
@@ -62,6 +64,7 @@ The JSON representation of the different BT mesh message types:
         "flags": {
             "presence": "NotPresent" | "PresentRemovable",
         }
+        "location": 0,
     }
 
 ### SensorStatus
@@ -91,6 +94,7 @@ Properties:
     "motion": {
         "sensed": u8
     }
+    "location": 0,
 }
 ```        
         
