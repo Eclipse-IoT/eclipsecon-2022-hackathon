@@ -168,17 +168,17 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             evt = element_control.next() => {
                 match evt {
                     Some(msg) => {
-                        log::debug!("Received message with opcode {:?} and {} parameter bytes!", msg.opcode, msg.parameters.len());
+                        log::trace!("Received message with opcode {:?} and {} parameter bytes!", msg.opcode, msg.parameters.len());
                         match SensorClient::<MicrobitSensorConfig, 1, 1>::parse(msg.opcode, &msg.parameters).map_err(|_| std::fmt::Error)? {
                             Some(message) => {
-                                log::debug!("Received {:?}", message);
+                                log::trace!("Received {:?}", message);
                             },
                             None => {}
                         }
 
                         match GenericBatteryClient ::parse(msg.opcode, &msg.parameters).map_err(|_| std::fmt::Error)? {
                             Some(message) => {
-                                log::debug!("Received {:?}", message);
+                                log::trace!("Received {:?}", message);
                             },
                             None => {}
                         }
@@ -228,15 +228,22 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             command = commands.next() => {
                 if let Some(Some(message)) = command {
                     let topic = message.topic();
+                    log::info!("Received on {}: {:?}", topic, message);
                     let mut parts = topic.rsplit("/");
-                    if let Some(device) = parts.next() {
-                        if device == args.drogue_device {
-                            println!("Received command for gateway: {:?}", message.payload());
-                        } else {
+                    if let Some(channel) = parts.next() {
+                        if channel == "provisioning" {
+                            log::info!("Received provisioning command for gateway: {:?}", message.payload());
+                        } else if channel == "sensor" {
+                            log::info!("Got message on sensor channel");
+                            if let Some(device) = parts.next() {
+                                log::info!("Command is for {}", device);
                             // Check if it's a device'y destination
                             if let Ok(destination) = u16::from_str_radix(device, 16) {
-                                if let Ok(command) = serde_json::to_value(message.payload()) {
+                                log::info!("Destination is {}", destination);
+                                if let Ok(command) = serde_json::from_slice(message.payload()) {
+                                    log::info!("Parsed command payload: {:?}", command);
                                     if let Some(raw) = json2command(&command) {
+                                        log::info!("Raw command parsed!");
                                         let path = if raw.location == front_loc {
                                             front.clone()
                                         } else if raw.location == left_loc {
@@ -260,6 +267,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                                 }
                             }
                         }
+                        }
                     }
                 }
             }
@@ -278,7 +286,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 // calling command hooks in drogue-cloud is not yet available.
 fn json2command(data: &Value) -> Option<RawMessage> {
     if let Value::Object(data) = data {
-        if let Some(Value::Object(state)) = data.get("button") {
+        if let Some(Value::Object(state)) = data.get("display") {
             let location = state["location"].as_u64().unwrap_or(0);
             let on = state["on"].as_bool().unwrap_or(false);
             let set = GenericOnOffSet {
