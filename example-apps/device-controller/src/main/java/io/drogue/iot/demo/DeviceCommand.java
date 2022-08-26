@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.drogue.iot.demo.data.CommandPayload;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
+import static io.quarkus.arc.ComponentsProvider.LOG;
+
 @RegisterForReflection
 public class DeviceCommand {
     private String deviceId;

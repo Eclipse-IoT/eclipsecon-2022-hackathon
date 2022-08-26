@@ -1,14 +1,13 @@
 package io.drogue.iot.demo;
 
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayDeque;
 import java.util.Queue;
-import java.util.concurrent.BlockingQueue;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import io.drogue.iot.demo.data.OnOffSet;
+import io.drogue.iot.demo.ui.DisplaySettings;
 import org.eclipse.microprofile.reactive.messaging.Channel;
 import org.eclipse.microprofile.reactive.messaging.Emitter;
 import org.eclipse.microprofile.reactive.messaging.Incoming;
@@ -41,23 +40,23 @@ public class Processor {
 
     private static final Logger LOG = LoggerFactory.getLogger(Processor.class);
 
-    private final Queue<Boolean> toggles = new ArrayDeque<>(10);
-    private volatile Boolean response = false;
+    private final Queue<DisplaySettings> settings = new ArrayDeque<>(10);
+    private volatile DisplaySettings displaySettings = null;
 
     @Inject
-    @Channel("response-changes")
+    @Channel("display-changes")
     @Broadcast
-    Emitter<Boolean> responseChanges;
+    Emitter<DisplaySettings> displayChanges;
 
-    public void toggleDisplay() {
-        LOG.info("Changing response to {}", response);
-        this.response = !response;
-        this.responseChanges.send(this.response);
-        this.toggles.add(this.response);
+    public void updateDisplaySettings(DisplaySettings settings) {
+        LOG.info("Changing settings to {}", settings);
+        this.displaySettings = settings;
+        this.displayChanges.send(this.displaySettings);
+        this.settings.add(settings);
     }
 
-    public Boolean getResponse() {
-        return this.response;
+    public DisplaySettings getDisplaySettings() {
+        return this.displaySettings;
     }
 
 
@@ -68,14 +67,13 @@ public class Processor {
 
         var payload = event.getPayload();
 
-        LOG.info("Received payload: {}", payload);
-
-        var response = this.toggles.poll();
+        var response = this.settings.poll();
         if (response == null) {
             return null;
         }
 
-        var display = new OnOffSet(response);
+        var display = new OnOffSet(response.enabled);
+        display.setLocation((short)0x100);
         var commandPayload = new CommandPayload(display);
         var command = new DeviceCommand();
         command.setDeviceId(event.getDeviceId());

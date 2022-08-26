@@ -14,6 +14,7 @@ import io.drogue.iot.demo.Processor;
 import io.drogue.iot.demo.data.CommandPayload;
 import io.drogue.iot.demo.data.DeviceEvent;
 import io.smallrye.mutiny.Multi;
+import org.jboss.resteasy.reactive.RestStreamElementType;
 
 /**
  * This resource is used by the main UI entrypoint, providing a stream for the events.
@@ -25,8 +26,8 @@ public class EventsResource {
     Processor processor;
 
     @Inject
-    @Channel("response-changes")
-    Multi<Boolean> responseChanges;
+    @Channel("display-changes")
+    Multi<DisplaySettings> displayChanges;
 
     @Inject
     @Channel("event-stream")
@@ -39,7 +40,7 @@ public class EventsResource {
     @GET
     @Path("/stream")
     @Produces(MediaType.SERVER_SENT_EVENTS)
-    @RestSseElementType(MediaType.APPLICATION_JSON)
+    @RestStreamElementType(MediaType.APPLICATION_JSON)
     public Multi<DeviceEvent> stream() {
         return this.events;
     }
@@ -47,17 +48,17 @@ public class EventsResource {
     @GET
     @Path("/display")
     @Produces(MediaType.SERVER_SENT_EVENTS)
-    @RestSseElementType(MediaType.APPLICATION_JSON)
-    public Multi<Boolean> responseChanges() {
+    @RestStreamElementType(MediaType.APPLICATION_JSON)
+    public Multi<DisplaySettings> displayChanges() {
         return Multi.createFrom()
-                .item(this.processor.getResponse())
-                .onCompletion().switchTo(this.responseChanges);
+                .item(this.processor.getDisplaySettings())
+                .onCompletion().switchTo(this.displayChanges);
     }
 
     @GET
     @Path("/commands")
     @Produces(MediaType.SERVER_SENT_EVENTS)
-    @RestSseElementType(MediaType.APPLICATION_JSON)
+    @RestStreamElementType(MediaType.APPLICATION_JSON)
     public Multi<DeviceCommand> commands() {
         return this.commands;
     }

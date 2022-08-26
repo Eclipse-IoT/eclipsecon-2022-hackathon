@@ -38,4 +38,13 @@ public class DeviceEvent {
     public void setTimestamp(Instant timestamp) {
         this.timestamp = timestamp;
     }
+
+    @Override
+    public String toString() {
+        return "DeviceEvent{" +
+                "deviceId='" + deviceId + '\'' +
+                ", timestamp=" + timestamp +
+                ", payload=" + payload +
+                '}';
+    }
 }

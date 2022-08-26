@@ -67,6 +67,7 @@ public class Receiver {
 
         var device = new DeviceEvent();
         device.setDeviceId(event.getExtension("device").toString());
+        device.setTimestamp(event.getTime().toInstant());
         device.setPayload(payload.getValue());
 
         // done

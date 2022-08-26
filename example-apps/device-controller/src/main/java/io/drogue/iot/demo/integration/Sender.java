@@ -32,10 +32,9 @@ public class Sender {
     public Message<byte[]> commands(DeviceCommand command) {
         LOG.info("Request to send device command: {}", command);
 
-        var topic = "command/" + this.applicationName + "/" + command.getDeviceId();
+        var topic = "command/" + this.applicationName + "/" + command.getDeviceId() + "/sensor";
 
         LOG.info("Sending to topic: {}", topic);
-        LOG.info("Sending payload: {}", command.getPayload());
 
         return MqttMessage.of(topic, command.getPayload(), MqttQoS.AT_LEAST_ONCE);
     }

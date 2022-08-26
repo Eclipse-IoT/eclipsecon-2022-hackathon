@@ -12,19 +12,16 @@ import org.slf4j.LoggerFactory;
 
 import io.drogue.iot.demo.Processor;
 
-@Path("/commands/display")
+@Path("/commands")
 public class CommandsResource {
-
-    private static final Logger LOG = LoggerFactory.getLogger(CommandsResource.class);
-
     @Inject
     Processor processor;
 
     @POST
-    @Consumes(MediaType.TEXT_PLAIN)
-    @Produces
-    public void setResponse() {
-        this.processor.toggleDisplay();
+    @Path("/display")
+    @Consumes(MediaType.APPLICATION_JSON)
+    public void updateDisplay(DisplaySettings settings) {
+        this.processor.updateDisplaySettings(settings);
     }
 
 }
