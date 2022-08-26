@@ -2,6 +2,7 @@ package io.drogue.iot.demo.data;
 
 import java.time.Instant;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
 /**
@@ -10,6 +11,8 @@ import io.quarkus.runtime.annotations.RegisterForReflection;
 @RegisterForReflection
 public class DeviceEvent {
     private String deviceId;
+
+    private Instant timestamp;
     private DevicePayload payload;
 
     public void setDeviceId(String deviceId) {
@@ -26,5 +29,13 @@ public class DeviceEvent {
 
     public DevicePayload getPayload() {
         return this.payload;
+    }
+
+    public Instant getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(Instant timestamp) {
+        this.timestamp = timestamp;
     }
 }

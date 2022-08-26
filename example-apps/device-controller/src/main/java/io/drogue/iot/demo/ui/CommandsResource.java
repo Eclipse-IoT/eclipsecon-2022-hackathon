@@ -12,10 +12,10 @@ import org.slf4j.LoggerFactory;
 
 import io.drogue.iot.demo.Processor;
 
-@Path("/response")
-public class Response {
+@Path("/commands/display")
+public class CommandsResource {
 
-    private static final Logger LOG = LoggerFactory.getLogger(Response.class);
+    private static final Logger LOG = LoggerFactory.getLogger(CommandsResource.class);
 
     @Inject
     Processor processor;
@@ -23,9 +23,8 @@ public class Response {
     @POST
     @Consumes(MediaType.TEXT_PLAIN)
     @Produces
-    public void setResponse(String response) {
-        LOG.info("Setting response to: {}", response);
-        this.processor.changeResponse(response);
+    public void setResponse() {
+        this.processor.toggleDisplay();
     }
 
 }

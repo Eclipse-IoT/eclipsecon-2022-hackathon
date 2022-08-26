@@ -91,8 +91,10 @@ async fn telemetry2json(msg: RawMessage) -> Option<Value> {
     {
         println!("Received sensor status {:?}", status);
         return Some(json!( {
-            "sensor": serde_json::to_value(&status.data).unwrap(),
-            "location": location
+            "sensor": {
+                "payload": serde_json::to_value(&status.data).unwrap(),
+                "location": location,
+            }
         }));
     }
 

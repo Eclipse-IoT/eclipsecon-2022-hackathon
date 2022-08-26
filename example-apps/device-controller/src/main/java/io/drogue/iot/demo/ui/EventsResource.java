@@ -6,11 +6,12 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
+import io.drogue.iot.demo.DeviceCommand;
 import org.eclipse.microprofile.reactive.messaging.Channel;
 import org.jboss.resteasy.reactive.RestSseElementType;
 
 import io.drogue.iot.demo.Processor;
-import io.drogue.iot.demo.data.DeviceCommand;
+import io.drogue.iot.demo.data.CommandPayload;
 import io.drogue.iot.demo.data.DeviceEvent;
 import io.smallrye.mutiny.Multi;
 
@@ -25,7 +26,7 @@ public class EventsResource {
 
     @Inject
     @Channel("response-changes")
-    Multi<String> responseChanges;
+    Multi<Boolean> responseChanges;
 
     @Inject
     @Channel("event-stream")
@@ -44,10 +45,10 @@ public class EventsResource {
     }
 
     @GET
-    @Path("/response")
+    @Path("/display")
     @Produces(MediaType.SERVER_SENT_EVENTS)
     @RestSseElementType(MediaType.APPLICATION_JSON)
-    public Multi<String> responseChanges() {
+    public Multi<Boolean> responseChanges() {
         return Multi.createFrom()
                 .item(this.processor.getResponse())
                 .onCompletion().switchTo(this.responseChanges);

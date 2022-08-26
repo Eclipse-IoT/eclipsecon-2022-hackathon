@@ -132,26 +132,21 @@
 
         <div class="description">
             <p>
-                This page shows the events, sent by a device publishing to The Things Network, processed and
-                received from Drogue IoT through its MQTT integration.
+                This page shows the events, sent by a BBC micro:bit Bluetooth Mesh node to Drogue IoT, and received from Drogue IoT.
             </p>
 
             <p>
-                When you press the blue button on the device, it will publish a message, which you can see on the left
+                The device will periodically publish sensor data, battery level as well as the current button states.
+            </p>
+
+            <p>
+                When you press the buttons on the micro:bit, it will emit a button status event, which you can see on the left
                 side.
-                The Quarkus application will then send back the response, and show what was sent on the right hand side.
             </p>
 
             <p>
-                The default response is <code>pong</code>. However, you can change it to <code>led:on</code> to switch on
-                the
-                blue LED. With <code>led:off</code> you can turn it off again.
-            </p>
-
-            <p>
-                As LoRa is a low-power technology, the device will only receive shortly after it has sent some data. So
-                changing the response here will not send out a change immediately. The next time the device sends some
-                data, it will receive the new command.
+                You can also control the LED display on the micro:bit by enabling/disabling blinking of the display, as well as
+                adjusting the brightness level.
             </p>
         </div>
 
@@ -167,44 +162,23 @@
                     <dd>
                         <pre><code><span id="timestamp">&nbsp;</span></code></pre>
                     </dd>
-                    <dt>Payload</dt>
+                    <dt>State</dt>
                     <dd>
-                        <pre><code><span id="payload">&nbsp;</span></code></pre>
+                        <pre><code><span id="state">&nbsp;</span></code></pre>
                     </dd>
                 </dl>
             </div>
 
             <div>
-                <h3>Response</h3>
+                <h3>Display</h3>
                 <dl>
-                    <dt>Current response</dt>
+                    <dt>State</dt>
                     <dd>
-                        <pre><code><span id="response">&nbsp;</span></code></pre>
+                        <span id="display"> </span>
                     </dd>
                 </dl>
-                <dl>
-                    <dt><label for="new-response">New response</label></dt>
-                    <dd>
-                        <input type="text" name="response" id="new-response">
-                    </dd>
-                </dl>
-                <button onclick="set_response();">Set response</button>
+                <button onclick="toggle_display();">Toggle Display</button>
             </div>
-
-            <div>
-                <h3>Latest command</h3>
-                <dl>
-                    <dt>Device ID</dt>
-                    <dd>
-                        <pre><code><span id="cmd_device_id">&nbsp;</span></code></pre>
-                    </dd>
-                    <dt>Payload</dt>
-                    <dd>
-                        <pre><code><span id="cmd_payload">&nbsp;</span></code></pre>
-                    </dd>
-                </dl>
-            </div>
-
         </div>
 
     </div>
@@ -240,33 +214,33 @@
 <script>
     const device_events = new EventSource("/events/stream");
     device_events.onmessage = function (event) {
-        console.log("SEE: ", event);
         const obj = JSON.parse(event.data);
         console.log("Device: ", obj)
         document.getElementById("device_id").innerText = obj.deviceId;
         document.getElementById("timestamp").innerText = obj.timestamp;
-        document.getElementById("payload").innerText = obj.payload;
+
+        var current = {};
+        try {
+            current = JSON.parse(document.getElementById("state").innerText);
+        } catch (e) {
+            // Ignore.
+        }
+        const merged = {
+            ...current,
+            ...obj.payload.state,
+        };
+        document.getElementById("state").innerText = JSON.stringify(merged, null, 2);
     };
-    const response_events = new EventSource("/events/response");
+    const response_events = new EventSource("/events/display");
     response_events.onmessage = function (event) {
         console.log("SEE: ", event);
-        document.getElementById("response").innerText = event.data;
-    };
-    const command_events = new EventSource("/events/commands");
-    command_events.onmessage = function (event) {
-        console.log("SEE: ", event);
-        const obj = JSON.parse(event.data);
-        console.log("Command: ", obj)
-        document.getElementById("cmd_device_id").innerText = obj.deviceId;
-        document.getElementById("cmd_payload").innerText = obj.payload;
+        document.getElementById("display").innerText = event.data;
     };
 
-    function set_response() {
-        const response = document.getElementById("new-response").value;
-        console.log("Setting new response: ", response);
+    function toggle_display() {
         const req = new XMLHttpRequest();
-        req.open("POST", "/response");
-        req.send(response);
+        req.open("POST", "/commands/display");
+        req.send();
     }
 </script>
 
