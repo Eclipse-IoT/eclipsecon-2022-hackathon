@@ -1,8 +1,11 @@
 #![cfg_attr(not(feature = "std"), no_std)]
-use btmesh_common::{InsufficientBuffer, ParseError};
-use btmesh_models::sensor::{
-    CadenceDescriptor, PropertyId, SensorConfig, SensorData, SensorDescriptor, SensorSetupConfig,
-    SettingDescriptor,
+use btmesh_common::{opcode::Opcode, InsufficientBuffer, ParseError};
+use btmesh_models::{
+    sensor::{
+        CadenceDescriptor, PropertyId, SensorConfig, SensorData, SensorDescriptor,
+        SensorSetupConfig, SettingDescriptor,
+    },
+    Message,
 };
 use heapless::Vec;
 
@@ -64,4 +67,20 @@ pub struct RawMessage {
     pub location: u16,
     pub opcode: std::vec::Vec<u8>,
     pub parameters: std::vec::Vec<u8>,
+}
+
+impl Message for RawMessage {
+    fn opcode(&self) -> Opcode {
+        let (opcode, _) = Opcode::split(&self.opcode[..]).unwrap();
+        opcode
+    }
+
+    fn emit_parameters<const N: usize>(
+        &self,
+        parameters: &mut heapless::Vec<u8, N>,
+    ) -> Result<(), InsufficientBuffer> {
+        parameters
+            .extend_from_slice(&self.parameters[..])
+            .map_err(|_| InsufficientBuffer)
+    }
 }

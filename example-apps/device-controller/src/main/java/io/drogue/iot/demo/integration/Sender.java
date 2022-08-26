@@ -32,7 +32,7 @@ public class Sender {
     public Message<byte[]> commands(DeviceCommand command) {
         LOG.info("Request to send device command: {}", command);
 
-        var topic = "command/" + this.applicationName + "/" + command.getDeviceId() + "/port:1";
+        var topic = "command/" + this.applicationName + "/" + command.getDeviceId();
 
         LOG.info("Sending to topic: {}", topic);
         LOG.info("Sending payload: {}", command.getPayload());

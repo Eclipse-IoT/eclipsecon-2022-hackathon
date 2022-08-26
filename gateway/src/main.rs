@@ -7,16 +7,19 @@ use bluer::mesh::{
 use btmesh_models::{
     generic::{
         battery::GenericBatteryClient,
-        onoff::{GenericOnOffClient, GenericOnOffServer},
+        onoff::{
+            GenericOnOffClient, GenericOnOffMessage, GenericOnOffServer, Set as GenericOnOffSet,
+        },
     },
     sensor::SensorClient,
-    Model,
+    Message, Model,
 };
 use clap::Parser;
 use dbus::Path;
 use futures::{pin_mut, StreamExt};
 use paho_mqtt as mqtt;
 use sensor_model::*;
+use serde_json::Value;
 use std::{sync::Arc, time::Duration};
 use tokio::{signal, sync::mpsc, time::sleep};
 
@@ -61,12 +64,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let left = Path::from(format!("{}/ele{}", root_path.clone(), "01"));
     let right = Path::from(format!("{}/ele{}", root_path.clone(), "02"));
 
+    let front_loc = 0x0100;
+    let left_loc = 0x010D;
+    let right_loc = 0x010E;
+
     let sim = Application {
         path: app_path,
         elements: vec![
             Element {
                 path: front.clone(),
-                location: Some(0x0100),
+                location: Some(front_loc),
                 models: vec![
                     Arc::new(FromDrogue::new(GenericOnOffClient)),
                     Arc::new(FromDrogue::new(GenericBatteryClient)),
@@ -75,14 +82,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 control_handle: Some(element_handle.clone()),
             },
             Element {
-                path: left,
-                location: Some(0x010D),
+                path: left.clone(),
+                location: Some(left_loc),
                 models: vec![Arc::new(FromDrogue::new(GenericOnOffServer))],
                 control_handle: Some(element_handle.clone()),
             },
             Element {
-                path: right,
-                location: Some(0x010E),
+                path: right.clone(),
+                location: Some(right_loc),
                 models: vec![Arc::new(FromDrogue::new(GenericOnOffServer))],
                 control_handle: Some(element_handle),
             },
@@ -93,7 +100,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let registered = mesh.application(root_path.clone(), sim).await?;
 
-    let _node = mesh.attach(root_path.clone(), &args.token).await?;
+    let node = mesh.attach(root_path.clone(), &args.token).await?;
 
     let mqtt_uri = args.drogue_mqtt_uri;
 
@@ -149,7 +156,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     mqtt_client.connect(conn_opts).await?;
 
-    println!("Gateway ready. Press Ctrl+C to quit.");
+    log::info!("Gateway ready. Press Ctrl+C to quit.");
     pin_mut!(element_control);
 
     let mut commands = mqtt_client.get_stream(100);
@@ -161,17 +168,17 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             evt = element_control.next() => {
                 match evt {
                     Some(msg) => {
-                        println!("Received message with opcode {:?} and {} parameter bytes!", msg.opcode, msg.parameters.len());
+                        log::debug!("Received message with opcode {:?} and {} parameter bytes!", msg.opcode, msg.parameters.len());
                         match SensorClient::<MicrobitSensorConfig, 1, 1>::parse(msg.opcode, &msg.parameters).map_err(|_| std::fmt::Error)? {
                             Some(message) => {
-                                println!("Received {:?}", message);
+                                log::debug!("Received {:?}", message);
                             },
                             None => {}
                         }
 
                         match GenericBatteryClient ::parse(msg.opcode, &msg.parameters).map_err(|_| std::fmt::Error)? {
                             Some(message) => {
-                                println!("Received {:?}", message);
+                                log::debug!("Received {:?}", message);
                             },
                             None => {}
                         }
@@ -206,9 +213,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 Some(msg) => {
                     match msg {
                         ApplicationMessage::JoinComplete(token) => {
-                            println!("Joined with token {:016x}", token);
-                            println!("Attaching");
-                            let _node = mesh.attach(root_path.clone(), &format!("{:016x}", token)).await?;
+                            log::debug!("Joined with token {:016x}", token);
+                            // TODO: When provisioning works?
+                            //_node = mesh.attach(root_path.clone(), &format!("{:016x}", token)).await?;
                         },
                         ApplicationMessage::JoinFailed(reason) => {
                             println!("Failed to join: {}", reason);
@@ -219,7 +226,42 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 None => break,
             },
             command = commands.next() => {
-                println!("Received command: {:?}", command);
+                if let Some(Some(message)) = command {
+                    let topic = message.topic();
+                    let mut parts = topic.rsplit("/");
+                    if let Some(device) = parts.next() {
+                        if device == args.drogue_device {
+                            println!("Received command for gateway: {:?}", message.payload());
+                        } else {
+                            // Check if it's a device'y destination
+                            if let Ok(destination) = u16::from_str_radix(device, 16) {
+                                if let Ok(command) = serde_json::to_value(message.payload()) {
+                                    if let Some(raw) = json2command(&command) {
+                                        let path = if raw.location == front_loc {
+                                            front.clone()
+                                        } else if raw.location == left_loc {
+                                            left.clone()
+                                        } else if raw.location == right_loc {
+                                            right.clone()
+                                        } else {
+                                            front.clone()
+                                        };
+                                        // TODO: Hmm, where to get this?
+                                        let app_key = 0;
+                                        match node.send(raw, path, destination, app_key).await {
+                                            Ok(_) => {
+                                                log::info!("Forwarded message to device");
+                                            }
+                                            Err(e) => {
+                                                log::warn!("Error forwarding message to device: {:?}", e);
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
     }
@@ -229,4 +271,36 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     sleep(Duration::from_secs(1)).await;
 
     Ok(())
+}
+
+// Converts JSON message to BLE mesh message
+// TODO: This should eventually be done by the model-converter, but support
+// calling command hooks in drogue-cloud is not yet available.
+fn json2command(data: &Value) -> Option<RawMessage> {
+    if let Value::Object(data) = data {
+        if let Some(Value::Object(state)) = data.get("button") {
+            let location = state["location"].as_u64().unwrap_or(0);
+            let on = state["on"].as_bool().unwrap_or(false);
+            let set = GenericOnOffSet {
+                on_off: if on { 1 } else { 0 },
+                tid: 0,
+                transition_time: None,
+                delay: None,
+            };
+            let msg = GenericOnOffMessage::Set(set);
+
+            let mut opcode: heapless::Vec<u8, 16> = heapless::Vec::new();
+            msg.opcode().emit(&mut opcode).unwrap();
+
+            let mut parameters: heapless::Vec<u8, 386> = heapless::Vec::new();
+            msg.emit_parameters(&mut parameters).unwrap();
+            let message = RawMessage {
+                location: location as u16,
+                opcode: opcode.to_vec(),
+                parameters: parameters.to_vec(),
+            };
+            return Some(message);
+        }
+    }
+    None
 }

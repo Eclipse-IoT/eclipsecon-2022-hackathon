@@ -32,7 +32,7 @@ async fn convert_telemetry(mut event: Event) -> Event {
 
 #[post("/command")]
 async fn convert_command(mut event: Event) -> Event {
-    println!("Received Event: {:?}", event);
+    println!("Received Command: {:?}", event);
     if let Some(Data::Json(data)) = event.data() {
         if let Some(output) = json2command(data) {
             let output = serde_json::to_value(output).unwrap();
