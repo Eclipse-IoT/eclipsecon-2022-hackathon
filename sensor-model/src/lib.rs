@@ -69,6 +69,7 @@ pub struct RawMessage {
     pub parameters: std::vec::Vec<u8>,
 }
 
+#[cfg(feature = "std")]
 impl Message for RawMessage {
     fn opcode(&self) -> Opcode {
         let (opcode, _) = Opcode::split(&self.opcode[..]).unwrap();
