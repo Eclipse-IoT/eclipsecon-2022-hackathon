@@ -4,7 +4,7 @@
 #![feature(generic_associated_types)]
 #![feature(type_alias_impl_trait)]
 
-use btmesh_device::{BluetoothMeshModel, BluetoothMeshModelContext};
+use btmesh_device::{BluetoothMeshModel, BluetoothMeshModelContext, Control, InboundModelPayload};
 use btmesh_macro::{device, element};
 use btmesh_models::{
     generic::{
@@ -51,8 +51,8 @@ async fn main(_s: Spawner) {
     let mut driver = Driver::new("drogue", unsafe { &__storage as *const u8 as u32 }, 100);
 
     let sd = driver.softdevice();
-    let sensor = Sensor::new(Duration::from_secs(5), sd);
-    let battery = Battery::new(Duration::from_secs(5));
+    let sensor = Sensor::new(sd);
+    let battery = Battery::new();
 
     let mut device = Device::new(board.btn_a, board.btn_b, board.display, battery, sensor);
 
@@ -174,22 +174,26 @@ impl BluetoothMeshModel<GenericOnOffServer> for DisplayOnOff {
     ) -> Self::RunFuture<'_, C> {
         async move {
             loop {
-                let (message, _meta) = ctx.receive().await;
-                match message {
-                    GenericOnOffMessage::Get => {}
-                    GenericOnOffMessage::Set(val) => {
-                        if val.on_off != 0 {
-                            self.display.scroll("ON").await;
+                match ctx.receive().await {
+                    InboundModelPayload::Message(message, _) => {
+                        match message {
+                            GenericOnOffMessage::Get => {}
+                            GenericOnOffMessage::Set(val) => {
+                                if val.on_off != 0 {
+                                    self.display.scroll("ON").await;
+                                }
+                            }
+                            GenericOnOffMessage::SetUnacknowledged(val) => {
+                                if val.on_off != 0 {
+                                    self.display.scroll("OFF").await;
+                                }
+                            }
+                            GenericOnOffMessage::Status(_) => {
+                                // not applicable
+                            }
                         }
                     }
-                    GenericOnOffMessage::SetUnacknowledged(val) => {
-                        if val.on_off != 0 {
-                            self.display.scroll("OFF").await;
-                        }
-                    }
-                    GenericOnOffMessage::Status(_) => {
-                        // not applicable
-                    }
+                    _ => {}
                 }
             }
         }
@@ -197,12 +201,12 @@ impl BluetoothMeshModel<GenericOnOffServer> for DisplayOnOff {
 }
 
 pub struct Battery {
-    interval: Duration,
+    ticker: Option<Ticker>,
 }
 
 impl Battery {
-    pub fn new(interval: Duration) -> Self {
-        Self { interval }
+    pub fn new() -> Self {
+        Self { ticker: None }
     }
 
     async fn read(&mut self) -> GenericBatteryStatus {
@@ -217,6 +221,43 @@ impl Battery {
             },
         )
     }
+
+    async fn process<C: BluetoothMeshModelContext<GenericBatteryServer>>(
+        &mut self,
+        ctx: &mut C,
+        data: &InboundModelPayload<GenericBatteryMessage>,
+    ) {
+        match data {
+            InboundModelPayload::Message(message, meta) => {
+                defmt::info!("Received message: {:?}", message);
+                match message {
+                    GenericBatteryMessage::Get => {
+                        let message = GenericBatteryMessage::Status(self.read().await);
+                        match ctx.send(message, meta.reply()).await {
+                            Ok(_) => {
+                                defmt::info!("Published battery status ");
+                            }
+                            Err(e) => {
+                                defmt::warn!("Error publishing battery status: {:?}", e);
+                            }
+                        }
+                    }
+                    GenericBatteryMessage::Status(_) => {}
+                }
+            }
+            InboundModelPayload::Control(Control::PublicationDetails(details)) => match details {
+                Some(cadence) => {
+                    defmt::info!("Enabling battery publish at {:?}", cadence.as_secs());
+                    self.ticker.replace(Ticker::every(*cadence));
+                }
+                None => {
+                    defmt::info!("Disabling battery publish");
+                    self.ticker.take();
+                }
+            },
+            _ => {}
+        }
+    }
 }
 
 impl BluetoothMeshModel<GenericBatteryServer> for Battery {
@@ -227,40 +268,28 @@ impl BluetoothMeshModel<GenericBatteryServer> for Battery {
 
     fn run<'run, C: BluetoothMeshModelContext<GenericBatteryServer> + 'run>(
         &'run mut self,
-        ctx: C,
+        mut ctx: C,
     ) -> Self::RunFuture<'_, C> {
         async move {
-            let mut tick = Ticker::every(self.interval);
             loop {
-                match select(ctx.receive(), tick.next()).await {
-                    Either::First((message, meta)) => {
-                        defmt::info!("Received message: {:?}", message);
-                        match message {
-                            GenericBatteryMessage::Get => {
-                                let message = GenericBatteryMessage::Status(self.read().await);
-                                match ctx.send(message, meta.reply()).await {
-                                    Ok(_) => {
-                                        defmt::info!("Published battery status ");
-                                    }
-                                    Err(e) => {
-                                        defmt::warn!("Error publishing battery status: {:?}", e);
-                                    }
+                if let Some(ticker) = self.ticker.as_mut() {
+                    match select(ctx.receive(), ticker.next()).await {
+                        Either::First(data) => self.process(&mut ctx, &data).await,
+                        Either::Second(_) => {
+                            let message = GenericBatteryMessage::Status(self.read().await);
+                            match ctx.publish(message).await {
+                                Ok(_) => {
+                                    defmt::info!("Published battery status ");
+                                }
+                                Err(e) => {
+                                    defmt::warn!("Error publishing battery status: {:?}", e);
                                 }
                             }
-                            GenericBatteryMessage::Status(_) => {}
                         }
                     }
-                    Either::Second(_) => {
-                        let message = GenericBatteryMessage::Status(self.read().await);
-                        match ctx.publish(message).await {
-                            Ok(_) => {
-                                defmt::info!("Published battery status ");
-                            }
-                            Err(e) => {
-                                defmt::warn!("Error publishing battery status: {:?}", e);
-                            }
-                        }
-                    }
+                } else {
+                    let m = ctx.receive().await;
+                    self.process(&mut ctx, &m).await;
                 }
             }
         }
@@ -270,13 +299,13 @@ impl BluetoothMeshModel<GenericBatteryServer> for Battery {
 type SensorServer = SensorSetupServer<MicrobitSensorConfig, 1, 1>;
 
 pub struct Sensor {
-    interval: Duration,
     sd: &'static Softdevice,
+    ticker: Option<Ticker>,
 }
 
 impl Sensor {
-    pub fn new(interval: Duration, sd: &'static Softdevice) -> Self {
-        Self { interval, sd }
+    pub fn new(sd: &'static Softdevice) -> Self {
+        Self { sd, ticker: None }
     }
 
     async fn read(&mut self) -> Result<SensorPayload, ()> {
@@ -284,6 +313,26 @@ impl Sensor {
         Ok(SensorPayload {
             temperature: temperature * 2,
         })
+    }
+
+    async fn process<C: BluetoothMeshModelContext<SensorServer>>(
+        &mut self,
+        _ctx: &mut C,
+        data: &InboundModelPayload<SensorSetupMessage<MicrobitSensorConfig, 1, 1>>,
+    ) {
+        match data {
+            InboundModelPayload::Control(Control::PublicationDetails(details)) => match details {
+                Some(cadence) => {
+                    defmt::info!("Enabling sensor publish at {:?}", cadence.as_secs());
+                    self.ticker.replace(Ticker::every(*cadence));
+                }
+                None => {
+                    defmt::info!("Disabling sensor publish");
+                    self.ticker.take();
+                }
+            },
+            _ => {}
+        }
     }
 }
 
@@ -295,34 +344,42 @@ impl BluetoothMeshModel<SensorServer> for Sensor {
 
     fn run<'run, C: BluetoothMeshModelContext<SensorServer> + 'run>(
         &'run mut self,
-        ctx: C,
+        mut ctx: C,
     ) -> Self::RunFuture<'_, C> {
         async move {
-            let mut tick = Ticker::every(self.interval);
             loop {
-                match select(ctx.receive(), tick.next()).await {
-                    Either::First(msg) => {
-                        defmt::info!("Received message: {:?}", msg);
-                    }
-                    Either::Second(_) => match self.read().await {
-                        Ok(result) => {
-                            defmt::info!("Read sensor data: {:?}", result);
-                            let message = SensorSetupMessage::Sensor(SensorMessage::Status(
-                                SensorStatus::new(result),
-                            ));
-                            match ctx.publish(message).await {
-                                Ok(_) => {
-                                    defmt::info!("Published sensor reading");
+                if let Some(ticker) = self.ticker.as_mut() {
+                    match select(ctx.receive(), ticker.next()).await {
+                        Either::First(data) => self.process(&mut ctx, &data).await,
+                        Either::Second(_) => {
+                            defmt::info!("TICK");
+                            match self.read().await {
+                                Ok(result) => {
+                                    defmt::info!("Read sensor data: {:?}", result);
+                                    let message = SensorSetupMessage::Sensor(
+                                        SensorMessage::Status(SensorStatus::new(result)),
+                                    );
+                                    match ctx.publish(message).await {
+                                        Ok(_) => {
+                                            defmt::info!("Published sensor reading");
+                                        }
+                                        Err(e) => {
+                                            defmt::warn!(
+                                                "Error publishing sensor reading: {:?}",
+                                                e
+                                            );
+                                        }
+                                    }
                                 }
                                 Err(e) => {
-                                    defmt::warn!("Error publishing sensor reading: {:?}", e);
+                                    defmt::warn!("Error reading sensor data: {:?}", e);
                                 }
                             }
                         }
-                        Err(e) => {
-                            defmt::warn!("Error reading sensor data: {:?}", e);
-                        }
-                    },
+                    }
+                } else {
+                    let m = ctx.receive().await;
+                    self.process(&mut ctx, &m).await;
                 }
             }
         }
