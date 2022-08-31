@@ -168,43 +168,49 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             evt = element_control.next() => {
                 match evt {
                     Some(msg) => {
-                        log::trace!("Received message with opcode {:?} and {} parameter bytes!", msg.opcode, msg.parameters.len());
-                        match SensorClient::<MicrobitSensorConfig, 1, 1>::parse(msg.opcode, &msg.parameters).map_err(|_| std::fmt::Error)? {
-                            Some(message) => {
-                                log::trace!("Received {:?}", message);
+                        match msg {
+                            ElementMessage::Received(received) => {
+                                log::trace!("Received message with opcode {:?} and {} parameter bytes!", received.opcode, received.parameters.len());
+                                match SensorClient::<MicrobitSensorConfig, 1, 1>::parse(&received.opcode, &received.parameters).map_err(|_| std::fmt::Error)? {
+                                    Some(message) => {
+                                        log::trace!("Received {:?}", message);
+                                    },
+                                    None => {}
+                                }
+
+                                match GenericBatteryClient ::parse(&received.opcode, &received.parameters).map_err(|_| std::fmt::Error)? {
+                                    Some(message) => {
+                                        log::trace!("Received {:?}", message);
+                                    },
+                                    None => {}
+                                }
+                                let mut opcode: heapless::Vec<u8, 16> = heapless::Vec::new();
+                                received.opcode.emit(&mut opcode).map_err(|_| std::fmt::Error)?;
+
+                                let mut parameters = Vec::new();
+                                parameters.extend_from_slice(&received.parameters);
+                                let message = RawMessage {
+                                    location: received.location.unwrap(),
+                                    opcode: opcode.to_vec(),
+                                    parameters,
+                                };
+                                let data = serde_json::to_string(&message)?;
+
+                                let src = received.src.as_bytes();
+                                let topic = format!("sensor/{:02x}{:02x}", src[0], src[1]);
+
+                                let message = mqtt::Message::new(topic, data.as_bytes(), 1);
+                                if let Err(e) = mqtt_client.publish(message).await {
+                                    log::warn!(
+                                        "Error publishing command back to device: {:?}",
+                                        e
+                                    );
+                                }
                             },
-                            None => {}
+                            ElementMessage::DevKey(received) => {
+                                println!("Received dev key message: {:?}", received);
+                            }
                         }
-
-                        match GenericBatteryClient ::parse(msg.opcode, &msg.parameters).map_err(|_| std::fmt::Error)? {
-                            Some(message) => {
-                                log::trace!("Received {:?}", message);
-                            },
-                            None => {}
-                        }
-                        let mut opcode: heapless::Vec<u8, 16> = heapless::Vec::new();
-                        msg.opcode.emit(&mut opcode).map_err(|_| std::fmt::Error)?;
-
-                        let mut parameters = Vec::new();
-                        parameters.extend_from_slice(&msg.parameters);
-                        let message = RawMessage {
-                            location: msg.location.unwrap(),
-                            opcode: opcode.to_vec(),
-                            parameters,
-                        };
-                        let data = serde_json::to_string(&message)?;
-
-                        let src = msg.src.as_bytes();
-                        let topic = format!("sensor/{:02x}{:02x}", src[0], src[1]);
-
-                        let message = mqtt::Message::new(topic, data.as_bytes(), 1);
-                        if let Err(e) = mqtt_client.publish(message).await {
-                            log::warn!(
-                                "Error publishing command back to device: {:?}",
-                                e
-                            );
-                        }
-
                     },
                     None => break,
                 }
@@ -237,36 +243,36 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                             log::info!("Got message on sensor channel");
                             if let Some(device) = parts.next() {
                                 log::info!("Command is for {}", device);
-                            // Check if it's a device'y destination
-                            if let Ok(destination) = u16::from_str_radix(device, 16) {
-                                log::info!("Destination is {}", destination);
-                                if let Ok(command) = serde_json::from_slice(message.payload()) {
-                                    log::info!("Parsed command payload: {:?}", command);
-                                    if let Some(raw) = json2command(&command) {
-                                        log::info!("Raw command parsed!");
-                                        let path = if raw.location == front_loc {
-                                            front.clone()
-                                        } else if raw.location == left_loc {
-                                            left.clone()
-                                        } else if raw.location == right_loc {
-                                            right.clone()
-                                        } else {
-                                            front.clone()
-                                        };
-                                        // TODO: Hmm, where to get this?
-                                        let app_key = 0;
-                                        match node.send(raw, path, destination, app_key).await {
-                                            Ok(_) => {
-                                                log::info!("Forwarded message to device");
-                                            }
-                                            Err(e) => {
-                                                log::warn!("Error forwarding message to device: {:?}", e);
+                                // Check if it's a device'y destination
+                                if let Ok(destination) = u16::from_str_radix(device, 16) {
+                                    log::info!("Destination is {}", destination);
+                                    if let Ok(command) = serde_json::from_slice(message.payload()) {
+                                        log::info!("Parsed command payload: {:?}", command);
+                                        if let Some(raw) = json2command(&command) {
+                                            log::info!("Raw command parsed!");
+                                            let path = if raw.location == front_loc {
+                                                front.clone()
+                                            } else if raw.location == left_loc {
+                                                left.clone()
+                                            } else if raw.location == right_loc {
+                                                right.clone()
+                                            } else {
+                                                front.clone()
+                                            };
+                                            // TODO: Hmm, where to get this?
+                                            let app_key = 0;
+                                            match node.send(raw, path, destination, app_key).await {
+                                                Ok(_) => {
+                                                    log::info!("Forwarded message to device");
+                                                }
+                                                Err(e) => {
+                                                    log::warn!("Error forwarding message to device: {:?}", e);
+                                                }
                                             }
                                         }
                                     }
                                 }
                             }
-                        }
                         }
                     }
                 }

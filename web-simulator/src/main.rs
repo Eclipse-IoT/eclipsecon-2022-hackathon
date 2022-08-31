@@ -120,7 +120,7 @@ fn app() -> Html {
                                                 Opcode::split(&command.opcode[..]).unwrap();
                                             if let Ok(Some(GenericOnOffMessage::Set(msg))) =
                                                 GenericOnOffServer::parse(
-                                                    opcode,
+                                                    &opcode,
                                                     &command.parameters,
                                                 )
                                             {
@@ -165,7 +165,7 @@ fn app() -> Html {
                                                 Opcode::split(&command.opcode[..]).unwrap();
                                             if let Ok(Some(GenericOnOffMessage::Set(msg))) =
                                                 GenericOnOffServer::parse(
-                                                    opcode,
+                                                    &opcode,
                                                     &command.parameters,
                                                 )
                                             {

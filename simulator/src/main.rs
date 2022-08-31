@@ -112,14 +112,21 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             evt = element_control.next() => {
                 match evt {
                     Some(msg) => {
-                        if let Ok(Some(GenericOnOffMessage::Set(m))) = GenericOnOffServer::parse(msg.opcode, &msg.parameters) {
-                            if m.on_off == 1 {
-                                println!("Turn ON");
-                            } else {
-                                println!("Turn OFF");
+                        match msg {
+                            ElementMessage::Received(received) => {
+                                if let Ok(Some(GenericOnOffMessage::Set(m))) = GenericOnOffServer::parse(&received.opcode, &received.parameters) {
+                                    if m.on_off == 1 {
+                                        println!("Turn ON");
+                                    } else {
+                                        println!("Turn OFF");
+                                    }
+                                }
+                            },
+                            ElementMessage::DevKey(received) => {
+                                println!("Received dev key message: {:?}", received);
                             }
                         }
-                    }
+                    },
                     None => break,
                 }
                 println!("Got message?!");
