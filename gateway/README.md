@@ -1,6 +1,7 @@
 # eclipse-hackathon-gateway
 
-Default gateway for the hackathon.
+The `gateway` is a Bluetooth Mesh gateway that can run on any Linux host with bluez, and
+forwards mesh model events to a Drogue Cloud instance.
 
 ## Prerequisites
 
