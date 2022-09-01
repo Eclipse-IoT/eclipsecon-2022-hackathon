@@ -56,7 +56,6 @@ public class Receiver {
 
         var event = format.deserialize(rawMessage.getPayload());
 
-        LOG.info("Received event: {}", event);
 
         var payload = mapData(
                 event,

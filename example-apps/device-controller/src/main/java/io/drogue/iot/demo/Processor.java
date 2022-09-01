@@ -40,7 +40,6 @@ public class Processor {
 
     private static final Logger LOG = LoggerFactory.getLogger(Processor.class);
 
-    private final Queue<DisplaySettings> settings = new ArrayDeque<>(10);
     private volatile DisplaySettings displaySettings = null;
 
     @Inject
@@ -52,36 +51,35 @@ public class Processor {
         LOG.info("Changing settings to {}", settings);
         this.displaySettings = settings;
         this.displayChanges.send(this.displaySettings);
-        this.settings.add(settings);
+
     }
 
     public DisplaySettings getDisplaySettings() {
         return this.displaySettings;
     }
 
-
-    @Incoming("event-stream")
+    @Incoming("display-changes")
     @Outgoing("device-commands")
     @Broadcast
-    public DeviceCommand process(DeviceEvent event) {
-
-        var payload = event.getPayload();
-
-        var response = this.settings.poll();
-        if (response == null) {
-            return null;
-        }
-
-        var display = new OnOffSet(response.enabled);
+    public DeviceCommand command(DisplaySettings settings) {
+        var display = new OnOffSet(settings.enabled);
         display.setLocation((short)0x100);
         var commandPayload = new CommandPayload(display);
         var command = new DeviceCommand();
-        command.setDeviceId(event.getDeviceId());
+        command.setDeviceId(settings.device);
         command.setPayload(commandPayload);
 
         LOG.info("Sending command: {}", command);
 
         return command;
+    }
+
+
+    @Incoming("event-stream")
+    public void process(DeviceEvent event) {
+        var payload = event.getPayload();
+
+        LOG.info("Received sensor data: {}", payload);
     }
 
 }
