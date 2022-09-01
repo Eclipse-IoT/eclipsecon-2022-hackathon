@@ -1,13 +1,15 @@
 # eclipsecon-2022-hackathon
 
-*WORK IN PROGRESS*
-
 This repository contains software, firmware and documentation for the EclipseCon 2022 hackathon.
 
-## Bluetooth Mesh Gateway
+For the hackathon, an instance of [Drogue IoT](www.drogue.io) as well as local Bluetooth Mesh gateways are deployed. The hackathon itself includes example tasks where you can:
 
-The `gateway` folder contains a Bluetooth Mesh gateway that can run on any Linux host with bluez, and
-forwards mesh model events to a Drogue Cloud instance.
+* Write firmware for the BBC micro:bit v2 in Rust. The firmware uses Bluetooth Mesh to send and receive data from the cloud applications.
+* Write Quarkus applications running locally and on OpenShift. The application consumes telemetry and produces commands using [cloud events](https://cloudevents.io/).
+
+For working on microcontroller firmare, have a look at the [firmware](firmware/) directory for more information and example tasks.
+
+For working on the quarkus application, have a look at the [example apps](example-apps/).
 
 ## BBC micro:bit firmware
 
@@ -30,6 +32,7 @@ You can try the WASM-based simulator by entering https://web-simulator-eclipseco
 
 The `model-converter` folder contains a HTTP server which is invoked by Drogue Cloud for each sensor event, and will convert data from the Bluetooth Mesh model format to the JSON format described in [MESHMODEL](MESHMODEL.md).
 
-## Digital twin
+## Bluetooth Mesh Gateway
 
-Should be there soon
+The `gateway` folder contains a Bluetooth Mesh gateway that can run on any Linux host with bluez, and
+forwards mesh model events to a Drogue Cloud instance.
