@@ -2,7 +2,7 @@
 
 This repository contains software, firmware and documentation for the EclipseCon 2022 hackathon.
 
-For the hackathon, an instance of [Drogue IoT](www.drogue.io) as well as local Bluetooth Mesh gateways are deployed. The hackathon itself includes example tasks where you can:
+For the hackathon, an instance of [Drogue IoT](https://www.drogue.io) as well as local Bluetooth Mesh gateways are deployed. The hackathon itself includes example tasks where you can:
 
 * Write firmware for the BBC micro:bit v2 in Rust. The firmware uses Bluetooth Mesh to send and receive data from the cloud applications.
 * Write Quarkus applications running locally and on OpenShift. The application consumes telemetry and produces commands using [cloud events](https://cloudevents.io/).
