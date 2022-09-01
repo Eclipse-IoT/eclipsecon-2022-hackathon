@@ -1,1 +1,1 @@
-RUST_LOG="eclipsecon_gateway=debug" cargo run -- --token 977fe713cd784eb2 --drogue-application eclipsecon-hackathon --drogue-device gateway --drogue-password hey-rodney
+while true; do RUST_LOG="eclipsecon_gateway=trace" cargo run -- --token 93915057ec20f72e --drogue-application eclipsecon-hackathon --drogue-device gateway --drogue-password hey-rodney; done

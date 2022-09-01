@@ -4,7 +4,9 @@
 #![feature(generic_associated_types)]
 #![feature(type_alias_impl_trait)]
 
-use btmesh_device::{BluetoothMeshModel, BluetoothMeshModelContext, Control, InboundModelPayload};
+use btmesh_device::{
+    BluetoothMeshModel, BluetoothMeshModelContext, Control, InboundModelPayload, PublicationCadence,
+};
 use btmesh_macro::{device, element};
 use btmesh_models::{
     generic::{
@@ -23,9 +25,16 @@ use btmesh_nrf_softdevice::*;
 use core::future::Future;
 use embassy_executor::Spawner;
 use embassy_futures::{select, Either};
-use embassy_time::{Duration, Ticker, Timer};
+use embassy_sync::{
+    blocking_mutex::raw::CriticalSectionRawMutex,
+    channel::{Channel, Receiver, Sender},
+};
+use embassy_time::{Duration, Instant, Ticker, Timer};
 use futures::StreamExt;
-use microbit_async::*;
+use microbit_async::{
+    display::{fonts, Brightness, Frame},
+    *,
+};
 use nrf_softdevice::{temperature_celsius, Softdevice};
 use sensor_model::*;
 
@@ -44,22 +53,80 @@ fn config() -> Config {
     config
 }
 
+type CS = CriticalSectionRawMutex;
+type BlinkChannel = Channel<CS, BlinkCommand, 1>;
+type BlinkSender = Sender<'static, CS, BlinkCommand, 1>;
+type BlinkReceiver = Receiver<'static, CS, BlinkCommand, 1>;
+
+enum BlinkCommand {
+    Start,
+    Stop,
+}
+
 #[embassy_executor::main]
-async fn main(_s: Spawner) {
+async fn main(s: Spawner) {
     let board = Microbit::new(config());
 
     let mut driver = Driver::new("drogue", unsafe { &__storage as *const u8 as u32 }, 100);
 
+    static BLINKCHAN: BlinkChannel = BlinkChannel::new();
     let sd = driver.softdevice();
     let sensor = Sensor::new(sd);
     let battery = Battery::new();
+    let display = DisplayOnOff::new(BLINKCHAN.sender());
 
-    let mut device = Device::new(board.btn_a, board.btn_b, board.display, battery, sensor);
+    s.spawn(blinker(board.display, BLINKCHAN.receiver()))
+        .unwrap();
+
+    let mut device = Device::new(board.btn_a, board.btn_b, display, battery, sensor);
 
     // Give flash some time before accessing
     Timer::after(Duration::from_millis(100)).await;
 
     driver.run(&mut device).await.unwrap();
+}
+
+#[embassy_executor::task]
+async fn blinker(mut display: LedMatrix, commands: BlinkReceiver) {
+    let mut enable = false;
+    loop {
+        if enable {
+            match select(rendering(&mut display), commands.recv()).await {
+                Either::First(_) => {}
+                Either::Second(BlinkCommand::Start) => enable = true,
+                Either::Second(BlinkCommand::Stop) => enable = false,
+            }
+        } else {
+            match commands.recv().await {
+                BlinkCommand::Start => enable = true,
+                BlinkCommand::Stop => enable = false,
+            }
+        }
+    }
+}
+
+async fn rendering(display: &mut LedMatrix) {
+    const BITMAP: Frame<5, 5> = fonts::frame_5x5(&[0b11111, 0b11111, 0b11111, 0b11111, 0b11111]);
+    loop {
+        display.set_brightness(Brightness::MIN);
+        display.apply(BITMAP);
+
+        let interval = Duration::from_millis(50);
+        let end = Instant::now() + Duration::from_millis(600);
+        while Instant::now() < end {
+            let _ = display.increase_brightness();
+            display.display(BITMAP, interval).await;
+        }
+
+        let end = Instant::now() + Duration::from_millis(400);
+        while Instant::now() < end {
+            let _ = display.decrease_brightness();
+            display.display(BITMAP, interval).await;
+        }
+        display.clear();
+
+        Timer::after(Duration::from_secs(1)).await;
+    }
 }
 
 #[device(cid = 0x0003, pid = 0x0001, vid = 0x0001)]
@@ -90,13 +157,13 @@ impl Device {
     pub fn new(
         btn_a: Button,
         btn_b: Button,
-        display: LedMatrix,
+        display: DisplayOnOff,
         battery: Battery,
         sensor: Sensor,
     ) -> Self {
         Self {
             front: Front {
-                display: DisplayOnOff::new(display),
+                display,
                 battery,
                 sensor,
             },
@@ -152,13 +219,13 @@ impl BluetoothMeshModel<GenericOnOffClient> for ButtonOnOff {
     }
 }
 
-struct DisplayOnOff {
-    display: LedMatrix,
+pub struct DisplayOnOff {
+    sender: BlinkSender,
 }
 
 impl DisplayOnOff {
-    fn new(display: LedMatrix) -> Self {
-        Self { display }
+    fn new(sender: BlinkSender) -> Self {
+        Self { sender }
     }
 }
 
@@ -180,12 +247,20 @@ impl BluetoothMeshModel<GenericOnOffServer> for DisplayOnOff {
                             GenericOnOffMessage::Get => {}
                             GenericOnOffMessage::Set(val) => {
                                 if val.on_off != 0 {
-                                    self.display.scroll("ON").await;
+                                    defmt::info!("Display ON");
+                                    self.sender.send(BlinkCommand::Start).await;
+                                } else {
+                                    defmt::info!("Display OFF");
+                                    self.sender.send(BlinkCommand::Stop).await;
                                 }
                             }
                             GenericOnOffMessage::SetUnacknowledged(val) => {
                                 if val.on_off != 0 {
-                                    self.display.scroll("OFF").await;
+                                    defmt::info!("Display ON");
+                                    self.sender.send(BlinkCommand::Start).await;
+                                } else {
+                                    defmt::info!("Display OFF");
+                                    self.sender.send(BlinkCommand::Stop).await;
                                 }
                             }
                             GenericOnOffMessage::Status(_) => {
@@ -245,12 +320,16 @@ impl Battery {
                     GenericBatteryMessage::Status(_) => {}
                 }
             }
-            InboundModelPayload::Control(Control::PublicationDetails(details)) => match details {
-                Some(cadence) => {
+            InboundModelPayload::Control(Control::PublicationCadence(cadence)) => match cadence {
+                PublicationCadence::Periodic(cadence) => {
                     defmt::info!("Enabling battery publish at {:?}", cadence.as_secs());
                     self.ticker.replace(Ticker::every(*cadence));
                 }
-                None => {
+                PublicationCadence::OnChange => {
+                    defmt::info!("Battery publish on change!");
+                    self.ticker.take();
+                }
+                PublicationCadence::None => {
                     defmt::info!("Disabling battery publish");
                     self.ticker.take();
                 }
@@ -321,12 +400,16 @@ impl Sensor {
         data: &InboundModelPayload<SensorSetupMessage<MicrobitSensorConfig, 1, 1>>,
     ) {
         match data {
-            InboundModelPayload::Control(Control::PublicationDetails(details)) => match details {
-                Some(cadence) => {
+            InboundModelPayload::Control(Control::PublicationCadence(cadence)) => match cadence {
+                PublicationCadence::Periodic(cadence) => {
                     defmt::info!("Enabling sensor publish at {:?}", cadence.as_secs());
                     self.ticker.replace(Ticker::every(*cadence));
                 }
-                None => {
+                PublicationCadence::OnChange => {
+                    defmt::info!("Sensor publish on change!");
+                    self.ticker.take();
+                }
+                PublicationCadence::None => {
                     defmt::info!("Disabling sensor publish");
                     self.ticker.take();
                 }
@@ -351,31 +434,25 @@ impl BluetoothMeshModel<SensorServer> for Sensor {
                 if let Some(ticker) = self.ticker.as_mut() {
                     match select(ctx.receive(), ticker.next()).await {
                         Either::First(data) => self.process(&mut ctx, &data).await,
-                        Either::Second(_) => {
-                            defmt::info!("TICK");
-                            match self.read().await {
-                                Ok(result) => {
-                                    defmt::info!("Read sensor data: {:?}", result);
-                                    let message = SensorSetupMessage::Sensor(
-                                        SensorMessage::Status(SensorStatus::new(result)),
-                                    );
-                                    match ctx.publish(message).await {
-                                        Ok(_) => {
-                                            defmt::info!("Published sensor reading");
-                                        }
-                                        Err(e) => {
-                                            defmt::warn!(
-                                                "Error publishing sensor reading: {:?}",
-                                                e
-                                            );
-                                        }
+                        Either::Second(_) => match self.read().await {
+                            Ok(result) => {
+                                defmt::info!("Read sensor data: {:?}", result);
+                                let message = SensorSetupMessage::Sensor(SensorMessage::Status(
+                                    SensorStatus::new(result),
+                                ));
+                                match ctx.publish(message).await {
+                                    Ok(_) => {
+                                        defmt::info!("Published sensor reading");
+                                    }
+                                    Err(e) => {
+                                        defmt::warn!("Error publishing sensor reading: {:?}", e);
                                     }
                                 }
-                                Err(e) => {
-                                    defmt::warn!("Error reading sensor data: {:?}", e);
-                                }
                             }
-                        }
+                            Err(e) => {
+                                defmt::warn!("Error reading sensor data: {:?}", e);
+                            }
+                        },
                     }
                 } else {
                     let m = ctx.receive().await;
