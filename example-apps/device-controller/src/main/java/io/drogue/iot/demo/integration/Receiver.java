@@ -53,25 +53,30 @@ public class Receiver {
         var format = EventFormatProvider
                 .getInstance()
                 .resolveFormat(JsonFormat.CONTENT_TYPE);
+        try {
 
-        var event = format.deserialize(rawMessage.getPayload());
+            var event = format.deserialize(rawMessage.getPayload());
 
 
-        var payload = mapData(
-                event,
-                PojoCloudEventDataMapper.from(this.objectMapper, DevicePayload.class)
-        );
+            var payload = mapData(
+                    event,
+                    PojoCloudEventDataMapper.from(this.objectMapper, DevicePayload.class)
+            );
 
-        // create device event
+            // create device event
 
-        var device = new DeviceEvent();
-        device.setDeviceId(event.getExtension("device").toString());
-        device.setTimestamp(event.getTime().toInstant());
-        device.setPayload(payload.getValue());
+            var device = new DeviceEvent();
+            device.setDeviceId(event.getExtension("device").toString());
+            device.setTimestamp(event.getTime().toInstant());
+            device.setPayload(payload.getValue());
 
-        // done
+            // done
 
-        return device;
+            return device;
+        } catch (Exception e) {
+            LOG.debug("Error decoding: {}", e.getMessage());
+            return null;
+        }
     }
 
 }
