@@ -10,6 +10,7 @@ mod display;
 mod sensor;
 
 use battery::*;
+use btmesh_common::Uuid;
 use btmesh_device::BluetoothMeshModel;
 use btmesh_macro::{device, element};
 use btmesh_nrf_softdevice::*;
@@ -23,6 +24,7 @@ use sensor::*;
 
 extern "C" {
     static __storage: u8;
+    static __config: u8;
 }
 
 use defmt_rtt as _;
@@ -42,7 +44,7 @@ async fn main(s: Spawner) {
         "drogue",
         unsafe { &__storage as *const u8 as u32 },
         100,
-        None,
+        unprovisioned_uuid(),
     );
 
     // An instance of the sensor module implementing the SensorServer model.
@@ -126,4 +128,22 @@ fn config() -> Config {
     config.gpiote_interrupt_priority = Priority::P2;
     config.time_interrupt_priority = Priority::P2;
     config
+}
+
+// Loading any compiled-in UUID to use for provisioning
+fn unprovisioned_uuid() -> Option<Uuid> {
+    const DEVICE_UUID: Option<&str> = option_env!("DEVICE_UUID");
+
+    // Attempt to decode the UUID
+    DEVICE_UUID
+        .map(|uuid| {
+            let mut data = [0; 16];
+            if let Ok(_) = hex::decode_to_slice(uuid, &mut data) {
+                Some(data)
+            } else {
+                None
+            }
+        })
+        .flatten()
+        .map(|data| Uuid::new(data))
 }
