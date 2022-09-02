@@ -1,16 +1,12 @@
 # EclipseCon 2022 Hackathon Console
 
-This is source code for the EclipseCon 2022 hackathon console. 
-This is an example of using the MQTT integration of [Drogue IoT](https://drogue.io) in combination
-with [Quarkus](https://quarkus.io/).
+This is source code for the EclipseCon 2022 Hackathon console which is where participants can claim the handed-out devices and test device connectivity with the default firmware.
 
 ## What does it do?
 
-It is a small Quarkus application, which connects to the MQTT integration endpoint of Drogue IoT. Receiving messages
-from micro:bit devices publishing to Drogue IoT Cloud.
+It is a small Quarkus application, which connects to the MQTT integration endpoint of Drogue IoT, the device registry and a database storing device claim status.
 
-The application starts a web-app that displays the current device readings, and allows
-you to trigger commands being sent back to the device.
+Once claimed, the application will display messages received from the microbit.
 
 When you press the 'Update' button, the new settings will be sent to the device.
 
