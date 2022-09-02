@@ -54,7 +54,6 @@ embassy-executor = { git = "https://github.com/embassy-rs/embassy.git", branch =
 embassy-time = { git = "https://github.com/embassy-rs/embassy.git", branch = "master" }
 embassy-nrf = { git = "https://github.com/embassy-rs/embassy.git", branch = "master" }
 embassy-sync = { git = "https://github.com/embassy-rs/embassy.git", branch = "master" }
-embassy-futures = { git = "https://github.com/embassy-rs/embassy.git", branch = "master" }
 nrf-softdevice = { git = "https://github.com/embassy-rs/nrf-softdevice.git", branch = "master" }
 nrf-softdevice-macro = { git = "https://github.com/embassy-rs/nrf-softdevice.git", branch = "master" }
 nrf-softdevice-s140 = { git = "https://github.com/embassy-rs/nrf-softdevice.git", branch = "master" }

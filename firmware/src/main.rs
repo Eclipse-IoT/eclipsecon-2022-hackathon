@@ -4,6 +4,9 @@
 #![feature(generic_associated_types)]
 #![feature(type_alias_impl_trait)]
 
+mod blinker;
+
+use blinker::*;
 use btmesh_device::{
     BluetoothMeshModel, BluetoothMeshModelContext, Control, InboundModelPayload, PublicationCadence,
 };
@@ -24,17 +27,10 @@ use btmesh_models::{
 use btmesh_nrf_softdevice::*;
 use core::future::Future;
 use embassy_executor::Spawner;
-use embassy_futures::{select, Either};
-use embassy_sync::{
-    blocking_mutex::raw::CriticalSectionRawMutex,
-    channel::{Channel, Receiver, Sender},
-};
-use embassy_time::{Duration, Instant, Ticker, Timer};
+use embassy_futures::select::{select, Either};
+use embassy_time::{Duration, Ticker, Timer};
 use futures::StreamExt;
-use microbit_async::{
-    display::{fonts, Brightness, Frame},
-    *,
-};
+use microbit_async::*;
 use nrf_softdevice::{temperature_celsius, Softdevice};
 use sensor_model::*;
 
@@ -53,21 +49,16 @@ fn config() -> Config {
     config
 }
 
-type CS = CriticalSectionRawMutex;
-type BlinkChannel = Channel<CS, BlinkCommand, 1>;
-type BlinkSender = Sender<'static, CS, BlinkCommand, 1>;
-type BlinkReceiver = Receiver<'static, CS, BlinkCommand, 1>;
-
-enum BlinkCommand {
-    Start,
-    Stop,
-}
-
 #[embassy_executor::main]
 async fn main(s: Spawner) {
     let board = Microbit::new(config());
 
-    let mut driver = Driver::new("drogue", unsafe { &__storage as *const u8 as u32 }, 100);
+    let mut driver = Driver::new(
+        "drogue",
+        unsafe { &__storage as *const u8 as u32 },
+        100,
+        None,
+    );
 
     static BLINKCHAN: BlinkChannel = BlinkChannel::new();
     let sd = driver.softdevice();
@@ -84,49 +75,6 @@ async fn main(s: Spawner) {
     Timer::after(Duration::from_millis(100)).await;
 
     driver.run(&mut device).await.unwrap();
-}
-
-#[embassy_executor::task]
-async fn blinker(mut display: LedMatrix, commands: BlinkReceiver) {
-    let mut enable = false;
-    loop {
-        if enable {
-            match select(rendering(&mut display), commands.recv()).await {
-                Either::First(_) => {}
-                Either::Second(BlinkCommand::Start) => enable = true,
-                Either::Second(BlinkCommand::Stop) => enable = false,
-            }
-        } else {
-            match commands.recv().await {
-                BlinkCommand::Start => enable = true,
-                BlinkCommand::Stop => enable = false,
-            }
-        }
-    }
-}
-
-async fn rendering(display: &mut LedMatrix) {
-    const BITMAP: Frame<5, 5> = fonts::frame_5x5(&[0b11111, 0b11111, 0b11111, 0b11111, 0b11111]);
-    loop {
-        display.set_brightness(Brightness::MIN);
-        display.apply(BITMAP);
-
-        let interval = Duration::from_millis(50);
-        let end = Instant::now() + Duration::from_millis(600);
-        while Instant::now() < end {
-            let _ = display.increase_brightness();
-            display.display(BITMAP, interval).await;
-        }
-
-        let end = Instant::now() + Duration::from_millis(400);
-        while Instant::now() < end {
-            let _ = display.decrease_brightness();
-            display.display(BITMAP, interval).await;
-        }
-        display.clear();
-
-        Timer::after(Duration::from_secs(1)).await;
-    }
 }
 
 #[device(cid = 0x0003, pid = 0x0001, vid = 0x0001)]

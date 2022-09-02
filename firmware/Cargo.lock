@@ -120,7 +120,7 @@ checksum = "bef38d45163c2f1dde094a7dfd33ccf595c92905c8f8f4fdc18d06fb1037718a"
 [[package]]
 name = "btmesh-bearer"
 version = "0.1.0"
-source = "git+https://github.com/drogue-iot/btmesh.git?branch=main#8c12606939c28eba4a97b56f0a1c645686a4b4b9"
+source = "git+https://github.com/drogue-iot/btmesh.git?branch=main#bbe23a969c77cec9b783037a09c853226869f9e3"
 dependencies = [
  "btmesh-common",
  "btmesh-pdu",
@@ -131,7 +131,7 @@ dependencies = [
 [[package]]
 name = "btmesh-common"
 version = "0.1.0"
-source = "git+https://github.com/drogue-iot/btmesh.git?branch=main#8c12606939c28eba4a97b56f0a1c645686a4b4b9"
+source = "git+https://github.com/drogue-iot/btmesh.git?branch=main#bbe23a969c77cec9b783037a09c853226869f9e3"
 dependencies = [
  "aes",
  "ccm",
@@ -150,12 +150,12 @@ dependencies = [
 [[package]]
 name = "btmesh-device"
 version = "0.1.0"
-source = "git+https://github.com/drogue-iot/btmesh.git?branch=main#8c12606939c28eba4a97b56f0a1c645686a4b4b9"
+source = "git+https://github.com/drogue-iot/btmesh.git?branch=main#bbe23a969c77cec9b783037a09c853226869f9e3"
 dependencies = [
  "btmesh-common",
  "btmesh-models",
  "defmt",
- "embassy-futures",
+ "embassy-futures 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "embassy-sync",
  "embassy-time",
  "futures",
@@ -165,7 +165,7 @@ dependencies = [
 [[package]]
 name = "btmesh-driver"
 version = "0.1.0"
-source = "git+https://github.com/drogue-iot/btmesh.git?branch=main#8c12606939c28eba4a97b56f0a1c645686a4b4b9"
+source = "git+https://github.com/drogue-iot/btmesh.git?branch=main#bbe23a969c77cec9b783037a09c853226869f9e3"
 dependencies = [
  "aes",
  "btmesh-bearer",
@@ -176,7 +176,7 @@ dependencies = [
  "btmesh-pdu",
  "cmac",
  "defmt",
- "embassy-futures",
+ "embassy-futures 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "embassy-sync",
  "embassy-time",
  "embedded-storage",
@@ -194,7 +194,7 @@ dependencies = [
 [[package]]
 name = "btmesh-macro"
 version = "0.1.0"
-source = "git+https://github.com/drogue-iot/btmesh.git?branch=main#8c12606939c28eba4a97b56f0a1c645686a4b4b9"
+source = "git+https://github.com/drogue-iot/btmesh.git?branch=main#bbe23a969c77cec9b783037a09c853226869f9e3"
 dependencies = [
  "btmesh-common",
  "darling 0.14.1",
@@ -208,7 +208,7 @@ dependencies = [
 [[package]]
 name = "btmesh-models"
 version = "0.1.0"
-source = "git+https://github.com/drogue-iot/btmesh.git?branch=main#8c12606939c28eba4a97b56f0a1c645686a4b4b9"
+source = "git+https://github.com/drogue-iot/btmesh.git?branch=main#bbe23a969c77cec9b783037a09c853226869f9e3"
 dependencies = [
  "btmesh-common",
  "defmt",
@@ -220,7 +220,7 @@ dependencies = [
 [[package]]
 name = "btmesh-nrf-softdevice"
 version = "0.1.0"
-source = "git+https://github.com/drogue-iot/btmesh.git?branch=main#8c12606939c28eba4a97b56f0a1c645686a4b4b9"
+source = "git+https://github.com/drogue-iot/btmesh.git?branch=main#bbe23a969c77cec9b783037a09c853226869f9e3"
 dependencies = [
  "atomic-polyfill 1.0.1",
  "btmesh-bearer",
@@ -229,7 +229,7 @@ dependencies = [
  "btmesh-driver",
  "btmesh-pdu",
  "defmt",
- "embassy-futures",
+ "embassy-futures 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "embassy-nrf",
  "embassy-sync",
  "embassy-time",
@@ -243,7 +243,7 @@ dependencies = [
 [[package]]
 name = "btmesh-pdu"
 version = "0.1.0"
-source = "git+https://github.com/drogue-iot/btmesh.git?branch=main#8c12606939c28eba4a97b56f0a1c645686a4b4b9"
+source = "git+https://github.com/drogue-iot/btmesh.git?branch=main#bbe23a969c77cec9b783037a09c853226869f9e3"
 dependencies = [
  "btmesh-common",
  "defmt",
@@ -587,7 +587,7 @@ dependencies = [
  "defmt",
  "defmt-rtt",
  "embassy-executor",
- "embassy-futures",
+ "embassy-futures 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "embassy-nrf",
  "embassy-sync",
  "embassy-time",
@@ -621,7 +621,7 @@ dependencies = [
 [[package]]
 name = "embassy-cortex-m"
 version = "0.1.0"
-source = "git+https://github.com/embassy-rs/embassy.git?branch=master#835b69456d6a270e6d5c869da46c0df30fe54254"
+source = "git+https://github.com/embassy-rs/embassy.git?branch=master#8b464d2668657284527693fbf9cc348766a00758"
 dependencies = [
  "atomic-polyfill 1.0.1",
  "cfg-if",
@@ -636,7 +636,7 @@ dependencies = [
 [[package]]
 name = "embassy-embedded-hal"
 version = "0.1.0"
-source = "git+https://github.com/embassy-rs/embassy.git?branch=master#835b69456d6a270e6d5c869da46c0df30fe54254"
+source = "git+https://github.com/embassy-rs/embassy.git?branch=master#8b464d2668657284527693fbf9cc348766a00758"
 dependencies = [
  "embassy-sync",
  "embedded-hal 0.2.7",
@@ -650,7 +650,7 @@ dependencies = [
 [[package]]
 name = "embassy-executor"
 version = "0.1.0"
-source = "git+https://github.com/embassy-rs/embassy.git?branch=master#835b69456d6a270e6d5c869da46c0df30fe54254"
+source = "git+https://github.com/embassy-rs/embassy.git?branch=master#8b464d2668657284527693fbf9cc348766a00758"
 dependencies = [
  "atomic-polyfill 1.0.1",
  "cfg-if",
@@ -664,12 +664,18 @@ dependencies = [
 [[package]]
 name = "embassy-futures"
 version = "0.1.0"
-source = "git+https://github.com/embassy-rs/embassy.git?branch=master#835b69456d6a270e6d5c869da46c0df30fe54254"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "47e5367165d347c039360f784812f493b001583ab6a3dd8622f4ce9c30374ec3"
+
+[[package]]
+name = "embassy-futures"
+version = "0.1.0"
+source = "git+https://github.com/embassy-rs/embassy.git?branch=master#8b464d2668657284527693fbf9cc348766a00758"
 
 [[package]]
 name = "embassy-hal-common"
 version = "0.1.0"
-source = "git+https://github.com/embassy-rs/embassy.git?branch=master#835b69456d6a270e6d5c869da46c0df30fe54254"
+source = "git+https://github.com/embassy-rs/embassy.git?branch=master#8b464d2668657284527693fbf9cc348766a00758"
 dependencies = [
  "num-traits",
 ]
@@ -677,7 +683,7 @@ dependencies = [
 [[package]]
 name = "embassy-macros"
 version = "0.1.0"
-source = "git+https://github.com/embassy-rs/embassy.git?branch=master#835b69456d6a270e6d5c869da46c0df30fe54254"
+source = "git+https://github.com/embassy-rs/embassy.git?branch=master#8b464d2668657284527693fbf9cc348766a00758"
 dependencies = [
  "darling 0.13.4",
  "proc-macro2",
@@ -688,7 +694,7 @@ dependencies = [
 [[package]]
 name = "embassy-nrf"
 version = "0.1.0"
-source = "git+https://github.com/embassy-rs/embassy.git?branch=master#835b69456d6a270e6d5c869da46c0df30fe54254"
+source = "git+https://github.com/embassy-rs/embassy.git?branch=master#8b464d2668657284527693fbf9cc348766a00758"
 dependencies = [
  "cfg-if",
  "cortex-m",
@@ -715,7 +721,7 @@ dependencies = [
 [[package]]
 name = "embassy-sync"
 version = "0.1.0"
-source = "git+https://github.com/embassy-rs/embassy.git?branch=master#835b69456d6a270e6d5c869da46c0df30fe54254"
+source = "git+https://github.com/embassy-rs/embassy.git?branch=master#8b464d2668657284527693fbf9cc348766a00758"
 dependencies = [
  "atomic-polyfill 1.0.1",
  "cfg-if",
@@ -728,7 +734,7 @@ dependencies = [
 [[package]]
 name = "embassy-time"
 version = "0.1.0"
-source = "git+https://github.com/embassy-rs/embassy.git?branch=master#835b69456d6a270e6d5c869da46c0df30fe54254"
+source = "git+https://github.com/embassy-rs/embassy.git?branch=master#8b464d2668657284527693fbf9cc348766a00758"
 dependencies = [
  "atomic-polyfill 1.0.1",
  "cfg-if",
@@ -742,9 +748,9 @@ dependencies = [
 [[package]]
 name = "embassy-usb"
 version = "0.1.0"
-source = "git+https://github.com/embassy-rs/embassy.git?branch=master#835b69456d6a270e6d5c869da46c0df30fe54254"
+source = "git+https://github.com/embassy-rs/embassy.git?branch=master#8b464d2668657284527693fbf9cc348766a00758"
 dependencies = [
- "embassy-futures",
+ "embassy-futures 0.1.0 (git+https://github.com/embassy-rs/embassy.git?branch=master)",
  "heapless",
 ]
 

@@ -1,11 +1,8 @@
 #![cfg_attr(not(feature = "std"), no_std)]
-use btmesh_common::{opcode::Opcode, InsufficientBuffer, ParseError};
-use btmesh_models::{
-    sensor::{
-        CadenceDescriptor, PropertyId, SensorConfig, SensorData, SensorDescriptor,
-        SensorSetupConfig, SettingDescriptor,
-    },
-    Message,
+use btmesh_common::{InsufficientBuffer, ParseError};
+use btmesh_models::sensor::{
+    CadenceDescriptor, PropertyId, SensorConfig, SensorData, SensorDescriptor, SensorSetupConfig,
+    SettingDescriptor,
 };
 use heapless::Vec;
 
@@ -70,8 +67,8 @@ pub struct RawMessage {
 }
 
 #[cfg(feature = "std")]
-impl Message for RawMessage {
-    fn opcode(&self) -> Opcode {
+impl btmesh_models::Message for RawMessage {
+    fn opcode(&self) -> btmesh_common::opcode::Opcode {
         let (opcode, _) = Opcode::split(&self.opcode[..]).unwrap();
         opcode
     }
