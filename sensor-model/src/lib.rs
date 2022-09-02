@@ -69,7 +69,7 @@ pub struct RawMessage {
 #[cfg(feature = "std")]
 impl btmesh_models::Message for RawMessage {
     fn opcode(&self) -> btmesh_common::opcode::Opcode {
-        let (opcode, _) = Opcode::split(&self.opcode[..]).unwrap();
+        let (opcode, _) = btmesh_common::opcode::Opcode::split(&self.opcode[..]).unwrap();
         opcode
     }
 
