@@ -4,6 +4,7 @@
 #![feature(generic_associated_types)]
 #![feature(type_alias_impl_trait)]
 
+mod button;
 mod display;
 
 use btmesh_device::{
@@ -11,17 +12,15 @@ use btmesh_device::{
 };
 use btmesh_macro::{device, element};
 use btmesh_models::{
-    generic::{
-        battery::{
-            GenericBatteryFlags, GenericBatteryFlagsCharging, GenericBatteryFlagsIndicator,
-            GenericBatteryFlagsPresence, GenericBatteryMessage, GenericBatteryServer,
-            GenericBatteryStatus,
-        },
-        onoff::{GenericOnOffClient, GenericOnOffMessage, Set as GenericOnOffSet},
+    generic::battery::{
+        GenericBatteryFlags, GenericBatteryFlagsCharging, GenericBatteryFlagsIndicator,
+        GenericBatteryFlagsPresence, GenericBatteryMessage, GenericBatteryServer,
+        GenericBatteryStatus,
     },
     sensor::{SensorMessage, SensorSetupMessage, SensorSetupServer, SensorStatus},
 };
 use btmesh_nrf_softdevice::*;
+use button::*;
 use core::future::Future;
 use display::*;
 use embassy_executor::Spawner;
@@ -122,48 +121,6 @@ impl Device {
             btn_b: ButtonB {
                 button: ButtonOnOff::new(btn_b),
             },
-        }
-    }
-}
-
-struct ButtonOnOff {
-    button: Button,
-}
-
-impl ButtonOnOff {
-    fn new(button: Button) -> Self {
-        Self { button }
-    }
-}
-
-impl BluetoothMeshModel<GenericOnOffClient> for ButtonOnOff {
-    type RunFuture<'f, C> = impl Future<Output=Result<(), ()>> + 'f
-    where
-        Self: 'f,
-        C: BluetoothMeshModelContext<GenericOnOffClient> + 'f;
-
-    fn run<'run, C: BluetoothMeshModelContext<GenericOnOffClient> + 'run>(
-        &'run mut self,
-        ctx: C,
-    ) -> Self::RunFuture<'_, C> {
-        async move {
-            loop {
-                self.button.wait_for_any_edge().await;
-                let message = GenericOnOffMessage::Set(GenericOnOffSet {
-                    on_off: if self.button.is_low() { 1 } else { 0 },
-                    tid: 0,
-                    transition_time: None,
-                    delay: None,
-                });
-                match ctx.publish(message).await {
-                    Ok(_) => {
-                        defmt::info!("Published button status ");
-                    }
-                    Err(e) => {
-                        defmt::warn!("Error publishing button status: {:?}", e);
-                    }
-                }
-            }
         }
     }
 }
