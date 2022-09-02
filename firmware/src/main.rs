@@ -4,9 +4,8 @@
 #![feature(generic_associated_types)]
 #![feature(type_alias_impl_trait)]
 
-mod blinker;
+mod display;
 
-use blinker::*;
 use btmesh_device::{
     BluetoothMeshModel, BluetoothMeshModelContext, Control, InboundModelPayload, PublicationCadence,
 };
@@ -18,14 +17,13 @@ use btmesh_models::{
             GenericBatteryFlagsPresence, GenericBatteryMessage, GenericBatteryServer,
             GenericBatteryStatus,
         },
-        onoff::{
-            GenericOnOffClient, GenericOnOffMessage, GenericOnOffServer, Set as GenericOnOffSet,
-        },
+        onoff::{GenericOnOffClient, GenericOnOffMessage, Set as GenericOnOffSet},
     },
     sensor::{SensorMessage, SensorSetupMessage, SensorSetupServer, SensorStatus},
 };
 use btmesh_nrf_softdevice::*;
 use core::future::Future;
+use display::*;
 use embassy_executor::Spawner;
 use embassy_futures::select::{select, Either};
 use embassy_time::{Duration, Ticker, Timer};
@@ -53,28 +51,31 @@ fn config() -> Config {
 async fn main(s: Spawner) {
     let board = Microbit::new(config());
 
-    let mut driver = Driver::new(
+    let driver = Driver::new(
         "drogue",
         unsafe { &__storage as *const u8 as u32 },
         100,
         None,
     );
 
-    static BLINKCHAN: BlinkChannel = BlinkChannel::new();
     let sd = driver.softdevice();
     let sensor = Sensor::new(sd);
     let battery = Battery::new();
-    let display = DisplayOnOff::new(BLINKCHAN.sender());
+    let display = DisplayOnOff::new(board.display);
 
-    s.spawn(blinker(board.display, BLINKCHAN.receiver()))
-        .unwrap();
-
-    let mut device = Device::new(board.btn_a, board.btn_b, display, battery, sensor);
+    let device = Device::new(board.btn_a, board.btn_b, display, battery, sensor);
 
     // Give flash some time before accessing
     Timer::after(Duration::from_millis(100)).await;
 
-    driver.run(&mut device).await.unwrap();
+    s.spawn(driver_task(driver, device)).unwrap();
+}
+
+#[embassy_executor::task]
+async fn driver_task(mut driver: Driver, mut device: Device) {
+    loop {
+        let _ = driver.run(&mut device).await;
+    }
 }
 
 #[device(cid = 0x0003, pid = 0x0001, vid = 0x0001)]
@@ -161,62 +162,6 @@ impl BluetoothMeshModel<GenericOnOffClient> for ButtonOnOff {
                     Err(e) => {
                         defmt::warn!("Error publishing button status: {:?}", e);
                     }
-                }
-            }
-        }
-    }
-}
-
-pub struct DisplayOnOff {
-    sender: BlinkSender,
-}
-
-impl DisplayOnOff {
-    fn new(sender: BlinkSender) -> Self {
-        Self { sender }
-    }
-}
-
-impl BluetoothMeshModel<GenericOnOffServer> for DisplayOnOff {
-    type RunFuture<'f, C> = impl Future<Output=Result<(), ()>> + 'f
-    where
-        Self: 'f,
-        C: BluetoothMeshModelContext<GenericOnOffServer> + 'f;
-
-    fn run<'run, C: BluetoothMeshModelContext<GenericOnOffServer> + 'run>(
-        &'run mut self,
-        ctx: C,
-    ) -> Self::RunFuture<'_, C> {
-        async move {
-            loop {
-                match ctx.receive().await {
-                    InboundModelPayload::Message(message, _) => {
-                        match message {
-                            GenericOnOffMessage::Get => {}
-                            GenericOnOffMessage::Set(val) => {
-                                if val.on_off != 0 {
-                                    defmt::info!("Display ON");
-                                    self.sender.send(BlinkCommand::Start).await;
-                                } else {
-                                    defmt::info!("Display OFF");
-                                    self.sender.send(BlinkCommand::Stop).await;
-                                }
-                            }
-                            GenericOnOffMessage::SetUnacknowledged(val) => {
-                                if val.on_off != 0 {
-                                    defmt::info!("Display ON");
-                                    self.sender.send(BlinkCommand::Start).await;
-                                } else {
-                                    defmt::info!("Display OFF");
-                                    self.sender.send(BlinkCommand::Stop).await;
-                                }
-                            }
-                            GenericOnOffMessage::Status(_) => {
-                                // not applicable
-                            }
-                        }
-                    }
-                    _ => {}
                 }
             }
         }
