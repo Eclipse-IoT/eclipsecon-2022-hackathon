@@ -4,6 +4,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import io.drogue.iot.hackathon.data.OnOffSet;
+import io.drogue.iot.hackathon.integration.registry.Registry;
 import io.drogue.iot.hackathon.ui.DisplaySettings;
 import org.eclipse.microprofile.reactive.messaging.Channel;
 import org.eclipse.microprofile.reactive.messaging.Emitter;
@@ -16,6 +17,9 @@ import io.drogue.iot.hackathon.data.CommandPayload;
 import io.drogue.iot.hackathon.data.DeviceEvent;
 import io.quarkus.runtime.Startup;
 import io.smallrye.reactive.messaging.annotations.Broadcast;
+
+import java.nio.charset.StandardCharsets;
+import java.util.UUID;
 
 /**
  * Process device events.
@@ -84,8 +88,18 @@ public class Processor {
     @Channel("gateway-commands")
     Emitter<ProvisioningCommand> provisioningEmitter;
 
+    @Inject
+    Registry registry;
+
     public void claimDevice(String claim_id) {
-        ProvisioningCommand command = new ProvisioningCommand(claim_id);
+        // TODO: Lookup in the database instead of generating it here
+        // TODO: Create a global address from stateful source
+        UUID uuid = UUID.nameUUIDFromBytes(claim_id.getBytes(StandardCharsets.UTF_8));
+        String address = "00c0";
+
+        registry.createDevice(claim_id, new String[]{address, uuid.toString()});
+
+        ProvisioningCommand command = new ProvisioningCommand(uuid.toString(), address);
         provisioningEmitter.send(command);
     }
 }

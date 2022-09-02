@@ -1,6 +1,7 @@
 package io.drogue.iot.hackathon.ui;
 
 import io.drogue.iot.hackathon.Processor;
+import io.drogue.iot.hackathon.integration.registry.Registry;
 import io.drogue.iot.hackathon.ui.ClaimRequest;
 
 import javax.inject.Inject;
