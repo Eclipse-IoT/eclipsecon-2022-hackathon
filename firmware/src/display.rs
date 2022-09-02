@@ -8,6 +8,7 @@ use microbit_async::{
     LedMatrix,
 };
 
+/// A display type implementing the GenericOnOffServer model.
 pub struct DisplayOnOff {
     display: LedMatrix,
 }
@@ -17,6 +18,7 @@ impl DisplayOnOff {
         Self { display }
     }
 
+    /// Wait for onoff messages and return whether display should be enabled or not
     async fn process<C: BluetoothMeshModelContext<GenericOnOffServer>>(ctx: &mut C) -> bool {
         loop {
             match ctx.receive().await {
@@ -39,10 +41,18 @@ impl DisplayOnOff {
         }
     }
 
+    /// Rendering loop for the blinker process.
     async fn blinker(display: &mut LedMatrix) {
+        // Enable all LEDs
         const BITMAP: Frame<5, 5> =
             fonts::frame_5x5(&[0b11111, 0b11111, 0b11111, 0b11111, 0b11111]);
 
+        // For each blink iteration does the following:
+        // - Set brightness to minimum
+        // - Enable bitmap to frame buffer
+        // - Gradually increase brightness until reaching max, then
+        // - Gradually decrease brightness until reaching min.
+        // - Pause for 1 second before next iteration
         loop {
             display.set_brightness(Brightness::MIN);
             display.apply(BITMAP);
@@ -66,6 +76,7 @@ impl DisplayOnOff {
     }
 }
 
+// Required trait implementation to be enabled in a Bluetooth mesh device.
 impl BluetoothMeshModel<GenericOnOffServer> for DisplayOnOff {
     type RunFuture<'f, C> = impl Future<Output=Result<(), ()>> + 'f
     where
@@ -81,6 +92,7 @@ impl BluetoothMeshModel<GenericOnOffServer> for DisplayOnOff {
                 let mut enable = false;
                 loop {
                     if enable {
+                        // When blinking is enabled, we need to await both the rendering loop and the inbound message processing.
                         match select(Self::blinker(&mut self.display), Self::process(&mut ctx))
                             .await
                         {
@@ -88,6 +100,7 @@ impl BluetoothMeshModel<GenericOnOffServer> for DisplayOnOff {
                             Either::Second(e) => enable = e,
                         }
                     } else {
+                        // When blinking is disabled, we just await incoming messages.
                         enable = Self::process(&mut ctx).await;
                     }
                 }

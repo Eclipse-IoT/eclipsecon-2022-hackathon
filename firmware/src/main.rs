@@ -28,18 +28,16 @@ extern "C" {
 use defmt_rtt as _;
 use panic_probe as _;
 
-// Application must run at a lower priority than softdevice
-fn config() -> Config {
-    let mut config = embassy_nrf::config::Config::default();
-    config.gpiote_interrupt_priority = Priority::P2;
-    config.time_interrupt_priority = Priority::P2;
-    config
-}
-
+// Application main entry point. The spawner can be used to start async tasks.
 #[embassy_executor::main]
 async fn main(s: Spawner) {
+    // A board type to access peripherals on the microbit.
     let board = Microbit::new(config());
 
+    // Don't remove. Give flash some time before accessing
+    Timer::after(Duration::from_millis(100)).await;
+
+    // An instance of the Bluetooth Mesh stack
     let driver = Driver::new(
         "drogue",
         unsafe { &__storage as *const u8 as u32 },
@@ -47,16 +45,19 @@ async fn main(s: Spawner) {
         None,
     );
 
-    let sd = driver.softdevice();
-    let sensor = Sensor::new(sd);
+    // An instance of the sensor module implementing the SensorServer model.
+    let sensor = Sensor::new(driver.softdevice());
+
+    // An instance of the battery module implementing the GenericBattery model.
     let battery = Battery::new();
+
+    // An instance of the display module implementing the OnOff model.
     let display = DisplayOnOff::new(board.display);
 
+    // An instance of our device with the models we'd like to expose.
     let device = Device::new(board.btn_a, board.btn_b, display, battery, sensor);
 
-    // Give flash some time before accessing
-    Timer::after(Duration::from_millis(100)).await;
-
+    // Spawn the driver worker task as a separate task.
     s.spawn(driver_task(driver, device)).unwrap();
 }
 
@@ -67,6 +68,7 @@ async fn driver_task(mut driver: Driver, mut device: Device) {
     }
 }
 
+// A BluetoothMesh device with each field being a Bluetooth Mesh element.
 #[device(cid = 0x0003, pid = 0x0001, vid = 0x0001)]
 pub struct Device {
     front: Front,
@@ -74,6 +76,7 @@ pub struct Device {
     btn_b: ButtonB,
 }
 
+// An element with multiple models.
 #[element(location = "front")]
 struct Front {
     display: DisplayOnOff,
@@ -81,11 +84,13 @@ struct Front {
     sensor: Sensor,
 }
 
+// An element for the 'A' button
 #[element(location = "left")]
 struct ButtonA {
     button: ButtonOnOff,
 }
 
+// An element for the 'B' button
 #[element(location = "right")]
 struct ButtonB {
     button: ButtonOnOff,
@@ -113,4 +118,12 @@ impl Device {
             },
         }
     }
+}
+
+// Application must run at a lower priority than softdevice. DO NOT CHANGE
+fn config() -> Config {
+    let mut config = embassy_nrf::config::Config::default();
+    config.gpiote_interrupt_priority = Priority::P2;
+    config.time_interrupt_priority = Priority::P2;
+    config
 }

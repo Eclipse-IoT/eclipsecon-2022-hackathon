@@ -9,9 +9,12 @@ use futures::StreamExt;
 use nrf_softdevice::{temperature_celsius, Softdevice};
 use sensor_model::*;
 
+// A convenient type alias for our sensor
 type SensorServer = SensorSetupServer<MicrobitSensorConfig, 1, 1>;
 
+// A sensor type implementing the SensorSetupServer model.
 pub struct Sensor {
+    // This field is required to access some peripherals that is also controlled by the radio driver
     sd: &'static Softdevice,
     ticker: Option<Ticker>,
 }
@@ -21,6 +24,7 @@ impl Sensor {
         Self { sd, ticker: None }
     }
 
+    // Read the current on-chip temperature
     async fn read(&mut self) -> Result<SensorPayload, ()> {
         let temperature: i8 = temperature_celsius(self.sd).map_err(|_| ())?.to_num();
         Ok(SensorPayload {
@@ -28,9 +32,9 @@ impl Sensor {
         })
     }
 
-    async fn process<C: BluetoothMeshModelContext<SensorServer>>(
+    // Process an inbound control message
+    async fn process(
         &mut self,
-        _ctx: &mut C,
         data: &InboundModelPayload<SensorSetupMessage<MicrobitSensorConfig, 1, 1>>,
     ) {
         match data {
@@ -61,13 +65,14 @@ impl BluetoothMeshModel<SensorServer> for Sensor {
 
     fn run<'run, C: BluetoothMeshModelContext<SensorServer> + 'run>(
         &'run mut self,
-        mut ctx: C,
+        ctx: C,
     ) -> Self::RunFuture<'_, C> {
         async move {
             loop {
                 if let Some(ticker) = self.ticker.as_mut() {
+                    // When ticker is enabled, we emit sensor readings on each tick.
                     match select(ctx.receive(), ticker.next()).await {
-                        Either::First(data) => self.process(&mut ctx, &data).await,
+                        Either::First(data) => self.process(&data).await,
                         Either::Second(_) => match self.read().await {
                             Ok(result) => {
                                 defmt::info!("Read sensor data: {:?}", result);
@@ -89,8 +94,9 @@ impl BluetoothMeshModel<SensorServer> for Sensor {
                         },
                     }
                 } else {
+                    // When ticker is disabled, we wait for commands.
                     let m = ctx.receive().await;
-                    self.process(&mut ctx, &m).await;
+                    self.process(&m).await;
                 }
             }
         }
