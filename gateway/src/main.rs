@@ -237,8 +237,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     log::info!("Received on {}: {:?}", topic, message);
                     let mut parts = topic.rsplit("/");
                     if let Some(channel) = parts.next() {
-                        if channel == "provisioning" {
+                        if channel == "provision" {
                             log::info!("Received provisioning command for gateway: {:?}", message.payload());
+                            if let Ok(command) = serde_json::from_slice::<Value>(message.payload()) {
+                                log::info!("Parsed provisioning command: {:?}", command);
+                            }
                         } else if channel == "sensor" {
                             log::info!("Got message on sensor channel");
                             if let Some(device) = parts.next() {
