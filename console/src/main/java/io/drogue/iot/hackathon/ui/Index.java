@@ -21,6 +21,7 @@ public class Index {
     @GET
     @Produces(MediaType.TEXT_HTML)
     public TemplateInstance get() {
+        // TODO: Read this from the database
         ClaimStatus status = new ClaimStatus();
         status.claimed = false;
         return Templates.index(status);

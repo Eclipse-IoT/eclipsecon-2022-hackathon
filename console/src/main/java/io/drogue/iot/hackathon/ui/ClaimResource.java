@@ -1,22 +1,23 @@
 package io.drogue.iot.hackathon.ui;
 
+import io.drogue.iot.hackathon.Processor;
+import io.drogue.iot.hackathon.ui.ClaimRequest;
+
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
-import io.drogue.iot.hackathon.Processor;
-
-@Path("/commands")
-public class CommandsResource {
+@Path("/claim")
+public class ClaimResource {
     @Inject
     Processor processor;
 
     @POST
-    @Path("/display")
     @Consumes(MediaType.APPLICATION_JSON)
-    public void updateDisplay(DisplaySettings settings) {
-        this.processor.updateDisplaySettings(settings);
+    public void claimDevice(ClaimRequest request) {
+        this.processor.claimDevice(request.claim_id);
     }
 }

@@ -276,6 +276,19 @@
         }
     };
 
+    function claim_device() {
+        var claim_id = document.getElementById("device-claim-id").value;
+        if (claim_id !== undefined && claim_id != null && claim_id != "") {
+            const req = new XMLHttpRequest();
+            req.open("POST", "/claim");
+            req.setRequestHeader("Content-Type", "application/json");
+            const body = JSON.stringify({ 'claim_id': claim_id});
+            req.send(body);
+        } else {
+            alert("Enter a claim id");
+        }
+    }
+
     function update_display() {
         var enabled = document.getElementById("display-enabled").checked;
         var brightness = document.getElementById("display-brightness").value;

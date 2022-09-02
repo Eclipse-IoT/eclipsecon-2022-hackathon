@@ -58,7 +58,7 @@ public class Processor {
     @Incoming("display-changes")
     @Outgoing("device-commands")
     @Broadcast
-    public DeviceCommand command(DisplaySettings settings) {
+    public DeviceCommand displayCommand(DisplaySettings settings) {
         var display = new OnOffSet(settings.enabled);
         display.setLocation((short)0x100);
         var commandPayload = new CommandPayload(display);
@@ -79,4 +79,13 @@ public class Processor {
         LOG.info("Received sensor data: {}", payload);
     }
 
+    @Inject
+    @Broadcast
+    @Channel("gateway-commands")
+    Emitter<ProvisioningCommand> provisioningEmitter;
+
+    public void claimDevice(String claim_id) {
+        ProvisioningCommand command = new ProvisioningCommand(claim_id);
+        provisioningEmitter.send(command);
+    }
 }

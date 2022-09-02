@@ -2,7 +2,9 @@ package io.drogue.iot.hackathon.integration;
 
 import javax.enterprise.context.ApplicationScoped;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.drogue.iot.hackathon.DeviceCommand;
+import io.drogue.iot.hackathon.ProvisioningCommand;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.reactive.messaging.Incoming;
 import org.eclipse.microprofile.reactive.messaging.Message;
@@ -28,7 +30,7 @@ public class Sender {
 
     @Incoming("device-commands")
     @Outgoing("commands")
-    public Message<byte[]> commands(DeviceCommand command) {
+    public Message<byte[]> deviceCommands(DeviceCommand command) {
         LOG.info("Request to send device command: {}", command);
 
         var topic = "command/" + this.applicationName + "/" + command.getDeviceId() + "/sensor";
@@ -38,4 +40,20 @@ public class Sender {
         return MqttMessage.of(topic, command.getPayload(), MqttQoS.AT_LEAST_ONCE);
     }
 
+    @Incoming("gateway-commands")
+    @Outgoing("commands")
+    public Message<byte[]> gatewayCommands(ProvisioningCommand command) {
+        LOG.info("Request to send gateway command: {}", command);
+        var topic = "command/" + this.applicationName + "/gateway/provision";
+
+        LOG.info("Sending to topic: {}", topic);
+        var m = new ObjectMapper();
+        try {
+            byte[] payload = m.writeValueAsBytes(command);
+            return MqttMessage.of(topic, payload, MqttQoS.AT_LEAST_ONCE);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
 }
