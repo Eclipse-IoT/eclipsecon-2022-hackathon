@@ -1,8 +1,8 @@
-package io.drogue.iot.demo.integration;
+package io.drogue.iot.hackathon.integration;
 
 import javax.enterprise.context.ApplicationScoped;
 
-import io.drogue.iot.demo.DeviceCommand;
+import io.drogue.iot.hackathon.DeviceCommand;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.reactive.messaging.Incoming;
 import org.eclipse.microprofile.reactive.messaging.Message;
@@ -10,7 +10,6 @@ import org.eclipse.microprofile.reactive.messaging.Outgoing;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.drogue.iot.demo.data.CommandPayload;
 import io.netty.handler.codec.mqtt.MqttQoS;
 import io.quarkus.runtime.Startup;
 import io.smallrye.reactive.messaging.mqtt.MqttMessage;

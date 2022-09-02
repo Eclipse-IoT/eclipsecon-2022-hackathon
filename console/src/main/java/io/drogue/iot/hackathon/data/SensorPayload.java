@@ -1,4 +1,4 @@
-package io.drogue.iot.demo.data;
+package io.drogue.iot.hackathon.data;
 
 public class SensorPayload {
     private Long temperature;

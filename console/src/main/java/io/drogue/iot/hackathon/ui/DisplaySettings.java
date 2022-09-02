@@ -1,4 +1,4 @@
-package io.drogue.iot.demo.ui;
+package io.drogue.iot.hackathon.ui;
 
 import io.quarkus.runtime.annotations.RegisterForReflection;
 

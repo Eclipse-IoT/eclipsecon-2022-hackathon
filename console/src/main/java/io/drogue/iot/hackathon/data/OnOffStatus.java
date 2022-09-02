@@ -1,22 +1,22 @@
-package io.drogue.iot.demo.data;
+package io.drogue.iot.hackathon.data;
 
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
 @RegisterForReflection
-public class OnOffSet extends ModelElement {
-    private final boolean on;
-
-    public OnOffSet(boolean on) {
-        this.on = on;
-    }
+public class OnOffStatus extends ModelElement {
+    private boolean on;
 
     public boolean isOn() {
         return on;
     }
 
+    public void setOn(boolean on) {
+        this.on = on;
+    }
+
     @Override
     public String toString() {
-        return "OnOffSet{" +
+        return "OnOffStatus{" +
                 "on=" + on +
                 ", location=" + location +
                 '}';

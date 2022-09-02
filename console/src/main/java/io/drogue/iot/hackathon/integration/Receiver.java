@@ -1,11 +1,11 @@
-package io.drogue.iot.demo.integration;
+package io.drogue.iot.hackathon.integration;
 
 import static io.cloudevents.core.CloudEventUtils.mapData;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
-import io.drogue.iot.demo.data.DevicePayload;
+import io.drogue.iot.hackathon.data.DevicePayload;
 import org.eclipse.microprofile.reactive.messaging.Incoming;
 import org.eclipse.microprofile.reactive.messaging.Message;
 import org.eclipse.microprofile.reactive.messaging.Outgoing;
@@ -17,7 +17,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.cloudevents.core.provider.EventFormatProvider;
 import io.cloudevents.jackson.JsonFormat;
 import io.cloudevents.jackson.PojoCloudEventDataMapper;
-import io.drogue.iot.demo.data.DeviceEvent;
+import io.drogue.iot.hackathon.data.DeviceEvent;
 import io.quarkus.runtime.Startup;
 import io.smallrye.reactive.messaging.annotations.Broadcast;
 

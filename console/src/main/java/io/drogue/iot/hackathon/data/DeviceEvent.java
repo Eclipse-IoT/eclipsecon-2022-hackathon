@@ -1,8 +1,7 @@
-package io.drogue.iot.demo.data;
+package io.drogue.iot.hackathon.data;
 
 import java.time.Instant;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
 /**

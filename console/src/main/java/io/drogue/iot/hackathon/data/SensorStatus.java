@@ -1,7 +1,6 @@
-package io.drogue.iot.demo.data;
+package io.drogue.iot.hackathon.data;
 
 import io.quarkus.runtime.annotations.RegisterForReflection;
-import io.vertx.codegen.Model;
 
 @RegisterForReflection
 public class SensorStatus extends ModelElement {

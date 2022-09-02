@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Drogue IoT meets Quarkus!</title>
+    <title>EclipseCon 2022 Hackathon!</title>
     <style>
         h1, h2, h3, h4, h5, h6 {
             margin-bottom: 0.5rem;
@@ -122,20 +122,18 @@
 <body>
 
 <div class="banner lead">
-    Drogue IoT meets Quarkus!
+    EclipseCon 2022 Hackathon!
 </div>
 
-<div class="container">
-    <div class="left-column">
 
+<div class="container">
+{#if status.claimed}
+    <div class="left-column">
         <h2>Device events</h2>
 
         <div class="description">
             <p>
-                This page shows the events, sent by a BBC micro:bit Bluetooth Mesh node to Drogue IoT, and received from Drogue IoT.
-            </p>
-
-            <p>
+                This page shows the events, sent by your BBC micro:bit Bluetooth Mesh node connected to Drogue IoT.
                 The device will periodically publish sensor data, battery level as well as the current button states.
             </p>
 
@@ -152,23 +150,8 @@
 
         <div class="row">
             <div>
-                <h3>Claim</h3>
-                <dl>
-                    <dt><label for="claim-device">Device</label></dt>
-                    <dd>
-                        <input type="text" id="claim-device" />
-                    </dd>
-                    <button onclick="claim();">Claim</button>
-                </dl>
-            </div>
-
-            <div>
                 <h3>Latest message</h3>
                 <dl>
-                    <dt>Device ID</dt>
-                    <dd>
-                        <pre><code><span id="device_id">&nbsp;</span></code></pre>
-                    </dd>
                     <dt>Timestamp</dt>
                     <dd>
                         <pre><code><span id="timestamp">&nbsp;</span></code></pre>
@@ -203,8 +186,35 @@
                 <button onclick="update_display();">Update</button>
             </div>
         </div>
-
     </div>
+{#else}
+    <div class="left-column">
+        <h2>Claim device</h2>
+        <div class="left-column">
+            <div class="description">
+                <p>
+                    This page allows you to claim a device by entering the ID on a sticker on the micro:bit box. Make sure your device is powered on when attempting to claim it.
+                </p>
+
+                <p>
+                    Once claimed, you should be able to see events from the micro:bit propagating to this console, as long as
+                    it is within the range of one of the gateways.
+                </p>
+            </div>
+            <div class="row">
+                <div>
+                    <dl>
+                        <dt><label for="device-claim-id">Claim code</label></dt>
+                        <dd>
+                            <input type="text" id="device-claim-id" />
+                        </dd>
+                    </dl>
+                    <button onclick="claim_device();">Claim Device</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{/if}
     <div class="right-column">
         <div class="right-section">
             <h3>Do you like Drogue IoT?</h3>

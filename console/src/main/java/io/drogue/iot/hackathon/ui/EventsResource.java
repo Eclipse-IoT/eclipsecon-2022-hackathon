@@ -1,4 +1,4 @@
-package io.drogue.iot.demo.ui;
+package io.drogue.iot.hackathon.ui;
 
 import javax.inject.Inject;
 import javax.ws.rs.GET;
@@ -6,13 +6,11 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
-import io.drogue.iot.demo.DeviceCommand;
+import io.drogue.iot.hackathon.DeviceCommand;
 import org.eclipse.microprofile.reactive.messaging.Channel;
-import org.jboss.resteasy.reactive.RestSseElementType;
 
-import io.drogue.iot.demo.Processor;
-import io.drogue.iot.demo.data.CommandPayload;
-import io.drogue.iot.demo.data.DeviceEvent;
+import io.drogue.iot.hackathon.Processor;
+import io.drogue.iot.hackathon.data.DeviceEvent;
 import io.smallrye.mutiny.Multi;
 import org.jboss.resteasy.reactive.RestStreamElementType;
 
