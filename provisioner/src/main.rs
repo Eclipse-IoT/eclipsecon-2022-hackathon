@@ -22,6 +22,8 @@ use btmesh_models::{
     foundation::configuration::{
         app_key::AppKeyMessage, ConfigurationClient, ConfigurationMessage, ConfigurationServer,
     },
+    generic::{battery::GENERIC_BATTERY_SERVER, onoff::GENERIC_ONOFF_SERVER},
+    sensor::SENSOR_SETUP_SERVER,
     Message, Model,
 };
 use clap::Parser;
@@ -169,6 +171,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
                                 sleep(Duration::from_secs(1)).await;
                                 node.add_app_key(element_path.clone(), unicast, 0, 0, false).await?;
+                                node.bind(element_path.clone(), unicast, 0, SENSOR_SETUP_SERVER).await?;
+                                node.bind(element_path.clone(), unicast, 0, GENERIC_ONOFF_SERVER).await?;
+                                node.bind(element_path.clone(), unicast, 0, GENERIC_BATTERY_SERVER).await?;
 
                                 // example composition get
                                 // let message = ConfigurationMessage::CompositionData(CompositionDataMessage::Get(0));
@@ -207,7 +212,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                                             ConfigurationMessage::AppKey(key) => {
                                                 match key {
                                                     AppKeyMessage::Status(status) => {
-                                                        println!("Received keys {:?} {:?}", status.indexes.net_key(), status.indexes.app_key())
+                                                        println!("Received keys {:?} {:?}", status.indexes.net_key(), status.indexes.app_key());
                                                     },
                                                     _ => println!("Received key message {:?}", key.opcode()),
                                                 }
