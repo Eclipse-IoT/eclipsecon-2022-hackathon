@@ -203,13 +203,11 @@
             </div>
             <div class="row">
                 <div>
-                    <dl>
-                        <dt><label for="device-claim-id">Claim code</label></dt>
-                        <dd>
-                            <input type="text" id="device-claim-id" />
-                        </dd>
-                    </dl>
-                    <button onclick="claim_device();">Claim Device</button>
+                    <form action="/claim" method="post">
+                        <label for="device-claim-id">Code:</label>
+                        <input type="text" id="device-claim-id" name="claim_id" />
+                        <input type="submit" value="Claim" />
+                    </form>
                 </div>
             </div>
         </div>

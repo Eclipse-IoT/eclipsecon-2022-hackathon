@@ -4,7 +4,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import io.drogue.iot.hackathon.data.OnOffSet;
-import io.drogue.iot.hackathon.integration.registry.Registry;
+import io.drogue.iot.hackathon.registry.Registry;
 import io.drogue.iot.hackathon.ui.DisplaySettings;
 import org.eclipse.microprofile.reactive.messaging.Channel;
 import org.eclipse.microprofile.reactive.messaging.Emitter;

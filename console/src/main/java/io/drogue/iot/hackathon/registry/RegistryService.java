@@ -1,4 +1,4 @@
-package io.drogue.iot.hackathon.integration.registry;
+package io.drogue.iot.hackathon.registry;
 
 import org.eclipse.microprofile.rest.client.annotation.RegisterClientHeaders;
 import org.eclipse.microprofile.rest.client.inject.RegisterRestClient;
@@ -15,12 +15,12 @@ import java.util.List;
 
 @Path("/api/registry/v1alpha1")
 @RegisterRestClient
-@RegisterClientHeaders(RegisterAuthHeaderFactory.class);
+@RegisterClientHeaders(RegisterAuthHeaderFactory.class)
 public interface RegistryService {
     @GET
     @Path("/apps/{application}/devices")
     @Produces(MediaType.APPLICATION_JSON)
-    List<Device> getDevices(@PathParam("application") String application, @QueryParam("labelSelector") String labelSelector);
+    List<Device> getDevices(@PathParam("application") String application, @QueryParam("labels") String labelSelector);
 
     @POST
     @Path("/apps/{application}/devices")

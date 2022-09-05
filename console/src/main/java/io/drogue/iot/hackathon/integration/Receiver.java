@@ -8,6 +8,7 @@ import javax.inject.Inject;
 import io.drogue.iot.hackathon.data.DevicePayload;
 import org.eclipse.microprofile.reactive.messaging.Incoming;
 import org.eclipse.microprofile.reactive.messaging.Message;
+import org.eclipse.microprofile.reactive.messaging.OnOverflow;
 import org.eclipse.microprofile.reactive.messaging.Outgoing;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,6 +41,7 @@ public class Receiver {
      * @return The processed {@link DeviceEvent}, or {@code null} if the event couldn't be processed.
      */
     @Incoming("telemetry")
+    @OnOverflow(value = OnOverflow.Strategy.DROP)
     @Outgoing("event-stream")
     @Broadcast
     public DeviceEvent process(Message<byte[]> rawMessage) {

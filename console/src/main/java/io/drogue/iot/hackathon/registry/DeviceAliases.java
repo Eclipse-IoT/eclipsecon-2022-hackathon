@@ -1,4 +1,4 @@
-package io.drogue.iot.hackathon.integration.registry;
+package io.drogue.iot.hackathon.registry;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
