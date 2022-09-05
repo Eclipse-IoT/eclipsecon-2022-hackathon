@@ -16,5 +16,7 @@ forwards mesh model events to a Drogue Cloud instance.
 Run the application:
 
 ```
-cargo run --release -- --token 7eb48c91911361da
+cargo run --release -- --token dd26596e54e78fa2
 ```
+
+Gateway has address `00bc` and subscribs to virtual address `8f32`
