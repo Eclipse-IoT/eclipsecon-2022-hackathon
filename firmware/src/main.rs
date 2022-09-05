@@ -32,7 +32,7 @@ use panic_probe as _;
 
 // Application main entry point. The spawner can be used to start async tasks.
 #[embassy_executor::main]
-async fn main(s: Spawner) {
+async fn main(_s: Spawner) {
     // A board type to access peripherals on the microbit.
     let board = Microbit::new(config());
 
@@ -40,7 +40,7 @@ async fn main(s: Spawner) {
     Timer::after(Duration::from_millis(100)).await;
 
     // An instance of the Bluetooth Mesh stack
-    let driver = Driver::new(
+    let mut driver = Driver::new(
         "drogue",
         unsafe { &__storage as *const u8 as u32 },
         100,
@@ -57,17 +57,10 @@ async fn main(s: Spawner) {
     let display = DisplayOnOff::new(board.display);
 
     // An instance of our device with the models we'd like to expose.
-    let device = Device::new(board.btn_a, board.btn_b, display, battery, sensor);
+    let mut device = Device::new(board.btn_a, board.btn_b, display, battery, sensor);
 
-    // Spawn the driver worker task as a separate task.
-    s.spawn(driver_task(driver, device)).unwrap();
-}
-
-#[embassy_executor::task]
-async fn driver_task(mut driver: Driver, mut device: Device) {
-    loop {
-        let _ = driver.run(&mut device).await;
-    }
+    // Run the mesh stack
+    let _ = driver.run(&mut device).await;
 }
 
 // A BluetoothMesh device with each field being a Bluetooth Mesh element.
