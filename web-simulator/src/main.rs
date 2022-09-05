@@ -53,8 +53,8 @@ fn app() -> Html {
         let state = state.clone();
         let matrix = matrix.clone();
         Callback::from(move |_| {
-            //let url = "https://web-simulator-eclipsecon-2022.apps.sandbox.drogue.world";
-            let url = "http://localhost:8088";
+            let url = "https://web-simulator-eclipsecon-2022.apps.sandbox.drogue.world";
+            //let url = "http://localhost:8088";
             let application = document()
                 .get_element_by_id("application")
                 .map(|e| e.dyn_ref::<InputElement>().map(|input| input.value()))
