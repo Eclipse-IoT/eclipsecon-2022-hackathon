@@ -6,6 +6,7 @@ members = [
   "simulator",
   "model-converter",
   "web-simulator",
+  "provisioner",
 ]
 
 [patch.crates-io]
@@ -14,4 +15,4 @@ btmesh-common = { git = "https://github.com/drogue-iot/btmesh.git", branch = "ma
 btmesh-models = { git = "https://github.com/drogue-iot/btmesh.git", branch = "main" }
 #btmesh-common = { path = "../drogue-iot/btmesh/btmesh-common" }
 #btmesh-models = { path = "../drogue-iot/btmesh/btmesh-models" }
-#bluer = { path = "../bluer/bluer" }
+#bluer = { path = "../../bluez/bluer/bluer" }
