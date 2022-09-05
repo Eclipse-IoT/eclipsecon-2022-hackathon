@@ -13,7 +13,7 @@ use btmesh_models::{
         },
         onoff::{GenericOnOffClient, GenericOnOffMessage, GenericOnOffServer},
     },
-    sensor::{SensorMessage, SensorSetupMessage, SensorSetupServer, SensorStatus},
+    sensor::{SensorMessage, SensorSetupMessage, SensorStatus},
     Model,
 };
 use clap::Parser;
@@ -32,7 +32,7 @@ struct Args {
     publish_interval: u64,
 }
 
-type Sensor = SensorSetupServer<MicrobitSensorConfig, 1, 1>;
+type Sensor = SensorServer;
 
 #[tokio::main(flavor = "current_thread")]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -99,7 +99,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 }));
 
                 let data = SensorPayload {
-                    temperature: 22
+                    temperature: 22,
+                    acceleration: Default::default(),
                 };
 
                 let sensor = SensorMessage::Status(SensorStatus::new(data));

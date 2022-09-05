@@ -6,37 +6,46 @@ use core::future::Future;
 use embassy_futures::select::{select, Either};
 use embassy_time::Ticker;
 use futures::StreamExt;
+use microbit_async::accelerometer::Accelerometer;
 use nrf_softdevice::{temperature_celsius, Softdevice};
-use sensor_model::*;
 
-// A convenient type alias for our sensor
-type SensorServer = SensorSetupServer<MicrobitSensorConfig, 1, 1>;
+use sensor_model::*;
 
 // A sensor type implementing the SensorSetupServer model.
 pub struct Sensor {
     // This field is required to access some peripherals that is also controlled by the radio driver
     sd: &'static Softdevice,
     ticker: Option<Ticker>,
+    xl: Accelerometer<'static>,
 }
 
 impl Sensor {
-    pub fn new(sd: &'static Softdevice) -> Self {
-        Self { sd, ticker: None }
+    pub fn new(sd: &'static Softdevice, xl: Accelerometer<'static>) -> Self {
+        Self {
+            sd,
+            ticker: None,
+            xl,
+        }
     }
 
     // Read the current on-chip temperature
     async fn read(&mut self) -> Result<SensorPayload, ()> {
         let temperature: i8 = temperature_celsius(self.sd).map_err(|_| ())?.to_num();
+
+        let xl = self.xl.accel_data().map_err(|_| ())?;
+        let mut accel = Acceleration::default();
+        accel.x = (xl.x / 10) as i16;
+        accel.y = (xl.y / 10) as i16;
+        accel.z = (xl.z / 10) as i16;
+
         Ok(SensorPayload {
             temperature: temperature * 2,
+            acceleration: accel,
         })
     }
 
     // Process an inbound control message
-    async fn process(
-        &mut self,
-        data: &InboundModelPayload<SensorSetupMessage<MicrobitSensorConfig, 1, 1>>,
-    ) {
+    async fn process(&mut self, data: &InboundModelPayload<SensorMessage>) {
         match data {
             InboundModelPayload::Control(Control::PublicationCadence(cadence)) => match cadence {
                 PublicationCadence::Periodic(cadence) => {

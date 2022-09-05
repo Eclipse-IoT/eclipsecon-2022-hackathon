@@ -5,7 +5,7 @@ use btmesh_models::{
         battery::{GenericBatteryClient, GenericBatteryFlagsPresence, GenericBatteryMessage},
         onoff::{GenericOnOffMessage, GenericOnOffServer, Set as GenericOnOffSet},
     },
-    sensor::{SensorClient, SensorMessage},
+    sensor::SensorMessage,
     Message, Model,
 };
 use cloudevents::{Data, Event};
@@ -76,7 +76,8 @@ async fn telemetry2json(msg: RawMessage) -> Option<Value> {
     let parameters = &msg.parameters[..];
     let location = msg.location;
 
-    if let Ok(Some(GenericOnOffMessage::Set(set))) = GenericOnOffServer::parse(&opcode, parameters) {
+    if let Ok(Some(GenericOnOffMessage::Set(set))) = GenericOnOffServer::parse(&opcode, parameters)
+    {
         return Some(json!({ "button": {"on": set.on_off == 1, "location": location }}));
     }
 
@@ -86,9 +87,7 @@ async fn telemetry2json(msg: RawMessage) -> Option<Value> {
         return Some(json!({ "button": {"on": set.on_off == 1, "location": location }}));
     }
 
-    if let Ok(Some(SensorMessage::Status(status))) =
-        SensorClient::<MicrobitSensorConfig, 1, 1>::parse(&opcode, parameters)
-    {
+    if let Ok(Some(SensorMessage::Status(status))) = SensorClient::parse(&opcode, parameters) {
         println!("Received sensor status {:?}", status);
         return Some(json!( {
             "sensor": {

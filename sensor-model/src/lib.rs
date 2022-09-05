@@ -1,8 +1,8 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 use btmesh_common::{InsufficientBuffer, ParseError};
 use btmesh_models::sensor::{
-    CadenceDescriptor, PropertyId, SensorConfig, SensorData, SensorDescriptor, SensorSetupConfig,
-    SettingDescriptor,
+    CadenceDescriptor, PropertyId, SensorClient as SC, SensorConfig, SensorData, SensorDescriptor,
+    SensorSetupConfig, SensorSetupMessage, SensorSetupServer, SettingDescriptor,
 };
 use heapless::Vec;
 
@@ -10,23 +10,55 @@ use heapless::Vec;
 #[cfg_attr(feature = "defmt", derive(defmt::Format))]
 pub struct MicrobitSensorConfig;
 
+pub type SensorServer = SensorSetupServer<MicrobitSensorConfig, 2, 1>;
+pub type SensorClient = SC<MicrobitSensorConfig, 2, 1>;
+pub type SensorMessage = SensorSetupMessage<MicrobitSensorConfig, 2, 1>;
+
 #[derive(Debug)]
 #[cfg_attr(feature = "defmt", derive(defmt::Format))]
 #[derive(serde::Serialize, serde::Deserialize)]
 pub struct SensorPayload {
     pub temperature: i8,
+    pub acceleration: Acceleration,
 }
+
+#[derive(Debug)]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
+#[derive(serde::Serialize, serde::Deserialize)]
+pub struct Acceleration {
+    pub x: i16,
+    pub y: i16,
+    pub z: i16,
+}
+
+impl Default for Acceleration {
+    fn default() -> Self {
+        Self { x: 0, y: 0, z: 0 }
+    }
+}
+
+const PROP_TEMP: PropertyId = PropertyId(0x4F);
+const PROP_XL: PropertyId = PropertyId(0x42);
 
 impl Default for SensorPayload {
     fn default() -> Self {
-        Self { temperature: 0 }
+        Self {
+            temperature: 0,
+            acceleration: Acceleration::default(),
+        }
     }
 }
 
 impl SensorData for SensorPayload {
     fn decode(&mut self, id: PropertyId, params: &[u8]) -> Result<(), ParseError> {
-        if id.0 == 0x4F {
+        if id == PROP_TEMP {
             self.temperature = params[0] as i8;
+            Ok(())
+        } else if id == PROP_XL {
+            self.acceleration = Acceleration::default();
+            self.acceleration.x = i16::from_le_bytes([params[1], params[2]]);
+            self.acceleration.y = i16::from_le_bytes([params[3], params[4]]);
+            self.acceleration.z = i16::from_le_bytes([params[5], params[6]]);
             Ok(())
         } else {
             Err(ParseError::InvalidValue)
@@ -38,8 +70,15 @@ impl SensorData for SensorPayload {
         property: PropertyId,
         xmit: &mut Vec<u8, N>,
     ) -> Result<(), InsufficientBuffer> {
-        if property == PropertyId(0x4F) {
+        if property == PROP_TEMP {
             xmit.extend_from_slice(&self.temperature.to_le_bytes())
+                .map_err(|_| InsufficientBuffer)?;
+        } else if property == PROP_XL {
+            xmit.extend_from_slice(&self.acceleration.x.to_le_bytes())
+                .map_err(|_| InsufficientBuffer)?;
+            xmit.extend_from_slice(&self.acceleration.y.to_le_bytes())
+                .map_err(|_| InsufficientBuffer)?;
+            xmit.extend_from_slice(&self.acceleration.z.to_le_bytes())
                 .map_err(|_| InsufficientBuffer)?;
         }
         Ok(())
@@ -49,7 +88,10 @@ impl SensorData for SensorPayload {
 impl SensorConfig for MicrobitSensorConfig {
     type Data = SensorPayload;
 
-    const DESCRIPTORS: &'static [SensorDescriptor] = &[SensorDescriptor::new(PropertyId(0x4F), 1)];
+    const DESCRIPTORS: &'static [SensorDescriptor] = &[
+        SensorDescriptor::new(PROP_TEMP, 1),
+        SensorDescriptor::new(PROP_XL, 1),
+    ];
 }
 
 impl SensorSetupConfig for MicrobitSensorConfig {

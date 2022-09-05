@@ -11,7 +11,6 @@ use btmesh_models::{
             GenericOnOffClient, GenericOnOffMessage, GenericOnOffServer, Set as GenericOnOffSet,
         },
     },
-    sensor::SensorClient,
     Message, Model,
 };
 use clap::Parser;
@@ -44,7 +43,7 @@ struct Args {
     insecure_tls: bool,
 }
 
-type Sensor = SensorClient<MicrobitSensorConfig, 1, 1>;
+type Sensor = SensorClient;
 
 #[tokio::main(flavor = "current_thread")]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -171,7 +170,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                         match msg {
                             ElementMessage::Received(received) => {
                                 log::trace!("Received message with opcode {:?} and {} parameter bytes!", received.opcode, received.parameters.len());
-                                match SensorClient::<MicrobitSensorConfig, 1, 1>::parse(&received.opcode, &received.parameters).map_err(|_| std::fmt::Error)? {
+                                match SensorClient::parse(&received.opcode, &received.parameters).map_err(|_| std::fmt::Error)? {
                                     Some(message) => {
                                         log::trace!("Received {:?}", message);
                                     },
@@ -237,12 +236,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     log::info!("Received on {}: {:?}", topic, message);
                     let mut parts = topic.rsplit("/");
                     if let Some(channel) = parts.next() {
-                        if channel == "provision" {
-                            log::info!("Received provisioning command for gateway: {:?}", message.payload());
-                            if let Ok(command) = serde_json::from_slice::<Value>(message.payload()) {
-                                log::info!("Parsed provisioning command: {:?}", command);
-                            }
-                        } else if channel == "sensor" {
+                        if channel == "sensor" {
                             log::info!("Got message on sensor channel");
                             if let Some(device) = parts.next() {
                                 log::info!("Command is for {}", device);

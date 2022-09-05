@@ -85,15 +85,19 @@ Properties:
 
 ```
 {
-    "temperature": {
-        "value": i8
+    "payload": {
+      "temperature": {
+          "value": i8
+      },
+      "noise": {
+          "value": u8
+      }
+      "accelerator": {
+          "x": i16,
+          "y": i16,
+          "z": i16,
+      }
     },
-    "noise": {
-        "value": u8
-    }
-    "motion": {
-        "sensed": u8
-    }
     "location": 0,
 }
 ```        

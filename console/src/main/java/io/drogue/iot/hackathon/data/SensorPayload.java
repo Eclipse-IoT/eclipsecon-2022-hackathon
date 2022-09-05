@@ -2,6 +2,7 @@ package io.drogue.iot.hackathon.data;
 
 public class SensorPayload {
     private Long temperature;
+    private Acceleration acceleration;
 
     public Long getTemperature() {
         return temperature;

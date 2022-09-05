@@ -18,6 +18,7 @@ use button::*;
 use core::future::Future;
 use display::*;
 use embassy_executor::Spawner;
+use embassy_nrf::interrupt;
 use embassy_time::{Duration, Timer};
 use microbit_async::*;
 use sensor::*;
@@ -48,7 +49,14 @@ async fn main(_s: Spawner) {
     );
 
     // An instance of the sensor module implementing the SensorServer model.
-    let sensor = Sensor::new(driver.softdevice());
+    let accelerometer = accelerometer::Accelerometer::new(
+        board.twispi0,
+        interrupt::take!(SPIM0_SPIS0_TWIM0_TWIS0_SPI0_TWI0),
+        board.p23,
+        board.p22,
+    )
+    .unwrap();
+    let sensor = Sensor::new(driver.softdevice(), accelerometer);
 
     // An instance of the battery module implementing the GenericBattery model.
     let battery = Battery::new();
