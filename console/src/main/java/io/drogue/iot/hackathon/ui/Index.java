@@ -6,6 +6,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
+import io.drogue.iot.hackathon.ClaimState;
 import io.drogue.iot.hackathon.ClaimStatus;
 import io.quarkus.qute.CheckedTemplate;
 import io.quarkus.qute.TemplateInstance;
@@ -18,12 +19,13 @@ public class Index {
         public static native TemplateInstance index(ClaimStatus status);
     }
 
+    @Inject
+    ClaimState claimState;
+
     @GET
     @Produces(MediaType.TEXT_HTML)
     public TemplateInstance get() {
-        // TODO: Read this from the database
-        ClaimStatus status = new ClaimStatus();
-        status.claimed = false;
+        ClaimStatus status = claimState.getCurrent();
         return Templates.index(status);
     }
 }

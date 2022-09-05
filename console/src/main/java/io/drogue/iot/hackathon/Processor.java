@@ -6,6 +6,7 @@ import javax.inject.Inject;
 import io.drogue.iot.hackathon.data.OnOffSet;
 import io.drogue.iot.hackathon.registry.Registry;
 import io.drogue.iot.hackathon.ui.DisplaySettings;
+import org.eclipse.microprofile.jwt.Claim;
 import org.eclipse.microprofile.reactive.messaging.Channel;
 import org.eclipse.microprofile.reactive.messaging.Emitter;
 import org.eclipse.microprofile.reactive.messaging.Incoming;
@@ -91,6 +92,12 @@ public class Processor {
     @Inject
     Registry registry;
 
+    @Inject
+    ClaimState claimState;
+
+    // TODO Lookup per user based on auth info
+
+
     public void claimDevice(String claim_id) {
         // TODO: Lookup in the database instead of generating it here
         // TODO: Create a global address from stateful source
@@ -101,5 +108,7 @@ public class Processor {
 
         ProvisioningCommand command = new ProvisioningCommand(uuid.toString(), address);
         provisioningEmitter.send(command);
+
+        claimState.update(new ClaimStatus(true, address));
     }
 }
