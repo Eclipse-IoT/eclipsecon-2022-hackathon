@@ -6,7 +6,7 @@ import javax.enterprise.context.ApplicationScoped;
 // TODO: Replace with the real thing
 @ApplicationScoped
 public class ClaimState {
-    private volatile ClaimStatus current = new ClaimStatus(false, "");
+    private volatile ClaimStatus current = new ClaimStatus(true, "00ad");
 
 
     public void update(ClaimStatus status) {
