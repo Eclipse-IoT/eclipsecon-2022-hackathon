@@ -13,7 +13,7 @@ use btmesh_models::{
         },
         onoff::{GenericOnOffClient, GenericOnOffMessage, GenericOnOffServer},
     },
-    sensor::{SensorMessage, SensorSetupMessage, SensorStatus},
+    sensor::SensorStatus,
     Model,
 };
 use clap::Parser;
@@ -108,7 +108,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 node.publish::<GenericBatteryServer>(battery, front.clone()).await?;
 
                 println!("Publishing sensor status");
-                node.publish::<Sensor>(SensorSetupMessage::Sensor(sensor), front.clone()).await?;
+                node.publish::<Sensor>(sensor, front.clone()).await?;
             }
             evt = element_control.next() => {
                 match evt {

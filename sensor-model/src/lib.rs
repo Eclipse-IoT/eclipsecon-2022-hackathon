@@ -2,7 +2,7 @@
 use btmesh_common::{InsufficientBuffer, ParseError};
 use btmesh_models::sensor::{
     CadenceDescriptor, PropertyId, SensorClient as SC, SensorConfig, SensorData, SensorDescriptor,
-    SensorSetupConfig, SensorSetupMessage, SensorSetupServer, SettingDescriptor,
+    SensorMessage as SM, SensorSetupConfig, SensorSetupServer, SettingDescriptor,
 };
 use heapless::Vec;
 
@@ -12,7 +12,7 @@ pub struct MicrobitSensorConfig;
 
 pub type SensorServer = SensorSetupServer<MicrobitSensorConfig, 2, 1>;
 pub type SensorClient = SC<MicrobitSensorConfig, 2, 1>;
-pub type SensorMessage = SensorSetupMessage<MicrobitSensorConfig, 2, 1>;
+pub type SensorMessage = SM<MicrobitSensorConfig, 2, 1>;
 
 #[derive(Debug)]
 #[cfg_attr(feature = "defmt", derive(defmt::Format))]

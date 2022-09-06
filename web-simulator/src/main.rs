@@ -7,7 +7,7 @@ use btmesh_models::{
         },
         onoff::{GenericOnOffMessage, GenericOnOffServer},
     },
-    sensor::{SensorMessage as SM, SensorStatus},
+    sensor::SensorStatus,
     Message, Model,
 };
 use gloo_timers::callback::Interval;
@@ -153,12 +153,11 @@ fn app() -> Html {
                             let pass = pass.clone();
                             let m = m.clone();
                             wasm_bindgen_futures::spawn_local(async move {
-                                let sensor: SensorMessage = SensorMessage::Sensor(SM::Status(
-                                    SensorStatus::new(SensorPayload {
+                                let sensor: SensorMessage =
+                                    SensorMessage::Status(SensorStatus::new(SensorPayload {
                                         temperature: 22,
                                         acceleration: Default::default(),
-                                    }),
-                                ));
+                                    }));
 
                                 match publish(&sensor, &u, &user, &pass, send_interval).await {
                                     Ok(command) => {

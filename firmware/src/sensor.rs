@@ -1,7 +1,7 @@
 use btmesh_device::{
     BluetoothMeshModel, BluetoothMeshModelContext, Control, InboundModelPayload, PublicationCadence,
 };
-use btmesh_models::sensor::{SensorMessage, SensorSetupMessage, SensorSetupServer, SensorStatus};
+use btmesh_models::sensor::SensorStatus;
 use core::future::Future;
 use embassy_futures::select::{select, Either};
 use embassy_time::Ticker;
@@ -16,6 +16,7 @@ pub struct Sensor {
     // This field is required to access some peripherals that is also controlled by the radio driver
     sd: &'static Softdevice,
     ticker: Option<Ticker>,
+    #[allow(dead_code)]
     xl: Accelerometer<'static>,
 }
 
@@ -32,11 +33,8 @@ impl Sensor {
     async fn read(&mut self) -> Result<SensorPayload, ()> {
         let temperature: i8 = temperature_celsius(self.sd).map_err(|_| ())?.to_num();
 
-        let xl = self.xl.accel_data().map_err(|_| ())?;
-        let mut accel = Acceleration::default();
-        accel.x = (xl.x / 10) as i16;
-        accel.y = (xl.y / 10) as i16;
-        accel.z = (xl.z / 10) as i16;
+        // TODO Accelerometer - Read the accelerometer data and add to the sensor payload,
+        let accel = Acceleration::default();
 
         Ok(SensorPayload {
             temperature: temperature * 2,
@@ -85,9 +83,7 @@ impl BluetoothMeshModel<SensorServer> for Sensor {
                         Either::Second(_) => match self.read().await {
                             Ok(result) => {
                                 defmt::info!("Read sensor data: {:?}", result);
-                                let message = SensorSetupMessage::Sensor(SensorMessage::Status(
-                                    SensorStatus::new(result),
-                                ));
+                                let message = SensorMessage::Status(SensorStatus::new(result));
                                 match ctx.publish(message).await {
                                     Ok(_) => {
                                         defmt::info!("Published sensor reading");
