@@ -1,0 +1,66 @@
+drogue:
+  application:
+    name: eclipsecon-hackathon
+
+  integration:
+    mqtt:
+      host: mqtt-integration.sandbox.drogue.cloud
+      port: 443
+
+mp:
+  messaging:
+    incoming:
+      telemetry:
+        connector: smallrye-mqtt
+        ssl: true
+        # client-id: <unique-id>
+        topic: app/${drogue.application.name}
+        host: ${drogue.integration.mqtt.host}
+        port: ${drogue.integration.mqtt.port}
+        username: ${drogue.api.user}
+        password: ${drogue.api.key}
+
+    outgoing:
+      commands:
+        connector: smallrye-mqtt
+        ssl: true
+        host: ${drogue.integration.mqtt.host}
+        port: ${drogue.integration.mqtt.port}
+        username: ${drogue.api.user}
+        password: ${drogue.api.key}
+        merge: true
+
+
+quarkus:
+  rest-client:
+
+    # Device registry
+    "io.drogue.iot.hackathon.registry.RegistryService":
+      url: https://api.sandbox.drogue.cloud/
+
+  oidc:
+
+  http:
+    cors: true
+
+  keycloak:
+    devservices:
+      enabled: false
+
+  datasource:
+    db-kind: postgresql
+
+  hibernate-orm:
+    database:
+      generation: update
+
+"%dev":
+  quarkus:
+    oidc:
+      auth-server-url: http://localhost:8081/realms/master
+
+    datasource:
+      username: admin
+      password: admin123456
+      jdbc:
+        url: jdbc:postgresql://localhost:5432/eclipsecon

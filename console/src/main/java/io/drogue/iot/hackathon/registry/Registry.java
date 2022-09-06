@@ -1,16 +1,21 @@
 package io.drogue.iot.hackathon.registry;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import io.quarkus.runtime.Startup;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import javax.enterprise.context.ApplicationScoped;
+import javax.ws.rs.core.Response;
+
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.eclipse.microprofile.rest.client.ext.ResponseExceptionMapper;
 import org.eclipse.microprofile.rest.client.inject.RestClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.enterprise.context.ApplicationScoped;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import io.quarkus.runtime.Startup;
 
 @Startup
 @ApplicationScoped
@@ -61,5 +66,9 @@ public class Registry {
 
         // Post device
         registryService.createDevice(applicationName, dev);
+    }
+
+    public void deleteDevice(String deviceId) {
+        registryService.deleteDevice(applicationName, deviceId);
     }
 }

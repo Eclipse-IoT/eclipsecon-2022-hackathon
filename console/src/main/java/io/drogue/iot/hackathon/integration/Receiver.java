@@ -59,7 +59,6 @@ public class Receiver {
 
             var event = format.deserialize(rawMessage.getPayload());
 
-
             var payload = mapData(
                     event,
                     PojoCloudEventDataMapper.from(this.objectMapper, DevicePayload.class)

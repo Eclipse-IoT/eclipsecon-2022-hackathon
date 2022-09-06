@@ -15,6 +15,22 @@ When you press the 'Update' button, the new settings will be sent to the device.
 This is a normal Quarkus application, and you can simply run it using `mvn quarkus:dev`. Or any of the other ways
 Quarkus applications can be run.
 
+### Locally
+
+This application requires a PostgreSQL and a Keycloak instance. You can start one using:
+
+```shell
+podman-compose -f develop/docker-compose.yaml up
+```
+
+Then start the Quarkus application from your IDE, or using:
+
+```shell
+mvn quarkus:dev
+```
+
+### Kubernetes
+
 The repository has a [`deploy/`](/deploy) folder, which contains deployment scripts for Kubernetes.
 
 All you need do is to fill in the values in the `010-configuration.template.yaml`, and deploy the YAML files.

@@ -6,7 +6,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
-import io.drogue.iot.hackathon.DeviceCommand;
+import io.drogue.iot.hackathon.commands.DeviceCommand;
 import org.eclipse.microprofile.reactive.messaging.Channel;
 
 import io.drogue.iot.hackathon.Processor;

@@ -127,7 +127,7 @@
 
 
 <div class="container">
-{#if status.claimed}
+{#if status.present}
     <div class="left-column">
         <h2>Device events</h2>
 
@@ -170,7 +170,7 @@
             <div>
                 <h3>Display</h3>
                 <dl>
-                    <dt><label for="display-enabled">Device</label></dt>
+                    <dt><label for="display-device">Device</label></dt>
                     <dd>
                         <input type="text" id="display-device" />
                     </dd>
@@ -254,7 +254,8 @@
         document.getElementById("device_id").innerText = obj.deviceId;
         document.getElementById("timestamp").innerText = obj.timestamp;
 
-        var current = {};
+        let current = {
+        };
         try {
             current = JSON.parse(document.getElementById("state").innerText);
         } catch (e) {
@@ -289,7 +290,7 @@
 
         var device_id = document.getElementById("display-device").value;
         var device_id_elem = document.getElementById("device_id").innerText;
-        if (device_id_elem !== undefined && device_id_elem.trim() != "") {
+        if (device_id_elem !== undefined && device_id_elem.trim() !== "") {
             device_id = document.getElementById("device_id").innerText;
         }
 
