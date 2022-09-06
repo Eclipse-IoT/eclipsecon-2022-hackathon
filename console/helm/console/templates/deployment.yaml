@@ -1,0 +1,40 @@
+kind: Deployment
+apiVersion: apps/v1
+
+metadata:
+  name: console
+  labels:
+    deployment: console
+
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      deployment: console
+  template:
+    metadata:
+      labels:
+        deployment: console
+    spec:
+      containers:
+        - name: service
+          image: quay.io/ctron/eclipsecon-2022-console:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+              name: http
+          livenessProbe:
+            httpGet:
+              port: 8080
+              path: /health/live
+          readinessProbe:
+            httpGet:
+              port: 8080
+              path: /health/ready
+          env:
+            - name: MP_MESSAGING_INCOMING_TELEMETRY_CLIENT_ID
+              value: {{ .Release.Name }}
+            - name: DROGUE_API_USER
+              value: {{ .Values.drogueCloud.api.user | quote }}
+            - name: DROGUE_API_KEY
+              value: {{ .Values.drogueCloud.api.key | quote }}

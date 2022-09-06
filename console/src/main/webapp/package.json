@@ -19,17 +19,9 @@
     "ci-checks": "npm run type-check && npm run lint && npm run test:coverage",
     "build:bundle-profile": "webpack --config webpack.prod.js --profile --json > stats.json",
     "bundle-profile:analyze": "npm run build:bundle-profile && webpack-bundle-analyzer ./stats.json",
-    "clean": "rimraf dist",
-    "storybook": "start-storybook -p 6006",
-    "build:storybook": "build-storybook"
+    "clean": "rimraf dist"
   },
   "devDependencies": {
-    "@storybook/addon-actions": "^6.2.9",
-    "@storybook/addon-info": "^5.3.21",
-    "@storybook/addon-knobs": "^6.2.9",
-    "@storybook/addon-links": "^6.2.9",
-    "@storybook/addons": "^6.2.9",
-    "@storybook/react": "^6.2.9",
     "@types/enzyme": "^3.10.8",
     "@types/jest": "^26.0.23",
     "@types/react-router-dom": "^5.1.7",
