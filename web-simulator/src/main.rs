@@ -99,7 +99,7 @@ fn app() -> Html {
                             let user = user.clone();
                             let pass = pass.clone();
                             let m = m.clone();
-                            /*wasm_bindgen_futures::spawn_local(async move {
+                            wasm_bindgen_futures::spawn_local(async move {
                                 let battery =
                                     GenericBatteryMessage::Status(GenericBatteryStatus::new(
                                         0,
@@ -136,7 +136,7 @@ fn app() -> Html {
                                         log::warn!("Error publishing battery data: {:?}", e)
                                     }
                                 }
-                            });*/
+                            });
                         });
 
                         // Sensor
@@ -183,7 +183,7 @@ fn app() -> Html {
                                         log::warn!("Error publishing sensor data: {:?}", e)
                                     }
                                 }
-                            });
+                            })
                         });
 
                         let sim = Simulator { _battery, _sensor };
