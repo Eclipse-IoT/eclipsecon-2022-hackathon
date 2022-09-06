@@ -6,7 +6,7 @@
 
 mod battery;
 mod button;
-mod display;
+mod onoff;
 mod sensor;
 mod speaker;
 
@@ -17,12 +17,13 @@ use btmesh_macro::{device, element};
 use btmesh_nrf_softdevice::*;
 use button::*;
 use core::future::Future;
-use display::*;
 use embassy_executor::Spawner;
 use embassy_nrf::interrupt;
 use embassy_time::{Duration, Timer};
 use microbit_async::*;
+use onoff::*;
 use sensor::*;
+use speaker::*;
 
 extern "C" {
     static __storage: u8;
@@ -62,11 +63,11 @@ async fn main(_s: Spawner) {
     // An instance of the battery module implementing the GenericBattery model.
     let battery = Battery::new();
 
-    // An instance of the display module implementing the OnOff model.
-    let display = DisplayOnOff::new(board.display);
+    // An instance of the onoff module implementing the OnOff model.
+    let onoff = OnOff::new(board.display, Speaker::new(board.pwm0, board.speaker));
 
     // An instance of our device with the models we'd like to expose.
-    let mut device = Device::new(board.btn_a, board.btn_b, display, battery, sensor);
+    let mut device = Device::new(board.btn_a, board.btn_b, onoff, battery, sensor);
 
     // Run the mesh stack
     let _ = driver.run(&mut device).await;
@@ -83,7 +84,7 @@ pub struct Device {
 // An element with multiple models.
 #[element(location = "front")]
 struct Front {
-    display: DisplayOnOff,
+    onoff: OnOff,
     battery: Battery,
     sensor: Sensor,
 }
@@ -104,13 +105,13 @@ impl Device {
     pub fn new(
         btn_a: Button,
         btn_b: Button,
-        display: DisplayOnOff,
+        onoff: OnOff,
         battery: Battery,
         sensor: Sensor,
     ) -> Self {
         Self {
             front: Front {
-                display,
+                onoff,
                 battery,
                 sensor,
             },

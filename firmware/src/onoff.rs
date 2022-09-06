@@ -1,7 +1,8 @@
+use crate::speaker::*;
 use btmesh_device::{BluetoothMeshModel, BluetoothMeshModelContext, InboundModelPayload};
 use btmesh_models::generic::onoff::{GenericOnOffMessage, GenericOnOffServer};
 use core::future::Future;
-use embassy_futures::select::{select, Either};
+use embassy_futures::select::{select3, Either3};
 use embassy_time::{Duration, Instant, Timer};
 use microbit_async::{
     display::{fonts, Brightness, Frame},
@@ -9,13 +10,14 @@ use microbit_async::{
 };
 
 /// A display type implementing the GenericOnOffServer model.
-pub struct DisplayOnOff {
+pub struct OnOff {
     display: LedMatrix,
+    speaker: Speaker,
 }
 
-impl DisplayOnOff {
-    pub fn new(display: LedMatrix) -> Self {
-        Self { display }
+impl OnOff {
+    pub fn new(display: LedMatrix, speaker: Speaker) -> Self {
+        Self { display, speaker }
     }
 
     /// Wait for onoff messages and return whether display should be enabled or not
@@ -74,10 +76,16 @@ impl DisplayOnOff {
             Timer::after(Duration::from_secs(1)).await;
         }
     }
+
+    #[allow(unused_variables)]
+    async fn jukebox(speaker: &mut Speaker) {
+        // TODO Speaker
+        // - Modify this section to play a riff (a collection of notes) on the speaker using the speaker instance
+    }
 }
 
 // Required trait implementation to be enabled in a Bluetooth mesh device.
-impl BluetoothMeshModel<GenericOnOffServer> for DisplayOnOff {
+impl BluetoothMeshModel<GenericOnOffServer> for OnOff {
     type RunFuture<'f, C> = impl Future<Output=Result<(), ()>> + 'f
     where
         Self: 'f,
@@ -88,21 +96,24 @@ impl BluetoothMeshModel<GenericOnOffServer> for DisplayOnOff {
         mut ctx: C,
     ) -> Self::RunFuture<'_, C> {
         async move {
+            let mut enable = false;
             loop {
-                let mut enable = false;
-                loop {
-                    if enable {
-                        // When blinking is enabled, we need to await both the rendering loop and the inbound message processing.
-                        match select(Self::blinker(&mut self.display), Self::process(&mut ctx))
-                            .await
-                        {
-                            Either::First(_) => {}
-                            Either::Second(e) => enable = e,
-                        }
-                    } else {
-                        // When blinking is disabled, we just await incoming messages.
-                        enable = Self::process(&mut ctx).await;
+                if enable {
+                    // When blinking is enabled, we need to await both the rendering loop and the inbound message processing.
+                    match select3(
+                        Self::blinker(&mut self.display),
+                        Self::jukebox(&mut self.speaker),
+                        Self::process(&mut ctx),
+                    )
+                    .await
+                    {
+                        Either3::First(_) => {}
+                        Either3::Second(_) => {}
+                        Either3::Third(e) => enable = e,
                     }
+                } else {
+                    // When blinking is disabled, we just await incoming messages.
+                    enable = Self::process(&mut ctx).await;
                 }
             }
         }
