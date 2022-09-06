@@ -10,8 +10,14 @@ database:
   hostname: localhost
   port: 5432
 
-  username: admin
+  username: console
   # password: <password>
 
   # override the full JDBC url
   # jdbcUrl: jdbc:postgresql://localhost:5432/eclipsecon
+
+postgresql:
+  auth:
+    username: console # align with database.username
+    existingSecret: database
+    database: eclipsecon # align with database.name
