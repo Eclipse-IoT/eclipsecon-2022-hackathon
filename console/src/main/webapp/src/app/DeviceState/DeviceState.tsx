@@ -26,7 +26,7 @@ interface ConnectionOptions {
 
 class Connection {
   private readonly url: string;
-  ws: WebSocket;
+  private ws: WebSocket;
   private closed: boolean;
   private timer?: number;
   private opts?: ConnectionOptions;
@@ -134,13 +134,13 @@ const DeviceState: React.FunctionComponent = () => {
         }
       }
     });
-    const w = ws.current.ws;
+    const w = ws.current;
     return () => w.close();
   }, []);
 
   useEffect(() => {
     ws.current?.accessToken(auth.userData?.access_token);
-  }, [auth]);
+  }, [ws, auth]);
 
   return <div>
     {state.connectionState} / <code>
