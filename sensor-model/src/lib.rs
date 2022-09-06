@@ -90,7 +90,7 @@ impl SensorConfig for MicrobitSensorConfig {
 
     const DESCRIPTORS: &'static [SensorDescriptor] = &[
         SensorDescriptor::new(PROP_TEMP, 1),
-        SensorDescriptor::new(PROP_XL, 1),
+        SensorDescriptor::new(PROP_XL, 6),
     ];
 }
 
