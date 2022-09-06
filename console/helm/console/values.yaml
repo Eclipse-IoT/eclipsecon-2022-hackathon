@@ -2,3 +2,16 @@ drogueCloud:
   api:
     # user: <access key user>
     # key: <access key>
+
+oidcAuthServer: https://sso-eclipsecon-2022.apps.sandbox.drogue.world/
+
+database:
+  name: eclipsecon
+  hostname: localhost
+  port: 5432
+
+  username: admin
+  # password: <password>
+
+  # override the full JDBC url
+  # jdbcUrl: jdbc:postgresql://localhost:5432/eclipsecon

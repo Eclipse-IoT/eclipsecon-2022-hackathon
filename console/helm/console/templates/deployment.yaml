@@ -38,3 +38,15 @@ spec:
               value: {{ .Values.drogueCloud.api.user | quote }}
             - name: DROGUE_API_KEY
               value: {{ .Values.drogueCloud.api.key | quote }}
+            - name: QUARKUS_OIDC_AUTH_SERVER_URL
+              value: {{ .Values.oidcAuthServer | quote }}
+            - name: QUARKUS_DATASOURCE_USERNAME
+              value: {{ .Values.database.username | quote }}
+            - name: QUARKUS_DATASOURCE_PASSWORD
+              value: {{ .Values.database.password | quote }}
+            - name: QUARKUS_DATASOURCE_JDBC_URL
+{{ with .Values.database.jdbcUrl }}
+              value: {{ . | quote }}
+{{ else }}
+              value: jdbc:postgresql://{{ .Values.database.hostname}}:{{ .Values.database.port}}/{{ .Values.database.name }}
+{{ end }}
