@@ -1011,6 +1011,7 @@ checksum = "2dffe52ecf27772e601905b7522cb4ef790d2cc203488bbd0e2fe85fcb74566d"
 [[package]]
 name = "microbit-async"
 version = "0.1.0"
+source = "git+https://github.com/lulf/microbit-async.git?branch=main#0a609dcb2edd278ec61b4a6400fc11479f9f6e8f"
 dependencies = [
  "cortex-m",
  "embassy-nrf",
