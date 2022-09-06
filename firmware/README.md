@@ -9,8 +9,8 @@ Firmware running on the EclipseCon 2022 Hackathon devices. The firmware implemen
 
 In addition, there are a few TODO's for hackathon participants who wants to get their hands dirty with embedded Rust. Each task has complementary work on the cloud side for processing data and sending commands.
 
-* Use the accelerometer to implement a motion detection device. The `accelerometer` module can be used to retrieve accelerometer data, and you can extend the sensor server to emit motion detection events.
-* Use the microphone to implement a noise detection device. The `microphone` module can be used to detect noise, and you can extend the sensor server implementation to emit noise detection events.
+* Use the accelerometer to supply x, y, z acceleration data. The `sensor` module can modified used to read accelerometer data and emit motion 3D acceleration readings.
+* Use the microphone to implement a noise detection device. The `sensor` module can be modified to read sound levels and emit sound level values.
 * Use the onboard speaker to implement a jukebox for playing simple tunes. The `speaker` module can be used to apply audio output on the microbit using Rust types representing notes by pitch and length. 
 
 Installing the toolchain software as instructed below before the event allows you to spend more time on the hackathon tasks!

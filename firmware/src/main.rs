@@ -8,6 +8,7 @@ mod battery;
 mod button;
 mod display;
 mod sensor;
+mod speaker;
 
 use battery::*;
 use btmesh_common::Uuid;
