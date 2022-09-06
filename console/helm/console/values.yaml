@@ -7,7 +7,7 @@ oidcAuthServer: https://sso-eclipsecon-2022.apps.sandbox.drogue.world/
 
 database:
   name: eclipsecon
-  hostname: postgres
+  hostname: eclipsecon-2022-console-postgresql
   port: 5432
 
   username: console
