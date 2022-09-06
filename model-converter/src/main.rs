@@ -17,7 +17,7 @@ async fn convert_telemetry(mut event: Event) -> Event {
     println!("Received Event: {:?}", event);
     if let Some(Data::Json(data)) = event.data() {
         if let Ok(data) = serde_json::from_value::<RawMessage>(data.clone()) {
-            let converted = telemetry2json(data).await;
+            let converted = telemetry2json(data);
             if let Some(state) = converted {
                 let output = json!({
                     "state": state,
@@ -71,7 +71,7 @@ fn json2command(data: &Value) -> Option<RawMessage> {
     None
 }
 
-async fn telemetry2json(msg: RawMessage) -> Option<Value> {
+fn telemetry2json(msg: RawMessage) -> Option<Value> {
     let (opcode, _) = Opcode::split(&msg.opcode[..]).unwrap();
     let parameters = &msg.parameters[..];
     let location = msg.location;
@@ -140,4 +140,35 @@ async fn main() -> std::io::Result<()> {
     .workers(1)
     .run()
     .await
+}
+
+#[cfg(test)]
+mod tests {
+    use btmesh_models::sensor::SensorStatus;
+    use sensor_model::SensorMessage;
+
+    use super::*;
+
+    #[test]
+    fn test_sensor_codec() {
+        let data = SensorPayload::default();
+        let msg: SensorMessage = SensorMessage::Status(SensorStatus::new(data));
+        let mut opcode: heapless::Vec<u8, 16> = heapless::Vec::new();
+        msg.opcode().emit(&mut opcode).unwrap();
+        let mut parameters: heapless::Vec<u8, 386> = heapless::Vec::new();
+        msg.emit_parameters(&mut parameters).unwrap();
+        let message = RawMessage {
+            location: 0,
+            opcode: opcode.to_vec(),
+            parameters: parameters.to_vec(),
+        };
+
+        let data = serde_json::to_value(&message).unwrap();
+
+        let raw: RawMessage = serde_json::from_value(data).unwrap();
+        println!("Raw: {:?}", raw);
+
+        let parsed = telemetry2json(raw).unwrap();
+        println!("Parsed: {:?}", parsed);
+    }
 }

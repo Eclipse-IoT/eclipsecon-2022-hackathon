@@ -56,9 +56,9 @@ impl SensorData for SensorPayload {
             Ok(())
         } else if id == PROP_XL {
             self.acceleration = Acceleration::default();
-            self.acceleration.x = i16::from_le_bytes([params[1], params[2]]);
-            self.acceleration.y = i16::from_le_bytes([params[3], params[4]]);
-            self.acceleration.z = i16::from_le_bytes([params[5], params[6]]);
+            self.acceleration.x = i16::from_le_bytes([params[0], params[1]]);
+            self.acceleration.y = i16::from_le_bytes([params[2], params[3]]);
+            self.acceleration.z = i16::from_le_bytes([params[4], params[5]]);
             Ok(())
         } else {
             Err(ParseError::InvalidValue)
