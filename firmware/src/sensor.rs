@@ -39,6 +39,7 @@ impl Sensor {
         Ok(SensorPayload {
             temperature: temperature * 2,
             acceleration: accel,
+            noise: 0,
         })
     }
 

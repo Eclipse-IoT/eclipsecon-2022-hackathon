@@ -157,6 +157,7 @@ fn app() -> Html {
                                     SensorMessage::Status(SensorStatus::new(SensorPayload {
                                         temperature: 22,
                                         acceleration: Default::default(),
+                                        noise: 0,
                                     }));
 
                                 match publish(&sensor, &u, &user, &pass, send_interval).await {

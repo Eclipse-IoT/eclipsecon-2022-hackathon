@@ -101,6 +101,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 let data = SensorPayload {
                     temperature: 22,
                     acceleration: Default::default(),
+                    noise: 0,
                 };
 
                 let sensor = SensorMessage::Status(SensorStatus::new(data));

@@ -10,9 +10,9 @@ use heapless::Vec;
 #[cfg_attr(feature = "defmt", derive(defmt::Format))]
 pub struct MicrobitSensorConfig;
 
-pub type SensorServer = SensorSetupServer<MicrobitSensorConfig, 2, 1>;
-pub type SensorClient = SC<MicrobitSensorConfig, 2, 1>;
-pub type SensorMessage = SM<MicrobitSensorConfig, 2, 1>;
+pub type SensorServer = SensorSetupServer<MicrobitSensorConfig, 3, 1>;
+pub type SensorClient = SC<MicrobitSensorConfig, 3, 1>;
+pub type SensorMessage = SM<MicrobitSensorConfig, 3, 1>;
 
 #[derive(Debug)]
 #[cfg_attr(feature = "defmt", derive(defmt::Format))]
@@ -20,6 +20,7 @@ pub type SensorMessage = SM<MicrobitSensorConfig, 2, 1>;
 pub struct SensorPayload {
     pub temperature: i8,
     pub acceleration: Acceleration,
+    pub noise: u8,
 }
 
 #[derive(Debug)]
@@ -38,12 +39,14 @@ impl Default for Acceleration {
 }
 
 const PROP_TEMP: PropertyId = PropertyId(0x4F);
-const PROP_XL: PropertyId = PropertyId(0x42);
+const PROP_XL: PropertyId = PropertyId(0x4242);
+const PROP_NOISE: PropertyId = PropertyId(0x79);
 
 impl Default for SensorPayload {
     fn default() -> Self {
         Self {
             temperature: 0,
+            noise: 0,
             acceleration: Acceleration::default(),
         }
     }
@@ -59,6 +62,9 @@ impl SensorData for SensorPayload {
             self.acceleration.x = i16::from_le_bytes([params[0], params[1]]);
             self.acceleration.y = i16::from_le_bytes([params[2], params[3]]);
             self.acceleration.z = i16::from_le_bytes([params[4], params[5]]);
+            Ok(())
+        } else if id == PROP_NOISE {
+            self.noise = params[0];
             Ok(())
         } else {
             Err(ParseError::InvalidValue)
@@ -80,6 +86,9 @@ impl SensorData for SensorPayload {
                 .map_err(|_| InsufficientBuffer)?;
             xmit.extend_from_slice(&self.acceleration.z.to_le_bytes())
                 .map_err(|_| InsufficientBuffer)?;
+        } else if property == PROP_NOISE {
+            xmit.extend_from_slice(&self.noise.to_le_bytes())
+                .map_err(|_| InsufficientBuffer)?;
         }
         Ok(())
     }
@@ -91,6 +100,7 @@ impl SensorConfig for MicrobitSensorConfig {
     const DESCRIPTORS: &'static [SensorDescriptor] = &[
         SensorDescriptor::new(PROP_TEMP, 1),
         SensorDescriptor::new(PROP_XL, 6),
+        SensorDescriptor::new(PROP_NOISE, 1),
     ];
 }
 
