@@ -1,15 +1,6 @@
 #![feature(generic_associated_types)]
 //! Attach and send/receive BT Mesh messages
 //!
-//! Example meshd
-//! [burrboard/gateway]$ sudo /usr/libexec/bluetooth/bluetooth-meshd --config ${PWD}/deploy/bluez/example/meshcfg --storage ${PWD}/deploy/bluez/example/mesh --debug
-//!
-//! Example device join
-//! [burrboard/gateway]$ app/temp-device.py join
-//!
-//! Example provisioner
-//! [bluer]$ RUST_LOG=TRACE cargo run -- --token 84783e12f11c4dcd
-
 use bluer::{
     mesh::{
         application::Application,
