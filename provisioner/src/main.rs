@@ -36,7 +36,7 @@ struct Args {
     drogue_mqtt_uri: String,
     #[clap(long, env, default_value = "ble-demo")]
     drogue_application: String,
-    #[clap(long, env, default_value = "gateway")]
+    #[clap(long, env, default_value = "provisioner")]
     drogue_device: String,
     #[clap(long, env, default_value = "hey-rodney")]
     drogue_password: String,
@@ -95,7 +95,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let mqtt_opts = mqtt::CreateOptionsBuilder::new()
         .server_uri(mqtt_uri.clone())
-        .client_id("btmesh-gateway")
+        .client_id("btmesh-provisioner")
         .persistence(mqtt::PersistenceType::None)
         .finalize();
     let mut mqtt_client = mqtt::AsyncClient::new(mqtt_opts)?;
@@ -144,7 +144,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     });
 
     mqtt_client.connect(conn_opts).await?;
-    log::info!("Gateway ready. Press Ctrl+C to quit.");
+    log::info!("Provisioner ready. Press Ctrl+C to quit.");
 
     let mut prov_stream = ReceiverStream::new(prov_rx);
     pin_mut!(element_control);
@@ -233,7 +233,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     let mut parts = topic.rsplit("/");
                     if let Some(channel) = parts.next() {
                         if channel == "provision" {
-                            log::info!("Received provisioning command for gateway: {:?}", message.payload());
+                            log::info!("Received provisioning command: {:?}", message.payload());
                             if let Ok(data) = serde_json::from_slice::<Value>(message.payload()) {
                                 log::info!("Parsed command payload: {:?}", data);
                                 let device = data.get("device");
