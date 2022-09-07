@@ -20,7 +20,7 @@ use core::future::Future;
 use embassy_executor::Spawner;
 use embassy_nrf::interrupt;
 use embassy_time::{Duration, Timer};
-use microbit_async::*;
+use microbit_async::{mic::Microphone, *};
 use onoff::*;
 use sensor::*;
 use speaker::*;
@@ -69,8 +69,24 @@ async fn main(_s: Spawner) {
     // An instance of our device with the models we'd like to expose.
     let mut device = Device::new(board.btn_a, board.btn_b, onoff, battery, sensor);
 
+    let mic = Microphone::new(
+        board.saadc,
+        interrupt::take!(SAADC),
+        board.microphone,
+        board.micen,
+    );
+    _s.spawn(measure_sound(mic)).unwrap();
+
     // Run the mesh stack
-    let _ = driver.run(&mut device).await;
+    //let _ = driver.run(&mut device).await;
+}
+
+#[embassy_executor::task]
+async fn measure_sound(mut mic: Microphone<'static>) {
+    loop {
+        mic.sound_level().await;
+        Timer::after(Duration::from_millis(100)).await;
+    }
 }
 
 // A BluetoothMesh device with each field being a Bluetooth Mesh element.
