@@ -1,12 +1,13 @@
-import * as React from 'react';
-import { Route, RouteComponentProps, Switch, useLocation } from 'react-router-dom';
-import { Dashboard } from '@app/Dashboard/Dashboard';
-import { GeneralSettings } from '@app/Settings/General/GeneralSettings';
-import { ProfileSettings } from '@app/Settings/Profile/ProfileSettings';
-import { NotFound } from '@app/NotFound/NotFound';
-import { useDocumentTitle } from '@app/utils/useDocumentTitle';
+import * as React from "react";
+import { Route, RouteComponentProps, Switch, useLocation } from "react-router-dom";
+import { Dashboard } from "@app/Dashboard/Dashboard";
+import { GeneralSettings } from "@app/Settings/General/GeneralSettings";
+import { ProfileSettings } from "@app/Settings/Profile/ProfileSettings";
+import { NotFound } from "@app/NotFound/NotFound";
+import { useDocumentTitle } from "@app/utils/useDocumentTitle";
 
 let routeFocusTimer: number;
+
 export interface IAppRoute {
   label?: string; // Excluding the label will exclude the route from the nav sidebar in AppLayout
   /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -29,10 +30,11 @@ const routes: AppRouteConfig[] = [
   {
     component: Dashboard,
     exact: true,
-    label: 'Dashboard',
-    path: '/',
-    title: 'EclipseCon 2022 | Main Dashboard',
-  },
+    label: "Dashboard",
+    path: "/",
+    title: "EclipseCon 2022 | Main Dashboard"
+  }
+  /*
   {
     label: 'Settings',
     routes: [
@@ -51,7 +53,7 @@ const routes: AppRouteConfig[] = [
         title: 'EclipseCon 2022 | Profile Settings',
       },
     ],
-  },
+  },*/
 ];
 
 // a custom hook for sending focus to the primary content container
@@ -62,7 +64,7 @@ const useA11yRouteChange = () => {
   const { pathname } = useLocation();
   React.useEffect(() => {
     routeFocusTimer = window.setTimeout(() => {
-      const mainContainer = document.getElementById('primary-app-container');
+      const mainContainer = document.getElementById("primary-app-container");
       if (mainContainer) {
         mainContainer.focus();
       }

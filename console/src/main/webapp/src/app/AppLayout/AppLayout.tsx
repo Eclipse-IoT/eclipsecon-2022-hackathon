@@ -13,8 +13,8 @@ import {
 } from "@patternfly/react-core";
 import { routes, IAppRoute, IAppRouteGroup } from "@app/routes";
 import { useAuth } from "oidc-react";
-import logo from "@app/bgimages/Patternfly-Logo.svg";
-import MD5 from 'crypto-js/md5';
+import logo from "@app/bgimages/logo.png";
+import MD5 from "crypto-js/md5";
 
 interface IAppLayout {
   children: React.ReactNode;
@@ -50,7 +50,7 @@ const AppLayout: React.FunctionComponent<IAppLayout> = ({ children }) => {
     }
 
     return (
-      <img src={logo} onClick={handleClick} alt="PatternFly Logo" />
+      <img className="pf-c-brand" src={logo} onClick={handleClick} alt="Drogue IoT Logo" />
     );
   }
 
