@@ -1,0 +1,50 @@
+ibex
+gorilla
+goat
+oryx
+eagle owl
+zebu
+wolf
+coyote
+donkey
+buffalo
+polar bear
+octopus
+boar
+hippopotamus
+colt
+springbok
+mouse
+waterbuck
+civet
+bull
+iguana
+salamander
+llama
+porpoise
+chinchilla
+lovebird
+antelope
+fawn
+hyena
+alligator
+dung beetle
+bat
+meerkat
+bison
+tapir
+blue crab
+starfish
+ocelot
+marmoset
+beaver
+fox
+rhinoceros
+elk
+hog
+quagga
+raccoon
+turtle
+woodchuck
+gazelle
+panther
