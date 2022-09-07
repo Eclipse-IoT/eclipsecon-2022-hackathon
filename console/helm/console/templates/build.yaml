@@ -12,6 +12,9 @@ spec:
   strategy:
     dockerStrategy:
       dockerfilePath: Dockerfile
+      from:
+        kind: ImageStreamTag
+        name: "ubi9-minimal:latest"
   output:
     to:
       kind: ImageStreamTag

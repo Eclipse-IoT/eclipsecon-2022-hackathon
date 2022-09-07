@@ -1,5 +1,40 @@
+---
 kind: ImageStream
 apiVersion: image.openshift.io/v1
 metadata:
   name: console
 spec: {}
+---
+kind: ImageStream
+apiVersion: image.openshift.io/v1
+metadata:
+  name: ubi9
+spec:
+  lookupPolicy:
+    local: false
+  tags:
+    - name: latest
+      from:
+        kind: DockerImage
+        name: 'registry.access.redhat.com/ubi9/ubi:latest'
+      importPolicy:
+        scheduled: true
+      referencePolicy:
+        type: Source
+---
+kind: ImageStream
+apiVersion: image.openshift.io/v1
+metadata:
+  name: ubi9-minimal
+spec:
+  lookupPolicy:
+    local: false
+  tags:
+    - name: latest
+      from:
+        kind: DockerImage
+        name: 'registry.access.redhat.com/ubi9/ubi-minimal:latest'
+      importPolicy:
+        scheduled: true
+      referencePolicy:
+        type: Source
