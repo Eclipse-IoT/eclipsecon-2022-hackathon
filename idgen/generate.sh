@@ -1,9 +1,9 @@
 #!/bin/bash
 
-for i in seq 0 50 
+echo "["
+for id in $(cat animals.txt)
 do
-	adj=$(shuf -n1 adjectives.txt)
-	noun=$(shuf -n1 nouns.txt)
-
-	echo "${adj} ${noun}"
+	u=$(uuidgen -s -N ${id} --namespace @dns | sed -e 's/-//g')
+	echo "{\"id\": \"${id}\", \"uuid\": \"${u}\"}"
 done
+echo "]"
