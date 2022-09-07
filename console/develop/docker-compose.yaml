@@ -1,0 +1,75 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: docker.io/bitnami/postgresql:14
+    environment:
+      - POSTGRESQL_USERNAME=admin
+      - POSTGRESQL_PASSWORD=admin123456
+      - POSTGRESQL_DATABASE=eclipsecon
+    ports:
+      - "5432:5432"
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:19.0.1
+    command: start-dev
+    environment:
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=admin123456
+      - KEYCLOAK_DB=dev-file
+    ports:
+      - "8081:8080"
+
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  init_keycloak:
+    image: quay.io/keycloak/keycloak:19.0.1
+    entrypoint: /usr/bin/bash
+    environment:
+      - KCADM_PATH=/opt/keycloak/bin/kcadm.sh
+      - KEYCLOAK_URL=http://keycloak:8080
+      - KEYCLOAK_ADMIN=admin
+      - KEYCLOAK_ADMIN_PASSWORD=admin123456
+      - REALM=master
+
+    command:
+      - -exc
+      - |
+        # wait until keycloak is ready
+        while ! curl -sf "$$KEYCLOAK_URL" --output /dev/null; do
+          echo "Waiting for Keycloak to start up..."
+          sleep 5
+        done
+        
+        echo "Keycloak ready"
+        
+        kcadm() { local cmd="$$1" ; shift ; "$$KCADM_PATH" "$$cmd" --config /tmp/kcadm.config "$$@" ; }
+        
+        # login
+        kcadm config credentials config --server "$$KEYCLOAK_URL" --realm master --user "$$KEYCLOAK_ADMIN" --password "$$KEYCLOAK_ADMIN_PASSWORD"
+        
+        # create device-admin role
+        kcadm create roles -r "$${REALM}" -s name=device-admin
+        
+        # create client
+        kcadm create clients -r $${REALM} -f - << EOF
+        {
+          "enabled": true,
+          "clientId": "frontend",
+          "publicClient": true,
+          "standardFlowEnabled": true,
+          "fullScopeAllowed": true,
+          "webOrigins": ["*"],
+          "redirectUris": ["http://localhost:*", "http://localhost:*/*"],
+          "attributes": {
+            "access.token.lifespan": "300"
+          }
+        }
+        EOF
+
+        # set device admin role
+        kcadm add-roles -r "$${REALM}" --uusername admin --rolename device-admin

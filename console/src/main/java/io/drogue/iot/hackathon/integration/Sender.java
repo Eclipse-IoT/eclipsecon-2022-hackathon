@@ -3,8 +3,8 @@ package io.drogue.iot.hackathon.integration;
 import javax.enterprise.context.ApplicationScoped;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.drogue.iot.hackathon.DeviceCommand;
-import io.drogue.iot.hackathon.ProvisioningCommand;
+import io.drogue.iot.hackathon.commands.DeviceCommand;
+import io.drogue.iot.hackathon.commands.ProvisioningCommand;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.eclipse.microprofile.reactive.messaging.Incoming;
 import org.eclipse.microprofile.reactive.messaging.Message;

@@ -1,4 +1,4 @@
-package io.drogue.iot.hackathon;
+package io.drogue.iot.hackathon.commands;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.drogue.iot.hackathon.data.CommandPayload;

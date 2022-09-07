@@ -1,11 +1,11 @@
-package io.drogue.iot.hackathon;
+package io.drogue.iot.hackathon.commands;
 
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
 @RegisterForReflection
 public class ProvisioningCommand {
-    private String device;
-    private String address;
+    private final String device;
+    private final String address;
 
     public ProvisioningCommand(String device, String address) {
         this.device = device;

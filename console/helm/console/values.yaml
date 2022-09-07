@@ -1,0 +1,29 @@
+drogueCloud:
+  api:
+    # user: <access key user>
+    # key: <access key>
+
+oidcAuthServer: https://sso-eclipsecon-2022.apps.sandbox.drogue.world/realms/eclipsecon
+
+database:
+  name: eclipsecon
+  hostname: eclipsecon-2022-console-postgresql
+  port: 5432
+
+  username: console
+  # password: <password>
+  # masterPassword: <password for postgres user>
+
+  # override the full JDBC url
+  # jdbcUrl: jdbc:postgresql://localhost:5432/eclipsecon
+
+postgresql:
+  auth:
+    username: console # align with database.username
+    existingSecret: database
+    database: eclipsecon # align with database.name
+  primary:
+    podSecurityContext:
+      enabled: false
+    containerSecurityContext:
+      enabled: false

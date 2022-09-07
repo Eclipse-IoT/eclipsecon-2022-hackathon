@@ -2,25 +2,27 @@ package io.drogue.iot.hackathon;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import javax.transaction.Transactional;
+import javax.ws.rs.WebApplicationException;
 
-import io.drogue.iot.hackathon.data.OnOffSet;
-import io.drogue.iot.hackathon.registry.Registry;
-import io.drogue.iot.hackathon.ui.DisplaySettings;
-import org.eclipse.microprofile.jwt.Claim;
 import org.eclipse.microprofile.reactive.messaging.Channel;
 import org.eclipse.microprofile.reactive.messaging.Emitter;
 import org.eclipse.microprofile.reactive.messaging.Incoming;
+import org.eclipse.microprofile.reactive.messaging.OnOverflow;
 import org.eclipse.microprofile.reactive.messaging.Outgoing;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.drogue.iot.hackathon.commands.DeviceCommand;
+import io.drogue.iot.hackathon.commands.ProvisioningCommand;
 import io.drogue.iot.hackathon.data.CommandPayload;
 import io.drogue.iot.hackathon.data.DeviceEvent;
+import io.drogue.iot.hackathon.data.OnOffSet;
+import io.drogue.iot.hackathon.registry.Registry;
+import io.drogue.iot.hackathon.service.DeviceClaimService;
+import io.drogue.iot.hackathon.ui.DisplaySettings;
 import io.quarkus.runtime.Startup;
 import io.smallrye.reactive.messaging.annotations.Broadcast;
-
-import java.nio.charset.StandardCharsets;
-import java.util.UUID;
 
 /**
  * Process device events.
@@ -63,9 +65,10 @@ public class Processor {
     @Incoming("display-changes")
     @Outgoing("device-commands")
     @Broadcast
+    @OnOverflow(value = OnOverflow.Strategy.LATEST)
     public DeviceCommand displayCommand(DisplaySettings settings) {
         var display = new OnOffSet(settings.enabled);
-        display.setLocation((short)0x100);
+        display.setLocation((short) 0x100);
         var commandPayload = new CommandPayload(display);
         var command = new DeviceCommand();
         command.setDeviceId(settings.device);
@@ -75,7 +78,6 @@ public class Processor {
 
         return command;
     }
-
 
     @Incoming("event-stream")
     public void process(DeviceEvent event) {
@@ -93,22 +95,32 @@ public class Processor {
     Registry registry;
 
     @Inject
-    ClaimState claimState;
+    DeviceClaimService service;
 
-    // TODO Lookup per user based on auth info
+    @Transactional
+    public void claimDevice(final String claimId, final String userId, final boolean canCreate) {
 
+        var claim = service.claimDevice(claimId, userId, canCreate);
 
-    public void claimDevice(String claim_id) {
-        // TODO: Lookup in the database instead of generating it here
         // TODO: Create a global address from stateful source
-        UUID uuid = UUID.nameUUIDFromBytes(claim_id.getBytes(StandardCharsets.UTF_8));
         String address = "00c0";
 
-        registry.createDevice(claim_id, new String[]{address, uuid.toString()});
+        try {
+            registry.createDevice(claimId, new String[] { address, claim.deviceId });
+        }
+        catch (WebApplicationException e) {
+            if (e.getResponse().getStatus() != 409 ) {
+                throw e;
+            }
+            // conflict means the device already exist, we re-use it
+        }
 
-        ProvisioningCommand command = new ProvisioningCommand(uuid.toString(), address);
+        ProvisioningCommand command = new ProvisioningCommand(claim.deviceId, address);
         provisioningEmitter.send(command);
+    }
 
-        claimState.update(new ClaimStatus(true, address));
+    @Transactional
+    public void releaseDevice (final String userId) {
+        service.releaseDevice(userId);
     }
 }

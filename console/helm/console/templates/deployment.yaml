@@ -1,0 +1,52 @@
+kind: Deployment
+apiVersion: apps/v1
+
+metadata:
+  name: console
+  labels:
+    deployment: console
+
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      deployment: console
+  template:
+    metadata:
+      labels:
+        deployment: console
+    spec:
+      containers:
+        - name: service
+          image: quay.io/ctron/eclipsecon-2022-console:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+              name: service
+          livenessProbe:
+            httpGet:
+              port: 8080
+              path: /q/health/live
+          readinessProbe:
+            httpGet:
+              port: 8080
+              path: /q/health/ready
+          env:
+            - name: MP_MESSAGING_INCOMING_TELEMETRY_CLIENT_ID
+              value: {{ .Release.Name }}
+            - name: DROGUE_API_USER
+              value: {{ .Values.drogueCloud.api.user | quote }}
+            - name: DROGUE_API_KEY
+              value: {{ .Values.drogueCloud.api.key | quote }}
+            - name: QUARKUS_OIDC_AUTH_SERVER_URL
+              value: {{ .Values.oidcAuthServer | quote }}
+            - name: QUARKUS_DATASOURCE_USERNAME
+              value: {{ .Values.database.username | quote }}
+            - name: QUARKUS_DATASOURCE_PASSWORD
+              value: {{ .Values.database.password | quote }}
+            - name: QUARKUS_DATASOURCE_JDBC_URL
+{{ with .Values.database.jdbcUrl }}
+              value: {{ . | quote }}
+{{ else }}
+              value: jdbc:postgresql://{{ .Values.database.hostname}}:{{ .Values.database.port}}/{{ .Values.database.name }}
+{{ end }}
