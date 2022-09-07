@@ -1,3 +1,5 @@
 **/target/
-firmware
+firmware/**
+idgen/**
 !target/release/eclipsecon-model-converter
+meshd/**
