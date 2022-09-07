@@ -63,8 +63,8 @@ btmesh-models = { git = "https://github.com/drogue-iot/btmesh.git", branch = "ma
 #btmesh-common = { path = "../../drogue-iot/btmesh/btmesh-common" }
 #btmesh-models = { path = "../../drogue-iot/btmesh/btmesh-models" }
 
-#[patch."https://github.com/lulf/microbit-async.git"]
-#microbit-async = { path = "../../microbit-async/microbit" }
+[patch."https://github.com/lulf/microbit-async.git"]
+microbit-async = { path = "../../microbit-async/microbit" }
 
 #[patch."https://github.com/drogue-iot/btmesh.git"]
 #btmesh-device = { path = "../../drogue-iot/btmesh/btmesh-device" }
