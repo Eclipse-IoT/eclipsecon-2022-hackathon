@@ -929,6 +929,31 @@ dependencies = [
 ]
 
 [[package]]
+name = "eclipsecon-provisioner"
+version = "0.1.0"
+dependencies = [
+ "bluer",
+ "btmesh-common",
+ "btmesh-models",
+ "clap",
+ "dbus",
+ "dbus-crossroads",
+ "dbus-tokio",
+ "env_logger",
+ "futures",
+ "heapless",
+ "hex",
+ "log",
+ "paho-mqtt",
+ "pin-project",
+ "sensor-model",
+ "serde_json",
+ "tokio",
+ "tokio-stream",
+ "uuid 1.1.2",
+]
+
+[[package]]
 name = "embedded-hal"
 version = "0.2.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1897,31 +1922,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0a2ca2c61bc9f3d74d2886294ab7b9853abd9c1ad903a3ac7815c58989bb7bab"
 dependencies = [
  "unicode-ident",
-]
-
-[[package]]
-name = "provisioner"
-version = "0.1.0"
-dependencies = [
- "bluer",
- "btmesh-common",
- "btmesh-models",
- "clap",
- "dbus",
- "dbus-crossroads",
- "dbus-tokio",
- "env_logger",
- "futures",
- "heapless",
- "hex",
- "log",
- "paho-mqtt",
- "pin-project",
- "sensor-model",
- "serde_json",
- "tokio",
- "tokio-stream",
- "uuid 1.1.2",
 ]
 
 [[package]]
