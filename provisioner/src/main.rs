@@ -18,9 +18,10 @@ use bluer::{
     },
     Uuid,
 };
+use btmesh_common::address::{LabelUuid, VirtualAddress};
 use btmesh_models::{
     foundation::configuration::{
-        app_key::AppKeyMessage, ConfigurationClient, ConfigurationMessage, ConfigurationServer,
+        app_key::AppKeyMessage, ConfigurationClient, ConfigurationMessage, ConfigurationServer, model_publication::PublishAddress,
     },
     generic::{battery::GENERIC_BATTERY_SERVER, onoff::GENERIC_ONOFF_SERVER},
     sensor::SENSOR_SETUP_SERVER,
@@ -88,7 +89,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             control_handle: ProvisionerControlHandle {
                 messages_tx: prov_tx,
             },
-            start_address: 0xbd,
+            start_address: 0x00bf,
         }),
         events_tx: app_tx,
     };
@@ -170,24 +171,26 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                                 println!("Successfully added node {:?} to the address {:#04x} with {:?} elements", uuid, unicast, count);
 
                                 sleep(Duration::from_secs(1)).await;
+
                                 node.add_app_key(element_path.clone(), unicast, 0, 0, false).await?;
+                                sleep(Duration::from_secs(1)).await;
                                 node.bind(element_path.clone(), unicast, 0, SENSOR_SETUP_SERVER).await?;
+                                sleep(Duration::from_secs(1)).await;
                                 node.bind(element_path.clone(), unicast, 0, GENERIC_ONOFF_SERVER).await?;
+                                sleep(Duration::from_secs(1)).await;
                                 node.bind(element_path.clone(), unicast, 0, GENERIC_BATTERY_SERVER).await?;
+                                sleep(Duration::from_secs(1)).await;
 
-                                // example composition get
-                                // let message = ConfigurationMessage::CompositionData(CompositionDataMessage::Get(0));
-                                // node.dev_key_send::<ConfigurationServer>(message, element_path.clone(), unicast, true, 0 as u16).await?;
-
-                                // example bind
-                                // let payload = ModelAppPayload {
-                                //     element_address: unicast.try_into().map_err(|_| ReqError::Failed)?,
-                                //     app_key_index: AppKeyIndex::new(0),
-                                //     model_identifier: SENSOR_SERVER,
+                                // let label = LabelUuid {
+                                //     uuid: Uuid::parse_str("f0bfd803cde184133096f003ea4a3dc2")?.into_bytes(),
+                                //     address: VirtualAddress::new(8f32 as u16).map_err(|_| std::fmt::Error)?
                                 // };
-
-                                // let message = ConfigurationMessage::from(ModelAppMessage::Bind(payload));
-                                // node.dev_key_send::<ConfigurationServer>(message, element_path.clone(), unicast, true, 0 as u16).await?;
+                                let label = LabelUuid::new(Uuid::parse_str("f0bfd803cde184133096f003ea4a3dc2")?.into_bytes()).map_err(|_| std::fmt::Error)?;
+                                let pub_address = PublishAddress::Virtual(label);
+                                node.pub_set(element_path.clone(), unicast, pub_address, 0, 51, 5, SENSOR_SETUP_SERVER).await?;
+                                sleep(Duration::from_secs(1)).await;
+                                node.pub_set(element_path.clone(), unicast, pub_address, 0, 51, 5, GENERIC_BATTERY_SERVER).await?;
+                                sleep(Duration::from_secs(1)).await;
                             },
                             ProvisionerMessage::AddNodeFailed(uuid, reason) => {
                                 println!("Failed to add node {:?}: '{:?}'", uuid, reason);
