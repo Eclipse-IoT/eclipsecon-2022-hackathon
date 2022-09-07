@@ -1,7 +1,8 @@
 import * as React from "react";
-import { useState, useEffect, useRef } from "react";
-import { WS_BASE } from "@app/backend";
+import { useState, useEffect, useRef, useContext } from "react";
+import { Endpoints, useEndpoints } from "@app/backend";
 import { useAuth } from "oidc-react";
+import { EndpointsContext } from "@app/index";
 
 enum ConnectionState {
   Disconnected = "Disconnected",
@@ -107,8 +108,15 @@ const DeviceState: React.FunctionComponent = () => {
 
   const ws = useRef<Connection>();
 
+  const endpoints = useContext(EndpointsContext);
+
   useEffect(() => {
-    ws.current = new Connection(WS_BASE + "/api/events/v1alpha1", {
+
+    const url = endpoints.ws("/api/events/v1alpha1");
+
+    console.log("WebSocket: ", url);
+
+    ws.current = new Connection(url, {
       onOpen: () => {
         setState({
           connectionState: ConnectionState.Connected
@@ -136,7 +144,7 @@ const DeviceState: React.FunctionComponent = () => {
     });
     const w = ws.current;
     return () => w.close();
-  }, []);
+  }, [endpoints]);
 
   useEffect(() => {
     ws.current?.accessToken(auth.userData?.access_token);

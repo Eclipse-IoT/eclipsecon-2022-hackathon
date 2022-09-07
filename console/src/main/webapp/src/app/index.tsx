@@ -8,18 +8,7 @@ import { AuthProvider, useAuth } from "oidc-react";
 import { Login } from "@app/Login/Login";
 import { Alert, AlertActionCloseButton, AlertGroup, AlertProps, AlertVariant } from "@patternfly/react-core";
 import { useState } from "react";
-
-const authConfig = {
-  onSignIn: async () => {
-    window.location.search = "";
-    window.location.hash = "";
-  },
-  authority: "http://localhost:8081/realms/master",
-  clientId: "frontend",
-  redirectUri: "http://localhost:9000",
-  automaticSilentRenew: true,
-  autoSignIn: false,
-};
+import { Endpoints, useEndpoints } from "@app/backend";
 
 const Content: React.FunctionComponent = () => {
 
@@ -49,6 +38,7 @@ export interface Toasts {
 }
 
 export const ToastsContext = React.createContext<Partial<Toasts>>({});
+export const EndpointsContext = React.createContext<Endpoints>(new Endpoints());
 
 const App: React.FunctionComponent = () => {
 
@@ -63,6 +53,32 @@ const App: React.FunctionComponent = () => {
   const removeAlert = (key?: React.Key) => {
     setAlerts(prevState => [...prevState.filter(alert => alert.key !== key)]);
   };
+
+  const endpoints = useEndpoints();
+
+  let content;
+  if (endpoints.status === "loaded") {
+
+    const authConfig = {
+      onSignIn: async () => {
+        window.location.search = "";
+        window.location.hash = "";
+      },
+      authority: endpoints.payload.authServerUrl,
+      clientId: "frontend",
+      redirectUri: document.location.toString(),
+      automaticSilentRenew: true,
+      autoSignIn: false
+    };
+
+    content = <EndpointsContext.Provider value={endpoints.payload}>
+      <AuthProvider {...authConfig}>
+        <Content />
+      </AuthProvider>
+    </EndpointsContext.Provider>;
+  } else {
+    content = <div>Loading…</div>;
+  }
 
   return (
     <React.Fragment>
@@ -91,9 +107,7 @@ const App: React.FunctionComponent = () => {
       <ToastsContext.Provider value={{
         addAlert, removeAlert
       }}>
-        <AuthProvider {...authConfig}>
-          <Content />
-        </AuthProvider>
+        {content}
       </ToastsContext.Provider>
 
     </React.Fragment>

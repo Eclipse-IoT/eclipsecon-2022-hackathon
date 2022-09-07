@@ -61,6 +61,9 @@ public class EventDispatcher {
     @Incoming("event-stream")
     @OnOverflow(value = OnOverflow.Strategy.LATEST)
     void onMessage(DeviceEvent event) {
+        if (event.getDeviceId() == null || event.getPayload() == null) {
+            return;
+        }
         broadcast(event.getDeviceId(), event);
     }
 
