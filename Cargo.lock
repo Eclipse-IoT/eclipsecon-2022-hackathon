@@ -357,7 +357,7 @@ dependencies = [
 [[package]]
 name = "bluer"
 version = "0.15.0"
-source = "git+https://github.com/dejanb/bluer.git?branch=mesh#167e8848bf94099a5cb9c4447d87ed3b22799205"
+source = "git+https://github.com/dejanb/bluer.git?branch=mesh#ab163c49f9df36d2eb1de3694638eb84b8b434dd"
 dependencies = [
  "btmesh-common",
  "btmesh-models",
@@ -414,7 +414,7 @@ dependencies = [
 [[package]]
 name = "btmesh-common"
 version = "0.1.0"
-source = "git+https://github.com/drogue-iot/btmesh.git?branch=main#93ce351e116a937fd36e954708ddc9b9e87ff59c"
+source = "git+https://github.com/drogue-iot/btmesh.git?branch=main#16a691e2f804e5ce759336be5968cca9beba6b3f"
 dependencies = [
  "aes",
  "ccm",
@@ -429,7 +429,7 @@ dependencies = [
 [[package]]
 name = "btmesh-models"
 version = "0.1.0"
-source = "git+https://github.com/drogue-iot/btmesh.git?branch=main#93ce351e116a937fd36e954708ddc9b9e87ff59c"
+source = "git+https://github.com/drogue-iot/btmesh.git?branch=main#16a691e2f804e5ce759336be5968cca9beba6b3f"
 dependencies = [
  "btmesh-common",
  "heapless",
