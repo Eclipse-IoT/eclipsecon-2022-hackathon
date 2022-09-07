@@ -50,7 +50,7 @@ async fn main(_s: Spawner) {
         unprovisioned_uuid(),
     );
 
-    // An instance of the sensor module implementing the SensorServer model.
+    // An accelerometer for recording orientation
     let accelerometer = accelerometer::Accelerometer::new(
         board.twispi0,
         interrupt::take!(SPIM0_SPIS0_TWIM0_TWIS0_SPI0_TWI0),
@@ -58,7 +58,17 @@ async fn main(_s: Spawner) {
         board.p22,
     )
     .unwrap();
-    let sensor = Sensor::new(driver.softdevice(), accelerometer);
+
+    // A microphone for reading sound levels.
+    let mic = Microphone::new(
+        board.saadc,
+        interrupt::take!(SAADC),
+        board.microphone,
+        board.micen,
+    );
+
+    // An instance of the sensor module implementing the SensorServer model.
+    let sensor = Sensor::new(driver.softdevice(), accelerometer, mic);
 
     // An instance of the battery module implementing the GenericBattery model.
     let battery = Battery::new();
@@ -69,24 +79,8 @@ async fn main(_s: Spawner) {
     // An instance of our device with the models we'd like to expose.
     let mut device = Device::new(board.btn_a, board.btn_b, onoff, battery, sensor);
 
-    let mic = Microphone::new(
-        board.saadc,
-        interrupt::take!(SAADC),
-        board.microphone,
-        board.micen,
-    );
-    _s.spawn(measure_sound(mic)).unwrap();
-
     // Run the mesh stack
-    //let _ = driver.run(&mut device).await;
-}
-
-#[embassy_executor::task]
-async fn measure_sound(mut mic: Microphone<'static>) {
-    loop {
-        mic.sound_level().await;
-        Timer::after(Duration::from_millis(100)).await;
-    }
+    let _ = driver.run(&mut device).await;
 }
 
 // A BluetoothMesh device with each field being a Bluetooth Mesh element.

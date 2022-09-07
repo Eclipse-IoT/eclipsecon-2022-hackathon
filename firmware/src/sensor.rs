@@ -6,26 +6,32 @@ use core::future::Future;
 use embassy_futures::select::{select, Either};
 use embassy_time::Ticker;
 use futures::StreamExt;
-use microbit_async::accelerometer::Accelerometer;
+use microbit_async::{accelerometer::Accelerometer, mic::Microphone};
 use nrf_softdevice::{temperature_celsius, Softdevice};
 
 use sensor_model::*;
 
 // A sensor type implementing the SensorSetupServer model.
+#[allow(dead_code)]
 pub struct Sensor {
     // This field is required to access some peripherals that is also controlled by the radio driver
     sd: &'static Softdevice,
     ticker: Option<Ticker>,
-    #[allow(dead_code)]
     xl: Accelerometer<'static>,
+    mic: Microphone<'static>,
 }
 
 impl Sensor {
-    pub fn new(sd: &'static Softdevice, xl: Accelerometer<'static>) -> Self {
+    pub fn new(
+        sd: &'static Softdevice,
+        xl: Accelerometer<'static>,
+        mic: Microphone<'static>,
+    ) -> Self {
         Self {
             sd,
             ticker: None,
             xl,
+            mic,
         }
     }
 
@@ -34,12 +40,19 @@ impl Sensor {
         let temperature: i8 = temperature_celsius(self.sd).map_err(|_| ())?.to_num();
 
         // TODO Accelerometer - Read the accelerometer data and add to the sensor payload,
-        let accel = Acceleration::default();
+        let mut accel = Acceleration::default();
+        let status = self.xl.accel_data().map_err(|_| ())?;
+        accel.x = status.x as i16;
+        accel.y = status.y as i16;
+        accel.z = status.z as i16;
+
+        // TODO Micrphone - Read the sound level data and add to sensor payload,
+        let noise: u8 = self.mic.sound_level().await;
 
         Ok(SensorPayload {
             temperature: temperature * 2,
             acceleration: accel,
-            noise: 0,
+            noise,
         })
     }
 
