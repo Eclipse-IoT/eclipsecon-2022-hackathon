@@ -10,7 +10,7 @@ spec:
     server: ''
   source:
     path: deployments/sso
-    repoURL: 'https://github.com/ctron/eclipsecon-2022-hackathon/'
+    repoURL: 'https://github.com/eclipse-iot/eclipsecon-2022-hackathon/'
     targetRevision: feature/add_doppelgaenger_1
   project: eclipsecon-2022
   syncPolicy:
@@ -28,9 +28,39 @@ spec:
     server: ''
   source:
     path: deployments/doppelgaenger
-    repoURL: 'https://github.com/ctron/eclipsecon-2022-hackathon/'
+    repoURL: 'https://github.com/eclipse-iot/eclipsecon-2022-hackathon/'
     targetRevision: feature/add_doppelgaenger_1
   project: eclipsecon-2022
   syncPolicy:
     syncOptions:
       - CreateNamespace=true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: eclipsecon-2022-console
+spec:
+  project: eclipsecon-2022
+  source:
+    repoURL: 'https://github.com/eclipse-iot/eclipsecon-2022-hackathon/'
+    path: console/helm/console
+    helm:
+      valueFiles:
+        - values.yaml
+      values: |
+        drogueCloud:
+          api:
+            user: '<change me>'
+            key: '<change me>'
+        database:
+          password: '<change me>'
+          masterPassword: '<change me>'
+  destination:
+    name: in-cluster
+    namespace: eclipsecon-2022
+    server: ''
+  ignoreDifferences:
+    - group: apps
+      kind: Deployment
+      jqPathExpressions:
+        - '.spec.template.spec.containers[] | .image'
