@@ -26,11 +26,11 @@ spec:
           livenessProbe:
             httpGet:
               port: 8080
-              path: /health/live
+              path: /q/health/live
           readinessProbe:
             httpGet:
               port: 8080
-              path: /health/ready
+              path: /q/health/ready
           env:
             - name: MP_MESSAGING_INCOMING_TELEMETRY_CLIENT_ID
               value: {{ .Release.Name }}

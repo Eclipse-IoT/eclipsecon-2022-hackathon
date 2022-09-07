@@ -35,6 +35,16 @@ The repository has a [`deploy/`](/deploy) folder, which contains deployment scri
 
 All you need do is to fill in the values in the `010-configuration.template.yaml`, and deploy the YAML files.
 
+### Building new images
+
+**NOTE:** Change `quay.io/ctron` with the container registry you would like to use.
+
+```shell
+mvn package
+podman build . -f src/main/docker/Dockerfile.jvm -t quay.io/ctron/eclipsecon-2022-console:latest
+podman push quay.io/ctron/eclipsecon-2022-console:latest
+```
+
 ## What is needed to run this?
 
 A bunch of things come together here. You can decide how much you want to self-host, how much you want to tweak, and how
