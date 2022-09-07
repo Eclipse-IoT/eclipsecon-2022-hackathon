@@ -4,7 +4,7 @@ RUN dnf -y install java maven rsync
 RUN mkdir /usr/src/build
 COPY . /usr/src/build
 WORKDIR /usr/src/build
-RUN mvn package
+RUN mvn -B package
 
 FROM registry.access.redhat.com/ubi9/ubi-minimal:latest
 
