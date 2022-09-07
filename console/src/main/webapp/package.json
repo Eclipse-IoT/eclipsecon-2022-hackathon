@@ -5,8 +5,8 @@
   "private": true,
   "scripts": {
     "prebuild": "npm run type-check && npm run clean",
-    "dr:surge": "node dr-surge.js",
-    "build": "webpack --config webpack.prod.js && npm run dr:surge",
+    "build": "webpack --config webpack.prod.js",
+    "build:quarkus": "npm run build && rsync -a dist/* ../resources/META-INF/resources",
     "start": "sirv dist --cors --single --host --port 8080",
     "start:dev": "webpack serve --color --progress --config webpack.dev.js",
     "test": "jest",

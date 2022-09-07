@@ -194,7 +194,7 @@
               <goal>npm</goal>
             </goals>
             <configuration>
-              <arguments>run build</arguments>
+              <arguments>run build:quarkus</arguments>
             </configuration>
           </execution>
         </executions>
