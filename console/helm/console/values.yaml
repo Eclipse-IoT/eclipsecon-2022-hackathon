@@ -21,3 +21,8 @@ postgresql:
     username: console # align with database.username
     existingSecret: database
     database: eclipsecon # align with database.name
+  primary:
+    podSecurityContext:
+      enabled: false
+    containerSecurityContext:
+      enabled: false
