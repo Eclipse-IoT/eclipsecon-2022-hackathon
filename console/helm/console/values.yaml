@@ -12,6 +12,7 @@ database:
 
   username: console
   # password: <password>
+  # masterPassword: <password for postgres user>
 
   # override the full JDBC url
   # jdbcUrl: jdbc:postgresql://localhost:5432/eclipsecon
@@ -21,7 +22,6 @@ postgresql:
     username: console # align with database.username
     existingSecret: database
     database: eclipsecon # align with database.name
-    # masterPassword: <password for postgres user>
   primary:
     podSecurityContext:
       enabled: false
