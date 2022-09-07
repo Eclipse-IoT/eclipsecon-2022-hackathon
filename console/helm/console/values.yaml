@@ -3,7 +3,7 @@ drogueCloud:
     # user: <access key user>
     # key: <access key>
 
-oidcAuthServer: https://sso-eclipsecon-2022.apps.sandbox.drogue.world/
+oidcAuthServer: https://sso-eclipsecon-2022.apps.sandbox.drogue.world/realms/eclipsecon
 
 database:
   name: eclipsecon
