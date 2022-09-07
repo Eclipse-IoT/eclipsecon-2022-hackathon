@@ -16,7 +16,11 @@ cortex-m-rt = "0.7"
 cortex-m = { version = "0.7.6", features = ["critical-section-single-core"] }
 
 defmt = "0.3"
-defmt-rtt = "0.3"
+
+defmt-rtt = { version = "0.3" }
+panic-probe = { version = "0.3", features = ["print-defmt"], optional = true }
+panic-reset = { version = "0.1.1", optional = true }
+
 embassy-executor = { version = "0.1.0", default-features = false, features = ["integrated-timers", "nightly"] }
 embassy-time = { version = "0.1.0", default-features = false, features = ["defmt-timestamp-uptime", "defmt"] }
 embassy-sync = { version = "0.1.0", default-features = false }
@@ -29,10 +33,12 @@ futures = { version = "0.3", default-features = false }
 
 nrf-softdevice = { version = "0.1.0", features = ["ble-peripheral", "ble-central", "ble-gatt-server", "s140", "nrf52833"] }
 nrf-softdevice-s140 = { version = "0.1.0" }
-panic-probe = { version = "0.3", features = ["print-defmt"] }
 
 sensor-model = { path = "../sensor-model", features = ["defmt"] }
 hex = { version = "0.4.3", default-features = false }
+
+[features]
+default = ["panic-probe"]
 
 [profile.dev]
 debug = 2

@@ -31,7 +31,12 @@ extern "C" {
 }
 
 use defmt_rtt as _;
+
+#[cfg(feature = "panic-probe")]
 use panic_probe as _;
+
+#[cfg(feature = "panic-reset")]
+use panic_reset as _;
 
 // Application main entry point. The spawner can be used to start async tasks.
 #[embassy_executor::main]
