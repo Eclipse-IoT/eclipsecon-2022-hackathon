@@ -1,26 +1,11 @@
-####
-# This Dockerfile is used in order to build a container that runs the Quarkus application in JVM mode
-#
-# Before building the container image run:
-#
-# ./mvnw package
-#
-# Then, build the image with:
-#
-# docker build -f src/main/docker/Dockerfile.jvm -t quarkus/mqtt-integration-jvm .
-#
-# Then run the container using:
-#
-# docker run -i --rm -p 8080:8080 quarkus/mqtt-integration-jvm
-#
-# If you want to include the debug port into your docker image
-# you will have to expose the debug port (default 5005) like this :  EXPOSE 8080 5050
-#
-# Then run the container using :
-#
-# docker run -i --rm -p 8080:8080 -p 5005:5005 -e JAVA_ENABLE_DEBUG="true" quarkus/mqtt-integration-jvm
-#
-###
+FROM registry.access.redhat.com/ubi9/ubi:latest AS builder
+
+RUN dnf -y install java maven rsync
+RUN mkdir /usr/src/build
+COPY . /usr/src/build
+WORKDIR /usr/src/build
+RUN mvn package
+
 FROM registry.access.redhat.com/ubi9/ubi-minimal:latest
 
 LABEL org.opencontainers.image.source="https://github.com/Eclipse-IoT/eclipsecon-2022-hackathon"
@@ -45,12 +30,13 @@ RUN microdnf -y install ca-certificates ${JAVA_PACKAGE} \
 # Configure the JAVA_OPTIONS, you can add -XshowSettings:vm to also display the heap size.
 ENV JAVA_OPTIONS="-Dquarkus.http.host=0.0.0.0 -Djava.util.logging.manager=org.jboss.logmanager.LogManager"
 # We make four distinct layers so if there are application changes the library layers can be re-used
-COPY --chown=1001 target/quarkus-app/lib/ /deployments/lib/
-COPY --chown=1001 target/quarkus-app/*.jar /deployments/
-COPY --chown=1001 target/quarkus-app/app/ /deployments/app/
-COPY --chown=1001 target/quarkus-app/quarkus/ /deployments/quarkus/
+COPY --from=builder --chown=1001 /usr/src/build/target/quarkus-app/lib/ /deployments/lib/
+COPY --from=builder --chown=1001 /usr/src/build/target/quarkus-app/*.jar /deployments/
+COPY --from=builder --chown=1001 /usr/src/build/target/quarkus-app/app/ /deployments/app/
+COPY --from=builder --chown=1001 /usr/src/build/target/quarkus-app/quarkus/ /deployments/quarkus/
 
 EXPOSE 8080
 USER 1001
 
 ENTRYPOINT [ "/deployments/run-java.sh" ]
+

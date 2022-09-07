@@ -1,0 +1,18 @@
+kind: BuildConfig
+apiVersion: build.openshift.io/v1
+metadata:
+  name: console
+spec:
+  triggers:
+    - type: ImageChange
+  source:
+    git:
+      uri: https://github.com/eclipse-iot/eclipsecon-2022-hackathon
+    contextDir: console
+  strategy:
+    dockerStrategy:
+      dockerfilePath: Dockerfile
+  output:
+    to:
+      kind: ImageStreamTag
+      name: console:latest
