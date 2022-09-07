@@ -12,7 +12,8 @@ use bluer::{
 use btmesh_common::address::{LabelUuid, VirtualAddress};
 use btmesh_models::{
     foundation::configuration::{
-        app_key::AppKeyMessage, ConfigurationClient, ConfigurationMessage, ConfigurationServer, model_publication::PublishAddress,
+        app_key::AppKeyMessage, model_publication::PublishAddress, ConfigurationClient,
+        ConfigurationMessage, ConfigurationServer,
     },
     generic::{battery::GENERIC_BATTERY_SERVER, onoff::GENERIC_ONOFF_SERVER},
     sensor::SENSOR_SETUP_SERVER,
@@ -34,7 +35,7 @@ struct Args {
     token: String,
     #[clap(long, env, default_value = "ssl://mqtt.sandbox.drogue.cloud:8883")]
     drogue_mqtt_uri: String,
-    #[clap(long, env, default_value = "ble-demo")]
+    #[clap(long, env, default_value = "eclipsecon-hackathon")]
     drogue_application: String,
     #[clap(long, env, default_value = "provisioner")]
     drogue_device: String,
@@ -161,16 +162,20 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                             ProvisionerMessage::AddNodeComplete(uuid, unicast, count) => {
                                 println!("Successfully added node {:?} to the address {:#04x} with {:?} elements", uuid, unicast, count);
 
-                                sleep(Duration::from_secs(1)).await;
+                                sleep(Duration::from_secs(10)).await;
 
+                                println!("Add app key");
                                 node.add_app_key(element_path.clone(), unicast, 0, 0, false).await?;
-                                sleep(Duration::from_secs(1)).await;
+                                sleep(Duration::from_secs(4)).await;
+                                println!("Bind sensor server");
                                 node.bind(element_path.clone(), unicast, 0, SENSOR_SETUP_SERVER).await?;
-                                sleep(Duration::from_secs(1)).await;
+                                sleep(Duration::from_secs(4)).await;
+                                println!("Bind onoff server");
                                 node.bind(element_path.clone(), unicast, 0, GENERIC_ONOFF_SERVER).await?;
-                                sleep(Duration::from_secs(1)).await;
+                                sleep(Duration::from_secs(4)).await;
+                                println!("Bind battery server");
                                 node.bind(element_path.clone(), unicast, 0, GENERIC_BATTERY_SERVER).await?;
-                                sleep(Duration::from_secs(1)).await;
+                                sleep(Duration::from_secs(4)).await;
 
                                 // let label = LabelUuid {
                                 //     uuid: Uuid::parse_str("f0bfd803cde184133096f003ea4a3dc2")?.into_bytes(),
@@ -178,10 +183,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                                 // };
                                 let label = LabelUuid::new(Uuid::parse_str("f0bfd803cde184133096f003ea4a3dc2")?.into_bytes()).map_err(|_| std::fmt::Error)?;
                                 let pub_address = PublishAddress::Virtual(label);
-                                node.pub_set(element_path.clone(), unicast, pub_address, 0, 51, 5, SENSOR_SETUP_SERVER).await?;
-                                sleep(Duration::from_secs(1)).await;
-                                node.pub_set(element_path.clone(), unicast, pub_address, 0, 51, 5, GENERIC_BATTERY_SERVER).await?;
-                                sleep(Duration::from_secs(1)).await;
+                                println!("Add pub-set for sensor server");
+                                node.pub_set(element_path.clone(), unicast, pub_address, 0, 29, 5, SENSOR_SETUP_SERVER).await?;
+                                sleep(Duration::from_secs(4)).await;
+                                println!("Add pub-set for battery server");
+                                node.pub_set(element_path.clone(), unicast, pub_address, 0, 29, 5, GENERIC_BATTERY_SERVER).await?;
+                                sleep(Duration::from_secs(4)).await;
                             },
                             ProvisionerMessage::AddNodeFailed(uuid, reason) => {
                                 println!("Failed to add node {:?}: '{:?}'", uuid, reason);
