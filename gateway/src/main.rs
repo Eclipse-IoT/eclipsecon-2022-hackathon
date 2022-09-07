@@ -29,7 +29,7 @@ struct Args {
     token: String,
     #[clap(long, env, default_value = "ssl://mqtt.sandbox.drogue.cloud:8883")]
     drogue_mqtt_uri: String,
-    #[clap(long, env, default_value = "ble-demo")]
+    #[clap(long, env, default_value = "eclipsecon-hackathon")]
     drogue_application: String,
     #[clap(long, env, default_value = "gateway")]
     drogue_device: String,

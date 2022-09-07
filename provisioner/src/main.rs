@@ -166,16 +166,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
                                 println!("Add app key");
                                 node.add_app_key(element_path.clone(), unicast, 0, 0, false).await?;
-                                sleep(Duration::from_secs(4)).await;
+                                sleep(Duration::from_secs(5)).await;
                                 println!("Bind sensor server");
                                 node.bind(element_path.clone(), unicast, 0, SENSOR_SETUP_SERVER).await?;
-                                sleep(Duration::from_secs(4)).await;
+                                sleep(Duration::from_secs(5)).await;
                                 println!("Bind onoff server");
                                 node.bind(element_path.clone(), unicast, 0, GENERIC_ONOFF_SERVER).await?;
                                 sleep(Duration::from_secs(4)).await;
                                 println!("Bind battery server");
                                 node.bind(element_path.clone(), unicast, 0, GENERIC_BATTERY_SERVER).await?;
-                                sleep(Duration::from_secs(4)).await;
+                                sleep(Duration::from_secs(5)).await;
 
                                 // let label = LabelUuid {
                                 //     uuid: Uuid::parse_str("f0bfd803cde184133096f003ea4a3dc2")?.into_bytes(),
@@ -184,11 +184,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                                 let label = LabelUuid::new(Uuid::parse_str("f0bfd803cde184133096f003ea4a3dc2")?.into_bytes()).map_err(|_| std::fmt::Error)?;
                                 let pub_address = PublishAddress::Virtual(label);
                                 println!("Add pub-set for sensor server");
-                                node.pub_set(element_path.clone(), unicast, pub_address, 0, 29, 5, SENSOR_SETUP_SERVER).await?;
-                                sleep(Duration::from_secs(4)).await;
+                                node.pub_set(element_path.clone(), unicast, pub_address, 0, 0x29, 5, SENSOR_SETUP_SERVER).await?;
+                                sleep(Duration::from_secs(5)).await;
                                 println!("Add pub-set for battery server");
-                                node.pub_set(element_path.clone(), unicast, pub_address, 0, 29, 5, GENERIC_BATTERY_SERVER).await?;
-                                sleep(Duration::from_secs(4)).await;
+                                node.pub_set(element_path.clone(), unicast, pub_address, 0, 0x29, 5, GENERIC_BATTERY_SERVER).await?;
+                                sleep(Duration::from_secs(5)).await;
                             },
                             ProvisionerMessage::AddNodeFailed(uuid, reason) => {
                                 println!("Failed to add node {:?}: '{:?}'", uuid, reason);
