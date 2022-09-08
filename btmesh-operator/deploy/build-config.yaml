@@ -1,0 +1,20 @@
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: btmesh-operator
+spec:
+  output:
+    to:
+      kind: ImageStreamTag
+      name: btmesh-operator:latest
+  source:
+    git:
+      ref: main
+      uri: https://github.com/eclipse-iot/eclipsecon-2022-hackathon.git
+    type: Git
+  strategy:
+    dockerStrategy:
+      dockerfilePath: btmesh-operator/Dockerfile
+    type: Docker
+  triggers:
+  - type: ConfigChange

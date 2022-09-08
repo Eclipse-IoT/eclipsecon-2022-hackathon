@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: btmesh-operator
+  labels:
+    app.kubernetes.io/name: btmesh-operator
+    app.kubernetes.io/instance: eclipsecon-2022
+    app.kubernetes.io/component: btmesh-operator
+  annotations:
+    image.openshift.io/triggers: |
+      [
+        {
+          "from": {
+            "kind":"ImageStreamTag",
+            "name":"btmesh-operator:latest"
+          },
+          "fieldPath":"spec.template.spec.containers[?(@.name==\"server\")].image"
+        }
+      ]
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: btmesh-operator
+      app.kubernetes.io/instance: eclipsecon-2022
+      app.kubernetes.io/component: btmesh-operator
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: btmesh-operator
+        app.kubernetes.io/instance: eclipsecon-2022
+        app.kubernetes.io/component: btmesh-operator
+    spec:
+      containers:
+      - name: server
+        image: btmesh-operator:latest
+        env:
+          - name: RUST_LOG
+            value: info
+        ports:
+        - name: endpoint
+          containerPort: 8080
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 8080
+        readinessProbe:
+          httpGet:
+            path: /healthz
+            port: 8080
