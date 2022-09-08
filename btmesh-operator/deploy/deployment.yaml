@@ -37,6 +37,33 @@ spec:
         env:
           - name: RUST_LOG
             value: info
+          - name: DROGUE_APPLICATION
+            valueFrom:
+              secretKeyRef:
+                key: application
+                name: drogue-config
+          - name: DROGUE_TOKEN
+            valueFrom:
+              secretKeyRef:
+                key: token
+                name: drogue-config
+          - name: DROGUE_USER
+            valueFrom:
+              secretKeyRef:
+                key: user
+                name: drogue-config
+          - name: DROGUE_DEVICE_REGISTRY
+            valueFrom:
+              secretKeyRef:
+                key: registry
+                name: drogue-config
+          - name: DROGUE_MQTT_INTEGRATION
+            valueFrom:
+              secretKeyRef:
+                key: mqtt-integration
+                name: drogue-config
+          - name: MQTT_GROUP_ID
+            value: btmesh-operator
         ports:
         - name: endpoint
           containerPort: 8080
