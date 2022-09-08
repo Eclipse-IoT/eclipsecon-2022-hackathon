@@ -1,8 +1,13 @@
+use crate::{borrowed::json2command, Publisher};
 use anyhow::{anyhow, Context};
 use gloo_utils::format::JsValueSerdeExt;
+use sensor_model::RawMessage;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use std::time::Duration;
+use std::{
+    sync::{Arc, Mutex},
+    time::Duration,
+};
 use wasm_bindgen::{prelude::*, JsCast};
 use yew::Callback;
 
@@ -50,6 +55,7 @@ extern "C" {
     fn payload_bytes(this: &Message) -> Vec<u8>;
 }
 
+#[derive(Clone, Copy, Debug)]
 pub enum QoS {
     QoS0,
     QoS1,
@@ -385,5 +391,108 @@ fn str_err(err: JsValue) -> anyhow::Error {
                 anyhow!("Unknown error")
             }
         },
+    }
+}
+
+trait CallbackExt<IN> {
+    fn filter_reform<T, F>(&self, f: F) -> Callback<T>
+    where
+        F: Fn(T) -> Option<IN> + 'static;
+}
+
+impl<IN: 'static> CallbackExt<IN> for Callback<IN> {
+    fn filter_reform<T, F>(&self, func: F) -> Callback<T>
+    where
+        F: Fn(T) -> Option<IN> + 'static,
+    {
+        let this = self.clone();
+        let func = move |input| {
+            if let Some(output) = func(input) {
+                this.emit(output);
+            }
+        };
+        Callback::from(func)
+    }
+}
+
+pub struct MqttPublisher {
+    client: Arc<Mutex<MqttClient>>,
+    topic: String,
+    qos: QoS,
+}
+
+#[derive(Clone, Default)]
+pub struct MqttOptions {
+    pub on_command: Callback<RawMessage>,
+    pub on_connection_lost: Callback<String>,
+    pub on_success: Callback<()>,
+    pub on_failure: Callback<String>,
+}
+
+impl MqttPublisher {
+    pub fn new(url: reqwest::Url, username: String, password: String, opts: MqttOptions) -> Self {
+        let mut client = MqttClient::new(url.as_str(), None);
+        client.set_on_connection_lost(opts.on_connection_lost.clone());
+        client.set_on_message_arrived(opts.on_command.filter_reform(|msg: MqttMessage| {
+            log::info!("Received message: {msg:?}");
+            if let Some(_) = msg.topic.strip_prefix("command/inbox//") {
+                match serde_json::from_slice(&msg.payload) {
+                    Ok(command) => Some(command),
+                    Err(err) => {
+                        log::warn!("Failed to parse command: {err}");
+                        if let Ok(json) = serde_json::from_slice(&msg.payload) {
+                            log::info!("JSON: {json}");
+                            json2command(&json)
+                        } else {
+                            None
+                        }
+                    }
+                }
+            } else {
+                None
+            }
+        }));
+
+        let client = Arc::new(Mutex::new(client));
+        let c = client.clone();
+
+        if let Err(err) = client.lock().unwrap().connect(
+            MqttConnectOptions {
+                username: Some(username),
+                password: Some(password),
+                clean_session: true,
+                reconnect: true,
+                keep_alive_interval: Some(Duration::from_secs(2)),
+                timeout: Some(Duration::from_secs(5)),
+            },
+            Callback::from(move |_| {
+                let _ = c.lock().unwrap().subscribe(
+                    "command/inbox/#",
+                    QoS::QoS0,
+                    Duration::from_secs(5),
+                    Callback::from(|_| {}),
+                    Callback::from(|_| {}),
+                );
+            }),
+            Callback::from(|_| {}),
+        ) {
+            log::warn!("Failed to connect: {err}");
+        }
+
+        Self {
+            client,
+            qos: QoS::QoS1,
+            topic: "sensor".to_string(),
+        }
+    }
+}
+
+impl Publisher for MqttPublisher {
+    fn send(&self, payload: String) -> anyhow::Result<()> {
+        Ok(self
+            .client
+            .lock()
+            .unwrap()
+            .publish(&self.topic, payload, self.qos, false)?)
     }
 }
