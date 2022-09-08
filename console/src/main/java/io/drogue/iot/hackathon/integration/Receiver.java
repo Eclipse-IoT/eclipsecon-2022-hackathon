@@ -2,10 +2,12 @@ package io.drogue.iot.hackathon.integration;
 
 import static io.cloudevents.core.CloudEventUtils.mapData;
 
+import java.time.Instant;
+import java.time.OffsetDateTime;
+import java.util.Optional;
+
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-
-import io.drogue.iot.hackathon.data.DevicePayload;
 
 import org.eclipse.microprofile.reactive.messaging.Incoming;
 import org.eclipse.microprofile.reactive.messaging.Message;
@@ -20,6 +22,7 @@ import io.cloudevents.core.provider.EventFormatProvider;
 import io.cloudevents.jackson.JsonFormat;
 import io.cloudevents.jackson.PojoCloudEventDataMapper;
 import io.drogue.iot.hackathon.data.DeviceEvent;
+import io.drogue.iot.hackathon.data.DevicePayload;
 import io.quarkus.runtime.Startup;
 import io.smallrye.reactive.messaging.annotations.Broadcast;
 
@@ -56,6 +59,13 @@ public class Receiver {
         var format = EventFormatProvider
                 .getInstance()
                 .resolveFormat(JsonFormat.CONTENT_TYPE);
+
+        if (format == null) {
+            // failed to get decoder
+            LOG.warn("Failed to get CloudEvents decoder");
+            return null;
+        }
+
         try {
 
             var event = format.deserialize(rawMessage.getPayload());
@@ -74,12 +84,26 @@ public class Receiver {
                     event,
                     PojoCloudEventDataMapper.from(this.objectMapper, DevicePayload.class)
             );
+            if (payload == null) {
+                // ignore if we are missing payload
+                return null;
+            }
+
+            var deviceId = Optional.ofNullable(event.getExtension("device"))
+                    .map(Object::toString)
+                    .orElse(null);
+            if (deviceId == null) {
+                // ignore if we are missing information
+                return null;
+            }
 
             // create device event
 
             var device = new DeviceEvent();
-            device.setDeviceId(event.getExtension("device").toString());
-            device.setTimestamp(event.getTime().toInstant());
+            device.setDeviceId(deviceId);
+            device.setTimestamp(Optional.ofNullable(event.getTime())
+                    .map(OffsetDateTime::toInstant)
+                    .orElseGet(Instant::now));
             device.setPayload(payload.getValue());
 
             // done
