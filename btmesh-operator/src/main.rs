@@ -6,8 +6,7 @@ use paho_mqtt as mqtt;
 
 use std::time::Duration;
 
-mod health;
-mod provisioner;
+use btmesh_operator::*;
 
 #[derive(Parser, Debug)]
 struct Args {
@@ -82,7 +81,7 @@ async fn main() -> anyhow::Result<()> {
     };
 
     let url = reqwest::Url::parse(&args.device_registry)?;
-    let drg = provisioner::DrogueClient::new(reqwest::Client::new(), url, tp);
+    let drg = DrogueClient::new(reqwest::Client::new(), url, tp);
 
     let mut conn_opts = mqtt::ConnectOptionsBuilder::new();
     conn_opts.user_name(args.user);
@@ -132,14 +131,14 @@ async fn main() -> anyhow::Result<()> {
         .context("Failed to connect to MQTT endpoint")?;
 
     let healthz = if !args.disable_health {
-        Some(health::HealthServer::new(args.health_port))
+        Some(HealthServer::new(args.health_port))
     } else {
         None
     };
 
     log::info!("Starting server");
 
-    let mut app = provisioner::Operator::new(
+    let mut app = Operator::new(
         mqtt_client,
         args.mqtt_group_id,
         args.application,

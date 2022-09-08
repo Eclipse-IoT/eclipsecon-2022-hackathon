@@ -1,5 +1,10 @@
 use cloudevents::{event::AttributeValue, Data, Event};
-use drogue_client::{core::v1::Conditions, dialect, registry::v1::Device, Section, Translator};
+use drogue_client::{
+    core::v1::{ConditionStatus, Conditions},
+    dialect,
+    registry::v1::Device,
+    Section, Translator,
+};
 use futures::stream::StreamExt;
 use paho_mqtt as mqtt;
 use serde::{Deserialize, Serialize};
@@ -35,22 +40,19 @@ impl Operator {
     pub async fn provision_devices(&self, mut devices: Vec<Device>) {
         for device in devices.iter_mut() {
             if let Some(Ok(spec)) = device.section::<BtMeshSpec>() {
-                let mut status: BtMeshStatus =
+                let status: BtMeshStatus =
                     if let Some(Ok(status)) = device.section::<BtMeshStatus>() {
                         status
                     } else {
                         BtMeshStatus {
                             address: None,
                             conditions: Default::default(),
-                            state: BtMeshDeviceState::Provisioning,
+                            state: BtMeshDeviceState::Provisioning { error: None },
                         }
                     };
 
-                status.conditions.update("Provisioning", true);
-                status.conditions.update("Provisioned", false);
-
                 // Send provisioning command for this device
-                if status.state == BtMeshDeviceState::Provisioning {
+                if let BtMeshDeviceState::Provisioning { error: _ } = status.state {
                     if let Ok(command) = serde_json::to_vec(&BtMeshCommand {
                         command: BtMeshOperation::Provision {
                             device: spec.device.clone(),
@@ -66,12 +68,12 @@ impl Operator {
                         }
                     }
                 }
-                self.update_status(device, status).await;
+                self.update_device(device, status).await;
             }
         }
     }
 
-    pub async fn update_status(&self, device: &mut Device, status: BtMeshStatus) {
+    pub async fn update_device(&self, device: &mut Device, status: BtMeshStatus) {
         if let Ok(_) = device.set_section::<BtMeshStatus>(status) {
             match self.registry.update_device(&device).await {
                 Ok(_) => log::debug!("Device {} status updated", device.metadata.name),
@@ -160,44 +162,66 @@ impl Operator {
                                 };
 
                                 if let (Some(event), Ok(Some(mut device))) = (event, device) {
-                                    let mut aliases: Vec<String> = device
-                                        .spec
-                                        .get("aliases")
-                                        .map(|s| {
-                                            if let Some(v) = s.as_array() {
-                                                v.iter()
-                                                    .map(|e| e.as_str().map(|s| s.to_string()))
-                                                    .flatten()
-                                                    .collect()
-                                            } else {
-                                                Vec::new()
-                                            }
-                                        })
-                                        .unwrap_or(Vec::new());
-
-                                    if !aliases.contains(&event.address) {
-                                        aliases.push(event.address.clone());
-                                    }
-
-                                    device
-                                        .spec
-                                        .insert("aliases".to_string(), serde_json::json!(aliases));
-
                                     let mut status: BtMeshStatus = if let Some(Ok(status)) =
                                         device.section::<BtMeshStatus>()
                                     {
                                         status
                                     } else {
                                         BtMeshStatus {
-                                            address: Some(event.address),
+                                            address: None,
                                             conditions: Default::default(),
-                                            state: event.status,
+                                            state: event.status.clone(),
                                         }
                                     };
-                                    status.conditions.update("Provisioned", true);
-                                    status.conditions.update("Provisioning", false);
 
-                                    self.update_status(&mut device, status).await;
+                                    match &event.status {
+                                        // If we're provisioned, update the status and insert alias in spec if its not already there
+                                        BtMeshDeviceState::Provisioned { address } => {
+                                            status.conditions.update("Provisioned", true);
+                                            status.conditions.update("Provisioning", false);
+
+                                            let mut aliases: Vec<String> = device
+                                                .spec
+                                                .get("aliases")
+                                                .map(|s| {
+                                                    if let Some(v) = s.as_array() {
+                                                        v.iter()
+                                                            .map(|e| {
+                                                                e.as_str().map(|s| s.to_string())
+                                                            })
+                                                            .flatten()
+                                                            .collect()
+                                                    } else {
+                                                        Vec::new()
+                                                    }
+                                                })
+                                                .unwrap_or(Vec::new());
+
+                                            if !aliases.contains(&address) {
+                                                aliases.push(address.clone());
+                                            }
+
+                                            device.spec.insert(
+                                                "aliases".to_string(),
+                                                serde_json::json!(aliases),
+                                            );
+                                        }
+                                        BtMeshDeviceState::Provisioning { error } => {
+                                            status.conditions.update("Provisioning", true);
+
+                                            let mut condition = ConditionStatus::default();
+                                            if let Some(error) = error {
+                                                condition.status = Some(false);
+                                                condition.reason =
+                                                    Some("Error provisioning device".to_string());
+                                                condition.message = Some(error.clone());
+                                            }
+
+                                            status.conditions.update("Provisioned", condition);
+                                        }
+                                    }
+
+                                    self.update_device(&mut device, status).await;
                                 }
                             }
                         }
@@ -214,7 +238,6 @@ impl Operator {
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct BtMeshEvent {
-    pub address: String,
     pub status: BtMeshDeviceState,
 }
 
@@ -228,7 +251,16 @@ pub enum BtMeshOperation {
     #[serde(rename = "provision")]
     Provision { device: String },
     #[serde(rename = "reset")]
-    Reset,
+    Reset { address: String },
+}
+
+#[derive(Serialize, Deserialize, Debug, Eq, PartialEq, Clone)]
+pub enum BtMeshDeviceState {
+    #[serde(rename = "provisioning")]
+    Provisioning { error: Option<String> },
+
+    #[serde(rename = "provisioned")]
+    Provisioned { address: String },
 }
 
 dialect!(BtMeshSpec [Section::Spec => "btmesh"]);
@@ -240,18 +272,9 @@ pub struct BtMeshSpec {
 
 dialect!(BtMeshStatus [Section::Status => "btmesh"]);
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct BtMeshStatus {
     pub conditions: Conditions,
     pub state: BtMeshDeviceState,
     pub address: Option<String>,
-}
-
-#[derive(Serialize, Deserialize, Debug, Eq, PartialEq)]
-pub enum BtMeshDeviceState {
-    #[serde(rename = "provisioning")]
-    Provisioning,
-
-    #[serde(rename = "provisioned")]
-    Provisioned,
 }

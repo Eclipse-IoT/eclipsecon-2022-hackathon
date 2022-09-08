@@ -19,7 +19,9 @@ use btmesh_models::{
     sensor::SENSOR_SETUP_SERVER,
     Message, Model,
 };
+use btmesh_operator::{BtMeshCommand, BtMeshDeviceState, BtMeshOperation, BtMeshStatus};
 use clap::Parser;
+use clap_num::maybe_hex;
 use dbus::Path;
 use futures::{pin_mut, StreamExt};
 use paho_mqtt as mqtt;
@@ -45,8 +47,6 @@ struct Args {
     ca_path: String,
     #[clap(long, env, parse(try_from_str), default_value = "false")]
     disable_tls: bool,
-    #[clap(long, env, parse(try_from_str), default_value = "false")]
-    insecure_tls: bool,
     #[clap(long, env, parse(try_from_str), default_value = "false")]
     insecure_tls: bool,
     #[clap(long, parse(try_from_str=maybe_hex))]
@@ -85,7 +85,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             control_handle: ProvisionerControlHandle {
                 messages_tx: prov_tx,
             },
-            start_address: args.start_address,
+            // TODO fix bluer
+            start_address: args.start_address.unwrap_or(0xbf) as i32,
         }),
         events_tx: app_tx,
     };
@@ -193,9 +194,20 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                                 println!("Add pub-set for battery server");
                                 node.pub_set(element_path.clone(), unicast, pub_address, 0, 0x29, 5, GENERIC_BATTERY_SERVER).await?;
                                 sleep(Duration::from_secs(5)).await;
+
+
+                                // TODO: Publish this message on the btmesh channel for the device
+                                // let status = BtMeshEvent {
+                                //   status: BtMeshDeviceState::Provisioned { address }
+                                // }
                             },
                             ProvisionerMessage::AddNodeFailed(uuid, reason) => {
                                 println!("Failed to add node {:?}: '{:?}'", uuid, reason);
+
+                                // let status = BtMeshEvent {
+                                //   status: BtMeshDeviceState::Provisioning { error }
+                                // }
+                                // TODO Publish this message on the btmesh channel for the device
                             }
                         }
                     },
@@ -243,17 +255,34 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     log::info!("Received on {}: {:?}", topic, message);
                     let mut parts = topic.rsplit("/");
                     if let Some(channel) = parts.next() {
-                        if channel == "provision" {
-                            log::info!("Received provisioning command: {:?}", message.payload());
-                            if let Ok(data) = serde_json::from_slice::<Value>(message.payload()) {
+                        if channel == "btmesh" {
+                            log::info!("Received btmesh command: {:?}", message.payload());
+                            if let Ok(data) = serde_json::from_slice::<BtMeshCommand>(message.payload()) {
                                 log::info!("Parsed command payload: {:?}", data);
-                                let device = data.get("device");
-                                match device {
-                                    Some(uuid) => {
-                                        log::info!("Provisioning {:?}", uuid);
-                                        node.management.add_node(Uuid::parse_str(uuid.as_str().unwrap())?).await?
-                                    },
-                                    _ => log::error!("No uuid provided")
+                                match data.command {
+                                    BtMeshOperation::Provision {
+                                        device
+                                    } => {
+                                        log::info!("Provisioning {:?}", device);
+                                        if let Ok(uuid) = Uuid::parse_str(&device) {
+                                            match node.management.add_node(uuid).await {
+                                                Ok(_) => {
+
+                                                }
+                                                Err(e) => {
+                                                    // let status = BtMeshEvent {
+                                                    //   status: BtMeshDeviceState::Provisioning { error }
+                                                    // }
+                                                    // TODO Publish this message on the btmesh channel for the device
+                                                }
+                                            }
+                                        }
+                                    }
+                                    BtMeshOperation::Reset {
+                                        address
+                                    } => {
+                                        todo!()
+                                    }
                                 }
                             }
                         }

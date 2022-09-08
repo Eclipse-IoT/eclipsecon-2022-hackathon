@@ -610,6 +610,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "clap-num"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ea589d838669bcc85ffc6126784601e61064951d206dde84895ff82a2ef8f056"
+dependencies = [
+ "num-traits",
+]
+
+[[package]]
 name = "clap_derive"
 version = "3.2.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1040,7 +1049,9 @@ dependencies = [
  "bluer",
  "btmesh-common",
  "btmesh-models",
+ "btmesh-operator",
  "clap",
+ "clap-num",
  "dbus",
  "dbus-crossroads",
  "dbus-tokio",
