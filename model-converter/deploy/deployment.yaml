@@ -6,6 +6,17 @@ metadata:
     app.kubernetes.io/name: model-converter
     app.kubernetes.io/instance: eclipsecon-2022
     app.kubernetes.io/component: model-converter
+  annotations:
+    image.openshift.io/triggers: |
+      [
+        {
+          "from": {
+            "kind":"ImageStreamTag",
+            "name":"model-converter:latest"
+          },
+          "fieldPath":"spec.template.spec.containers[?(@.name==\"server\")].image"
+        }
+      ]
 spec:
   replicas: 1
   selector:
