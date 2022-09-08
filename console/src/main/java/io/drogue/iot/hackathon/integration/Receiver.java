@@ -6,6 +6,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 
 import io.drogue.iot.hackathon.data.DevicePayload;
+
 import org.eclipse.microprofile.reactive.messaging.Incoming;
 import org.eclipse.microprofile.reactive.messaging.Message;
 import org.eclipse.microprofile.reactive.messaging.OnOverflow;
@@ -59,24 +60,32 @@ public class Receiver {
 
             var event = format.deserialize(rawMessage.getPayload());
 
-            if ("sensor".equals(event.getSubject())) {
-                var payload = mapData(
-                        event,
-                        PojoCloudEventDataMapper.from(this.objectMapper, DevicePayload.class)
-                );
-
-                // create device event
-
-                var device = new DeviceEvent();
-                device.setDeviceId(event.getExtension("device").toString());
-                device.setTimestamp(event.getTime().toInstant());
-                device.setPayload(payload.getValue());
-
-                // done
-
-                return device;
+            if (!"io.drogue.event.v1".equals(event.getType())) {
+                // we are only interested in telemetry events
+                return null;
             }
-            return null;
+
+            if (!"sensor".equals(event.getSubject())) {
+                // we are only interested in the "sensor" channel
+                return null;
+            }
+
+            var payload = mapData(
+                    event,
+                    PojoCloudEventDataMapper.from(this.objectMapper, DevicePayload.class)
+            );
+
+            // create device event
+
+            var device = new DeviceEvent();
+            device.setDeviceId(event.getExtension("device").toString());
+            device.setTimestamp(event.getTime().toInstant());
+            device.setPayload(payload.getValue());
+
+            // done
+
+            return device;
+
         } catch (Exception e) {
             LOG.debug("Error decoding: {}", e.getMessage());
             return null;
