@@ -3162,6 +3162,8 @@ dependencies = [
 name = "web-simulator"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
+ "async-trait",
  "btmesh-common",
  "btmesh-models",
  "getrandom",
@@ -3169,11 +3171,14 @@ dependencies = [
  "gloo-timers",
  "gloo-utils",
  "heapless",
+ "js-sys",
  "log",
  "rand",
  "reqwest",
  "sensor-model",
+ "serde",
  "serde_json",
+ "uuid 1.1.2",
  "wasm-bindgen",
  "wasm-bindgen-futures",
  "wasm-logger",
