@@ -2,6 +2,7 @@ use cloudevents::{event::AttributeValue, Data, Event};
 use drogue_client::{
     core::v1::{ConditionStatus, Conditions},
     dialect,
+    meta::v1::CommonMetadataMut,
     registry::v1::Device,
     Section, Translator,
 };
@@ -51,20 +52,37 @@ impl Operator {
                         }
                     };
 
-                // Send provisioning command for this device
-                if let BtMeshDeviceState::Provisioning { error: _ } = status.state {
-                    if let Ok(command) = serde_json::to_vec(&BtMeshCommand {
-                        command: BtMeshOperation::Provision {
-                            device: spec.device.clone(),
-                        },
-                    }) {
-                        let topic = format!(
-                            "command/{}/{}/btmesh",
-                            self.application, device.metadata.name,
-                        );
-                        let message = mqtt::Message::new(topic, &command[..], 1);
-                        if let Err(e) = self.client.publish(message).await {
-                            log::warn!("Error publishing command back to device: {:?}", e);
+                let topic = format!(
+                    "command/{}/{}/btmesh",
+                    self.application, device.metadata.name,
+                );
+                if device.metadata.deletion_timestamp.is_none() {
+                    device.metadata.ensure_finalizer("btmesh-operator");
+
+                    // Send provisioning command for this device
+                    if let BtMeshDeviceState::Provisioning { error: _ } = status.state {
+                        if let Ok(command) = serde_json::to_vec(&BtMeshCommand {
+                            command: BtMeshOperation::Provision {
+                                device: spec.device.clone(),
+                            },
+                        }) {
+                            let message = mqtt::Message::new(topic, &command[..], 1);
+                            if let Err(e) = self.client.publish(message).await {
+                                log::warn!("Error publishing command back to device: {:?}", e);
+                            }
+                        }
+                    }
+                } else {
+                    if let Some(address) = &status.address {
+                        if let Ok(command) = serde_json::to_vec(&BtMeshCommand {
+                            command: BtMeshOperation::Reset {
+                                address: address.clone(),
+                            },
+                        }) {
+                            let message = mqtt::Message::new(topic, &command[..], 1);
+                            if let Err(e) = self.client.publish(message).await {
+                                log::warn!("Error publishing command back to device: {:?}", e);
+                            }
                         }
                     }
                 }
@@ -175,6 +193,9 @@ impl Operator {
                                     };
 
                                     match &event.status {
+                                        BtMeshDeviceState::Reset => {
+                                            device.metadata.remove_finalizer("btmesh-operator");
+                                        }
                                         // If we're provisioned, update the status and insert alias in spec if its not already there
                                         BtMeshDeviceState::Provisioned { address } => {
                                             status.conditions.update("Provisioned", true);
@@ -261,6 +282,9 @@ pub enum BtMeshDeviceState {
 
     #[serde(rename = "provisioned")]
     Provisioned { address: String },
+
+    #[serde(rename = "reset")]
+    Reset,
 }
 
 dialect!(BtMeshSpec [Section::Spec => "btmesh"]);

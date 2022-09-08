@@ -19,7 +19,9 @@ use btmesh_models::{
     sensor::SENSOR_SETUP_SERVER,
     Message, Model,
 };
-use btmesh_operator::{BtMeshCommand, BtMeshDeviceState, BtMeshOperation, BtMeshStatus};
+use btmesh_operator::{
+    BtMeshCommand, BtMeshDeviceState, BtMeshEvent, BtMeshOperation, BtMeshStatus,
+};
 use clap::Parser;
 use clap_num::maybe_hex;
 use dbus::Path;
@@ -197,9 +199,23 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 
                                 // TODO: Publish this message on the btmesh channel for the device
-                                // let status = BtMeshEvent {
-                                //   status: BtMeshDeviceState::Provisioned { address }
-                                // }
+                                let address = format!("{:04x}", unicast);
+                                let topic = format!("btmesh/{}", address);
+                                let status = BtMeshEvent {
+                                    status: BtMeshDeviceState::Provisioned {
+                                        address,
+                                    },
+                                };
+
+                                let data = serde_json::to_string(&status)?;
+                                let message = mqtt::Message::new(topic, data.as_bytes(), 1);
+                                if let Err(e) = mqtt_client.publish(message).await {
+                                    log::warn!(
+                                        "Error publishing provisioning status: {:?}",
+                                        e
+                                    );
+                                }
+
                             },
                             ProvisionerMessage::AddNodeFailed(uuid, reason) => {
                                 println!("Failed to add node {:?}: '{:?}'", uuid, reason);
@@ -281,6 +297,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                                     BtMeshOperation::Reset {
                                         address
                                     } => {
+                                        // TODO: Send reset to device and respond to cloud when done
                                         todo!()
                                     }
                                 }

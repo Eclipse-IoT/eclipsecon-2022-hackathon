@@ -3,9 +3,7 @@ package io.drogue.iot.hackathon;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
-import javax.ws.rs.WebApplicationException;
 
-import io.drogue.iot.hackathon.commands.ProvisioningOperation;
 import org.eclipse.microprofile.reactive.messaging.Channel;
 import org.eclipse.microprofile.reactive.messaging.Emitter;
 import org.eclipse.microprofile.reactive.messaging.Incoming;
@@ -15,7 +13,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.drogue.iot.hackathon.commands.DeviceCommand;
-import io.drogue.iot.hackathon.commands.ProvisioningCommand;
 import io.drogue.iot.hackathon.data.CommandPayload;
 import io.drogue.iot.hackathon.data.DeviceEvent;
 import io.drogue.iot.hackathon.data.OnOffSet;
@@ -25,7 +22,6 @@ import io.drogue.iot.hackathon.ui.DisplaySettings;
 import io.quarkus.runtime.Startup;
 import io.smallrye.reactive.messaging.annotations.Broadcast;
 
-import java.util.Arrays;
 import java.util.Collections;
 
 /**
@@ -91,11 +87,6 @@ public class Processor {
     }
 
     @Inject
-    @Broadcast
-    @Channel("provisioner-commands")
-    Emitter<ProvisioningCommand> provisioningEmitter;
-
-    @Inject
     Registry registry;
 
     @Inject
@@ -104,16 +95,13 @@ public class Processor {
     @Transactional
     public void claimDevice(final String claimId, final String userId, final boolean canCreate) {
         var claim = service.claimDevice(claimId, userId, canCreate);
-        ProvisioningCommand command = new ProvisioningCommand(ProvisioningOperation.provision, claim.deviceId, Collections.singletonList(claimId));
-        provisioningEmitter.send(command);
+        registry.createDevice(claimId, Collections.singletonList(claim.deviceId));
     }
 
     @Transactional
     public void releaseDevice (final String userId) {
         var claim = service.getDeviceClaimFor(userId);
-        if (claim.isPresent()) {
-            provisioningEmitter.send(new ProvisioningCommand(ProvisioningOperation.reset, claim.get().deviceId, Collections.singletonList(claim.get().id)));
-        }
+        claim.ifPresent(deviceClaim -> registry.deleteDevice(deviceClaim.id));
         service.releaseDevice(userId);
     }
 }
