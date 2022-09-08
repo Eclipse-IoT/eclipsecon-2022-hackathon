@@ -3,7 +3,6 @@ package io.drogue.iot.hackathon;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
-import javax.ws.rs.WebApplicationException;
 
 import org.eclipse.microprofile.reactive.messaging.Channel;
 import org.eclipse.microprofile.reactive.messaging.Emitter;
@@ -14,7 +13,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.drogue.iot.hackathon.commands.DeviceCommand;
-import io.drogue.iot.hackathon.commands.ProvisioningCommand;
 import io.drogue.iot.hackathon.data.CommandPayload;
 import io.drogue.iot.hackathon.data.DeviceEvent;
 import io.drogue.iot.hackathon.data.OnOffSet;
@@ -23,6 +21,8 @@ import io.drogue.iot.hackathon.service.DeviceClaimService;
 import io.drogue.iot.hackathon.ui.DisplaySettings;
 import io.quarkus.runtime.Startup;
 import io.smallrye.reactive.messaging.annotations.Broadcast;
+
+import java.util.Collections;
 
 /**
  * Process device events.
@@ -87,11 +87,6 @@ public class Processor {
     }
 
     @Inject
-    @Broadcast
-    @Channel("gateway-commands")
-    Emitter<ProvisioningCommand> provisioningEmitter;
-
-    @Inject
     Registry registry;
 
     @Inject
@@ -100,12 +95,13 @@ public class Processor {
     @Transactional
     public void claimDevice(final String claimId, final String userId, final boolean canCreate) {
         var claim = service.claimDevice(claimId, userId, canCreate);
-        ProvisioningCommand command = new ProvisioningCommand(claimId, claim.deviceId);
-        provisioningEmitter.send(command);
+        registry.createDevice(claimId, Collections.singletonList(claim.deviceId));
     }
 
     @Transactional
     public void releaseDevice (final String userId) {
+        var claim = service.getDeviceClaimFor(userId);
+        claim.ifPresent(deviceClaim -> registry.deleteDevice(deviceClaim.id));
         service.releaseDevice(userId);
     }
 }

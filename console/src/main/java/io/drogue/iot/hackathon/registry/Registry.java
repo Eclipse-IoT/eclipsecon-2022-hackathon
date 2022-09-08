@@ -28,7 +28,7 @@ public class Registry {
     @RestClient
     RegistryService registryService;
 
-    public void createDevice(String device, String[] aliases) {
+    public void createDevice(String device, List<String> aliases) {
         // List gateways
         List<String> gateways = new ArrayList<>();
         List<Device> devices = registryService.getDevices(applicationName, "role=gateway");
@@ -49,7 +49,7 @@ public class Registry {
 
         DeviceSpec spec = new DeviceSpec();
         DeviceAliases deviceAliases = new DeviceAliases();
-        deviceAliases.setAliases(Arrays.asList(aliases));
+        deviceAliases.setAliases(aliases);
         spec.setAlias(deviceAliases);
 
         GatewaySelector selector = new GatewaySelector();
