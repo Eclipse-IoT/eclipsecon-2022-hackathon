@@ -39,8 +39,10 @@ impl Operator {
     }
 
     pub async fn provision_devices(&self, mut devices: Vec<Device>) {
+        log::info!("Provisioning unprovisioned devices");
         for device in devices.iter_mut() {
             if let Some(Ok(spec)) = device.section::<BtMeshSpec>() {
+                log::info!("Found device with btmesh spec: {:?}", spec);
                 let status: BtMeshStatus =
                     if let Some(Ok(status)) = device.section::<BtMeshStatus>() {
                         status
@@ -57,6 +59,7 @@ impl Operator {
                     self.application, device.metadata.name,
                 );
                 if device.metadata.deletion_timestamp.is_none() {
+                    log::info!("Setting finalizer");
                     device.metadata.ensure_finalizer("btmesh-operator");
 
                     // Send provisioning command for this device
@@ -66,6 +69,7 @@ impl Operator {
                                 device: spec.device.clone(),
                             },
                         }) {
+                            log::info!("Sending provisioning command");
                             let message = mqtt::Message::new(topic, &command[..], 1);
                             if let Err(e) = self.client.publish(message).await {
                                 log::warn!("Error publishing command back to device: {:?}", e);
@@ -73,6 +77,7 @@ impl Operator {
                         }
                     }
                 } else {
+                    log::info!("Device is being deleted, sending reset: {:?}", status);
                     if let Some(address) = &status.address {
                         if let Ok(command) = serde_json::to_vec(&BtMeshCommand {
                             command: BtMeshOperation::Reset {
@@ -94,7 +99,7 @@ impl Operator {
     pub async fn update_device(&self, device: &mut Device, status: BtMeshStatus) {
         if let Ok(_) = device.set_section::<BtMeshStatus>(status) {
             match self.registry.update_device(&device).await {
-                Ok(_) => log::debug!("Device {} status updated", device.metadata.name),
+                Ok(_) => log::info!("Device {} status updated", device.metadata.name),
                 Err(e) => {
                     log::warn!(
                         "Device {} status update error: {:?}",
@@ -131,6 +136,8 @@ impl Operator {
                 .subscribe(format!("app/{}", &self.application), 1);
         }
 
+        log::info!("Starting operator");
+
         let stream = self.client.get_stream(100);
         join!(self.reconcile_devices(), self.process_events(stream));
         Ok(())
@@ -161,6 +168,7 @@ impl Operator {
                             }
 
                             if subject == "devices" {
+                                log::info!("Received event on devices channel");
                                 let devices = self
                                     .registry
                                     .list_devices(&self.application, None)
@@ -170,6 +178,7 @@ impl Operator {
 
                                 self.provision_devices(devices).await;
                             } else if subject == "btmesh" {
+                                log::info!("Received event on btmesh channel: {:?}", e);
                                 let device =
                                     self.registry.get_device(&self.application, device).await;
                                 let event: Option<BtMeshEvent> = match e.data() {
