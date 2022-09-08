@@ -1,0 +1,20 @@
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: model-converter
+spec:
+  output:
+    to:
+      kind: ImageStreamTag
+      name: model-converter:latest
+  source:
+    git:
+      ref: main
+      uri: https://github.com/eclipse-iot/eclipsecon-2022-hackathon.git
+    type: Git
+  strategy:
+    dockerStrategy:
+      dockerfilePath: model-converter/Dockerfile
+    type: Docker
+  triggers:
+  - type: ConfigChange

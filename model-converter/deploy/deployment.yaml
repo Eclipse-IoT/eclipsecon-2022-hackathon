@@ -22,7 +22,7 @@ spec:
     spec:
       containers:
       - name: server
-        image: docker.io/lulf/eclipsecon-model-converter:latest
+        image: model-converter:latest
         env:
           - name: RUST_LOG
             value: info
