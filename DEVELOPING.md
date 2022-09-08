@@ -43,7 +43,6 @@ DEVICE_UUID=<uuid> cargo run --release
 ## Provision microbit
 
 ```
-export UUID=<uuid> # Same as you used for the microbit
 echo '{"device":"<uuid>"}' | http POST https://api.sandbox.drogue.cloud/api/command/v1alpha1/apps/eclipsecon-hackathon/devices/provisioner command==provision "Authorization:Bearer $(drg whoami -t)"
 ```
 
