@@ -47,6 +47,10 @@ struct Args {
     disable_tls: bool,
     #[clap(long, env, parse(try_from_str), default_value = "false")]
     insecure_tls: bool,
+    #[clap(long, env, parse(try_from_str), default_value = "false")]
+    insecure_tls: bool,
+    #[clap(long, parse(try_from_str=maybe_hex))]
+    start_address: Option<u32>,
 }
 
 #[tokio::main(flavor = "current_thread")]
@@ -81,7 +85,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             control_handle: ProvisionerControlHandle {
                 messages_tx: prov_tx,
             },
-            start_address: 0x00bf,
+            start_address: args.start_address,
         }),
         events_tx: app_tx,
     };

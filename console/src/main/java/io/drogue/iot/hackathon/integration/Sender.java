@@ -40,11 +40,11 @@ public class Sender {
         return MqttMessage.of(topic, command.getPayload(), MqttQoS.AT_LEAST_ONCE);
     }
 
-    @Incoming("gateway-commands")
+    @Incoming("provisioner-commands")
     @Outgoing("commands")
     public Message<byte[]> gatewayCommands(ProvisioningCommand command) {
-        LOG.info("Request to send gateway command: {}", command);
-        var topic = "command/" + this.applicationName + "/gateway/provision";
+        LOG.info("Request to send provisioner command: {}", command);
+        var topic = "command/" + this.applicationName + "/provisioner/provision";
 
         LOG.info("Sending to topic: {}", topic);
         var m = new ObjectMapper();
