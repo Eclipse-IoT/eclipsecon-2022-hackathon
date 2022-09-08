@@ -99,23 +99,8 @@ public class Processor {
 
     @Transactional
     public void claimDevice(final String claimId, final String userId, final boolean canCreate) {
-
         var claim = service.claimDevice(claimId, userId, canCreate);
-
-        // TODO: Create a global address from stateful source
-        String address = "00c0";
-
-        try {
-            registry.createDevice(claimId, new String[] { address, claim.deviceId });
-        }
-        catch (WebApplicationException e) {
-            if (e.getResponse().getStatus() != 409 ) {
-                throw e;
-            }
-            // conflict means the device already exist, we re-use it
-        }
-
-        ProvisioningCommand command = new ProvisioningCommand(claim.deviceId, address);
+        ProvisioningCommand command = new ProvisioningCommand(claimId, claim.deviceId);
         provisioningEmitter.send(command);
     }
 

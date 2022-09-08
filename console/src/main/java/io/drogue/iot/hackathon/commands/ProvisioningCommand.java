@@ -4,19 +4,18 @@ import io.quarkus.runtime.annotations.RegisterForReflection;
 
 @RegisterForReflection
 public class ProvisioningCommand {
+    private final String id;
     private final String device;
-    private final String address;
-
-    public ProvisioningCommand(String device, String address) {
+    public ProvisioningCommand(String id, String device) {
+        this.id = id;
         this.device = device;
-        this.address = address;
     }
 
     public String getDevice() {
         return device;
     }
 
-    public String getAddress() {
-        return address;
+    public String getId() {
+        return id;
     }
 }
