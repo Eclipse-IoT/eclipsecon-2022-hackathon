@@ -12,6 +12,6 @@ LABEL org.opencontainers.image.source="https://github.com/Eclipse-IoT/eclipsecon
 
 RUN mkdir /public
 
-COPY --from=builder target/release/eclipsecon-model-converter /
+COPY --from=builder ../target/release/eclipsecon-model-converter /
 
 ENTRYPOINT [ "/eclipsecon-model-converter" ]
