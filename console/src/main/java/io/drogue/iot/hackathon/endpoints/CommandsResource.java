@@ -6,7 +6,6 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 
 import io.drogue.iot.hackathon.Processor;
@@ -48,6 +47,8 @@ public class CommandsResource {
 
         var settings = new DisplaySettings();
         settings.device = claim.get().id;
+        settings.enabled = command.enabled;
+        settings.brightness = command.brightness;
 
         this.processor.updateDisplaySettings(settings);
     }

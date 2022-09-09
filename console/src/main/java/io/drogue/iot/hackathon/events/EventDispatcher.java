@@ -20,7 +20,6 @@ import org.slf4j.LoggerFactory;
 
 import io.drogue.iot.hackathon.data.DeviceEvent;
 import io.drogue.iot.hackathon.data.DeviceState;
-import io.drogue.iot.hackathon.registry.Device;
 import io.drogue.iot.hackathon.service.DeviceClaimService;
 import io.quarkus.security.identity.IdentityProviderManager;
 import io.quarkus.security.identity.SecurityIdentity;

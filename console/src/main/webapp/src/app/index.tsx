@@ -33,7 +33,7 @@ const Content: React.FunctionComponent = () => {
 };
 
 export interface Toasts {
-  addAlert: (variant: AlertVariant, title: string, timeout?: number | boolean) => void;
+  addAlert: (variant: AlertVariant, title: string, timeout?: number | boolean, content?: React.ReactNode) => void;
   removeAlert: (key: React.Key) => void;
 }
 
@@ -44,9 +44,9 @@ const App: React.FunctionComponent = () => {
 
   const [alerts, setAlerts] = useState<Partial<AlertProps>[]>([]);
 
-  const addAlert = (variant: AlertVariant, title: string, timeout?: number | boolean) => {
+  const addAlert = (variant: AlertVariant, title: string, timeout?: number | boolean, children?: React.ReactNode) => {
     setAlerts(prevState => [...prevState, {
-      title, variant, timeout, key: new Date().getTime()
+      title, variant, timeout, key: new Date().getTime(), children
     }]);
   };
 
@@ -83,7 +83,7 @@ const App: React.FunctionComponent = () => {
   return (
     <React.Fragment>
       <AlertGroup isToast isLiveRegion>
-        {alerts.map(({ key, variant, title, timeout }) => {
+        {alerts.map(({ key, variant, title, timeout, children }) => {
 
           let actionClose;
           if (!timeout) {
@@ -93,14 +93,15 @@ const App: React.FunctionComponent = () => {
             />);
           }
 
-          return (<Alert
-            variant={variant}
-            title={title}
-            timeout={timeout}
-            actionClose={actionClose}
-            onTimeout={() => removeAlert(key)}
-            key={key}
-          />);
+          return (
+            <Alert
+              variant={variant}
+              title={title}
+              timeout={timeout}
+              actionClose={actionClose}
+              onTimeout={() => removeAlert(key)}
+              key={key}
+            ></Alert>);
         })}
       </AlertGroup>
 

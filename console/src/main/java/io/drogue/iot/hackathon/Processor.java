@@ -71,6 +71,7 @@ public class Processor {
     }
 
     @Incoming("event-stream")
+    @OnOverflow(value = OnOverflow.Strategy.DROP)
     public void process(DeviceEvent event) {
         var payload = event.getPayload();
 

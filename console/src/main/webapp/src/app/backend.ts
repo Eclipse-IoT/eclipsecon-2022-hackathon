@@ -1,6 +1,7 @@
 import { DispatchWithoutAction, useContext, useEffect, useReducer, useState } from "react";
 import { useAuth } from "oidc-react";
 import { EndpointsContext } from "@app/index";
+import { AuthContextProps } from "oidc-react/build/src/AuthContextInterface";
 
 export interface DeviceClaim {
   deviceId: string | null;
@@ -108,7 +109,9 @@ const useEndpoints = (): Service<Endpoints> => {
 
   useEffect(() => {
     console.log("Fetching backend information");
-    fetch("/.well-known/eclipsecon-2022/endpoints")
+    fetch("/.well-known/eclipsecon-2022/endpoints", {
+      cache: "no-cache"
+    })
       .then(response => {
         if (!response.ok) {
           throw new Error(`Failed to retrieve endpoint information: ${response.status} - ${response.statusText}`);
@@ -160,6 +163,35 @@ const useGameService = (): [Service<DeviceClaim>, DispatchWithoutAction] => {
   return [result, reload];
 };
 
+interface DisplaySettings {
+  brightness: number;
+  enabled: boolean;
+}
+
+const setDisplay = async (endpoints: Service<Endpoints>, auth: AuthContextProps, display: DisplaySettings): Promise<Response> => {
+
+  if (endpoints.status !== "loaded") {
+    return Promise.reject("Missing endpoints");
+  }
+
+  const url = endpoints.payload.api("/api/commands/v1alpha1/display");
+
+  return await fetch(url, {
+    method: "POST",
+    headers: new Headers({
+      "Authorization": "Bearer " + auth.userData?.access_token,
+      "Content-Type": "application/json"
+    }),
+    body: JSON.stringify(display)
+  }).then(response => {
+    if (!response.ok) {
+      throw new Error(`Request failed: ${response.status}: ${response.statusText}`);
+    }
+    return response;
+  });
+
+};
+
 const claimDevice = async (endpoints: Endpoints, deviceId: string, accessToken?: string): Promise<Response> => {
 
   const url = endpoints.api("/api/deviceClaims/v1alpha1?" + new URLSearchParams({
@@ -199,4 +231,4 @@ const releaseDevice = async (endpoints: Endpoints, deviceId: string, accessToken
     });
 };
 
-export { useEndpoints, useGameService, claimDevice, releaseDevice };
+export { useEndpoints, useGameService, claimDevice, releaseDevice, setDisplay };

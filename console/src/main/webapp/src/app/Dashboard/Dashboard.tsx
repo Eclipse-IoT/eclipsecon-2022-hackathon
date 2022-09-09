@@ -13,13 +13,14 @@ import {
   ModalVariant,
   PageSection,
   TextInput,
-  Title
+  Title, Toolbar, ToolbarContent, ToolbarItem
 } from "@patternfly/react-core";
 import { claimDevice, releaseDevice, useGameService } from "@app/backend";
 import { ExclamationCircleIcon, MicrochipIcon } from "@patternfly/react-icons";
 import { EndpointsContext, ToastsContext } from "@app/index";
 import { useAuth } from "oidc-react";
 import { DeviceState } from "@app/DeviceState/DeviceState";
+import { DeviceControl } from "@app/DisplayCommand/DeviceControl";
 
 type validate = "success" | "error";
 
@@ -70,17 +71,28 @@ const Dashboard: React.FunctionComponent = () => {
   };
 
   if (service.status === "loaded") {
-    let claim;
+    let content;
     if (service.payload?.deviceId !== undefined) {
-      claim = (<React.Fragment>
-        <>Device claimed: {service.payload?.deviceId}</>
-        <Button variant="secondary" isDanger onClick={() => onReleaseDevice(service.payload?.deviceId)}>Release</Button>
+      content = (<React.Fragment>
+        <PageSection variant="light">
+          <Toolbar>
+            <ToolbarContent>
+              <ToolbarItem variant="label">Claimed</ToolbarItem>
+              <ToolbarItem>{service.payload?.deviceId}</ToolbarItem>
+              <ToolbarItem>
+                <Button variant="secondary" isDanger
+                        onClick={() => onReleaseDevice(service.payload?.deviceId)}>Release</Button>
+              </ToolbarItem>
+            </ToolbarContent>
+          </Toolbar>
 
-        <DeviceState></DeviceState>
+          <DeviceState></DeviceState>
+          <DeviceControl></DeviceControl>
 
+        </PageSection>
       </React.Fragment>);
     } else {
-      claim = (
+      content = (
         <React.Fragment>
           <EmptyState>
             <EmptyStateIcon icon={MicrochipIcon} />
@@ -133,9 +145,7 @@ const Dashboard: React.FunctionComponent = () => {
       );
     }
 
-    return (<PageSection>
-      {claim}
-    </PageSection>);
+    return content;
 
   } else {
     return (<></>);

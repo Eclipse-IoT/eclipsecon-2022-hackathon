@@ -1,8 +1,8 @@
 import * as React from "react";
 import { useState, useEffect, useRef, useContext } from "react";
-import { Endpoints, useEndpoints } from "@app/backend";
 import { useAuth } from "oidc-react";
 import { EndpointsContext } from "@app/index";
+import { CodeBlock, CodeBlockCode } from "@patternfly/react-core";
 
 enum ConnectionState {
   Disconnected = "Disconnected",
@@ -150,11 +150,14 @@ const DeviceState: React.FunctionComponent = () => {
     ws.current?.accessToken(auth.userData?.access_token);
   }, [ws, auth]);
 
-  return <div>
-    {state.connectionState} / <code>
-    <pre>{JSON.stringify(state.lastMessage, null, 2)}</pre>
-  </code>
-  </div>;
+  return (
+    <>
+      {state.connectionState}
+      <CodeBlock>
+        <CodeBlockCode id="device-state-content">{JSON.stringify(state.lastMessage, null, 2)}</CodeBlockCode>
+      </CodeBlock>
+    </>
+  );
 };
 
 export { DeviceState };
