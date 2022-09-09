@@ -1,0 +1,21 @@
+<html lang="en">
+
+<body>
+
+<dl>
+    {#for thing in state }
+        <dt>{thing.key}</dt>
+        <dd>
+        <dl>
+        {#for prop in thing.value }
+            <dt>{prop.key}</dt>
+            <dd>{prop.value.value}</dd>
+        {/for}
+        </dl>
+        </dd>
+    {/for}
+</dl>
+
+</body>
+
+</html>
