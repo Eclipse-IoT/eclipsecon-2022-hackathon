@@ -6,10 +6,9 @@ spec:
   source:
     git:
       uri: https://github.com/eclipse-iot/eclipsecon-2022-hackathon
-    contextDir: web-simulator
   strategy:
     dockerStrategy:
-      dockerfilePath: Dockerfile
+      dockerfilePath: web-simulator/Dockerfile
   output:
     to:
       kind: ImageStreamTag
