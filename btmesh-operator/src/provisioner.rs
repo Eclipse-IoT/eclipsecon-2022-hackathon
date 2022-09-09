@@ -48,7 +48,6 @@ impl Operator {
                         BtMeshStatus {
                             address: None,
                             conditions: Default::default(),
-                            state: BtMeshDeviceState::Provisioning { error: None },
                         }
                     };
 
@@ -69,7 +68,11 @@ impl Operator {
                     device.metadata.ensure_finalizer("btmesh-operator");
 
                     // Send provisioning command for this device
-                    if let BtMeshDeviceState::Provisioning { error: _ } = status.state {
+                    if status.address.is_none() {
+                        log::info!(
+                            "Sending provisioning command to device {}",
+                            device.metadata.name
+                        );
                         if let Ok(command) = serde_json::to_vec(&BtMeshCommand {
                             command: BtMeshOperation::Provision {
                                 device: uuid.clone(),
@@ -229,7 +232,6 @@ impl Operator {
                                         BtMeshStatus {
                                             address: None,
                                             conditions: Default::default(),
-                                            state: event.status.clone(),
                                         }
                                     };
 
@@ -260,7 +262,6 @@ impl Operator {
                                         }
                                         BtMeshDeviceState::Provisioning { error } => {
                                             status.conditions.update("Provisioning", true);
-
                                             let mut condition = ConditionStatus::default();
                                             if let Some(error) = error {
                                                 condition.status = Some(false);
@@ -329,6 +330,5 @@ dialect!(BtMeshStatus [Section::Status => "btmesh"]);
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct BtMeshStatus {
     pub conditions: Conditions,
-    pub state: BtMeshDeviceState,
     pub address: Option<u16>,
 }
