@@ -289,17 +289,21 @@ impl Operator {
                                                 updated |= Self::ensure_alias(&mut device, &alias);
                                             }
                                             BtMeshDeviceState::Provisioning { error } => {
-                                                status.conditions.update("Provisioning", true);
-                                                let mut condition = ConditionStatus::default();
-                                                if let Some(error) = error {
-                                                    condition.status = Some(false);
-                                                    condition.reason = Some(
-                                                        "Error provisioning device".to_string(),
-                                                    );
-                                                    condition.message = Some(error.clone());
+                                                // If we're provisioned, we cant move back to being provisioning!
+                                                if status.address.is_none() {
+                                                    status.conditions.update("Provisioning", true);
+                                                    let mut condition = ConditionStatus::default();
+                                                    if let Some(error) = error {
+                                                        condition.status = Some(false);
+                                                        condition.reason = Some(
+                                                            "Error provisioning device".to_string(),
+                                                        );
+                                                        condition.message = Some(error.clone());
+                                                    }
+                                                    status
+                                                        .conditions
+                                                        .update("Provisioned", condition);
                                                 }
-
-                                                status.conditions.update("Provisioned", condition);
                                             }
                                         }
                                         self.update_device(&mut device, status, updated).await;
