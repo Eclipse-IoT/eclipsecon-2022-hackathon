@@ -1,12 +1,13 @@
 use crate::Publisher;
 use sensor_model::RawMessage;
-use yew::Callback;
+use yew::{html, Callback, Html};
 
 pub struct HttpPublisher {
     url: reqwest::Url,
     username: String,
     password: String,
     command: Callback<RawMessage>,
+    connection_state: Callback<Html>,
 }
 
 impl HttpPublisher {
@@ -15,12 +16,15 @@ impl HttpPublisher {
         username: String,
         password: String,
         command: Callback<RawMessage>,
+        connection_state: Callback<Html>,
     ) -> Self {
+        connection_state.emit(html!("Running"));
         Self {
             url,
             username,
             password,
             command,
+            connection_state,
         }
     }
 
@@ -63,5 +67,11 @@ impl Publisher for HttpPublisher {
         });
 
         Ok(())
+    }
+}
+
+impl Drop for HttpPublisher {
+    fn drop(&mut self) {
+        self.connection_state.emit(html!("Stopped"));
     }
 }

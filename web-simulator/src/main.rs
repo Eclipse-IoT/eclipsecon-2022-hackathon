@@ -95,11 +95,14 @@ fn app() -> Html {
     });
     let state = use_state(|| SimulatorState::Stopped);
 
-    let url =
-        use_state(|| "https://web-simulator-eclipsecon-2022.apps.sandbox.drogue.world".to_string());
+    let url = use_state(|| {
+        "wss://mqtt-endpoint-ws-browser-drogue-iot.apps.wonderful.iot-playground.org/mqtt"
+            .to_string()
+    });
     let application = use_state(|| "eclipsecon-hackathon".to_string());
     let device = use_state(|| "simulator1".to_string());
     let password = use_state(|| "hey-rodney".to_string());
+    let connection_state = use_state(|| html!("Stopped"));
     let refs = Refs::default();
 
     let onclick = {
@@ -111,6 +114,7 @@ fn app() -> Html {
         let device = device.clone();
         let password = password.clone();
         let refs = refs.clone();
+        let connection_state = connection_state.clone();
 
         Callback::from(move |_| {
             let url = Some((*url).clone()).filter(|s| !s.is_empty());
@@ -162,6 +166,11 @@ fn app() -> Html {
                             }
                         });
 
+                        let cs = connection_state.clone();
+                        let on_connection_state = Callback::from(move |state| {
+                            cs.set(state);
+                        });
+
                         let publisher: Arc<dyn Publisher> = match url.scheme() {
                             "ws" | "wss" => Arc::new(MqttPublisher::new(
                                 url,
@@ -169,12 +178,16 @@ fn app() -> Html {
                                 password,
                                 MqttOptions {
                                     on_command,
-                                    on_success: Default::default(),
-                                    on_failure: Default::default(),
-                                    on_connection_lost: Default::default(),
+                                    on_connection_state,
                                 },
                             )),
-                            _ => Arc::new(HttpPublisher::new(url, username, password, on_command)),
+                            _ => Arc::new(HttpPublisher::new(
+                                url,
+                                username,
+                                password,
+                                on_command,
+                                on_connection_state,
+                            )),
                         };
 
                         // Battery
@@ -346,11 +359,13 @@ fn app() -> Html {
         <div class="field">
         <label class="label">{"State"}</label>
         <div class="control">
-        <p>{&*state}</p>
+        <p>{(*connection_state).clone()}</p>
         </div>
         </div>
 
-        <h2>{"Display"}</h2>
+        <div class="field">
+        <label class="label">{"Display"}</label>
+        <div class="control">
             <span id="0x0" class={dotcolor} style={style.clone()}/>
             <span id="0x1" class={dotcolor} style={style.clone()}/>
             <span id="0x2" class={dotcolor} style={style.clone()}/>
@@ -381,6 +396,7 @@ fn app() -> Html {
             <span id="4x3" class={dotcolor} style={style.clone()} />
             <span id="4x4" class={dotcolor} style={style.clone()} />
         <br />
+        </div></div>
 
         </div></div>
 

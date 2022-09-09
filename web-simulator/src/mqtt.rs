@@ -9,7 +9,7 @@ use std::{
     time::Duration,
 };
 use wasm_bindgen::{prelude::*, JsCast};
-use yew::Callback;
+use yew::{html, Callback, Html};
 
 #[wasm_bindgen(module = "/js/paho/wrapper.js")]
 extern "C" {
@@ -419,20 +419,25 @@ pub struct MqttPublisher {
     client: Arc<Mutex<MqttClient>>,
     topic: String,
     qos: QoS,
+    opts: MqttOptions,
 }
 
 #[derive(Clone, Default)]
 pub struct MqttOptions {
+    pub on_connection_state: Callback<Html>,
     pub on_command: Callback<RawMessage>,
-    pub on_connection_lost: Callback<String>,
-    pub on_success: Callback<()>,
-    pub on_failure: Callback<String>,
 }
 
 impl MqttPublisher {
     pub fn new(url: reqwest::Url, username: String, password: String, opts: MqttOptions) -> Self {
+        opts.on_connection_state.emit(html!("Connecting"));
         let mut client = MqttClient::new(url.as_str(), None);
-        client.set_on_connection_lost(opts.on_connection_lost.clone());
+
+        let cs = opts.on_connection_state.clone();
+        client.set_on_connection_lost(Callback::from(move |err| {
+            cs.emit(html!({ format!("Disconnected: {err}") }))
+        }));
+
         client.set_on_message_arrived(opts.on_command.filter_reform(|msg: MqttMessage| {
             log::info!("Received message: {msg:?}");
             if let Some(_) = msg.topic.strip_prefix("command/inbox//") {
@@ -456,6 +461,8 @@ impl MqttPublisher {
         let client = Arc::new(Mutex::new(client));
         let c = client.clone();
 
+        let cs = opts.on_connection_state.clone();
+
         if let Err(err) = client.lock().unwrap().connect(
             MqttConnectOptions {
                 username: Some(username),
@@ -465,16 +472,33 @@ impl MqttPublisher {
                 keep_alive_interval: Some(Duration::from_secs(2)),
                 timeout: Some(Duration::from_secs(5)),
             },
-            Callback::from(move |_| {
-                let _ = c.lock().unwrap().subscribe(
-                    "command/inbox/#",
-                    QoS::QoS0,
-                    Duration::from_secs(5),
-                    Callback::from(|_| {}),
-                    Callback::from(|_| {}),
-                );
-            }),
-            Callback::from(|_| {}),
+            {
+                let cs = cs.clone();
+                cs.emit(html!("Subscribing"));
+                Callback::from(move |_| {
+                    let _ = c.lock().unwrap().subscribe(
+                        "command/inbox/#",
+                        QoS::QoS0,
+                        Duration::from_secs(5),
+                        {
+                            let cs = cs.clone();
+                            Callback::from(move |_| cs.emit(html!("Running")))
+                        },
+                        {
+                            let cs = cs.clone();
+                            Callback::from(move |err| {
+                                cs.emit(html!(format!("Failed to subscribe: {err}")));
+                            })
+                        },
+                    );
+                })
+            },
+            {
+                let cs = cs.clone();
+                Callback::from(move |err| {
+                    cs.emit(html!(format!("Failed to connect: {err}")));
+                })
+            },
         ) {
             log::warn!("Failed to connect: {err}");
         }
@@ -483,6 +507,7 @@ impl MqttPublisher {
             client,
             qos: QoS::QoS1,
             topic: "sensor".to_string(),
+            opts,
         }
     }
 }
@@ -494,5 +519,11 @@ impl Publisher for MqttPublisher {
             .lock()
             .unwrap()
             .publish(&self.topic, payload, self.qos, false)?)
+    }
+}
+
+impl Drop for MqttPublisher {
+    fn drop(&mut self) {
+        self.opts.on_connection_state.emit(html!("Stopped"));
     }
 }
