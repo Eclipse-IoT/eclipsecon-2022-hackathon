@@ -91,7 +91,7 @@ struct Refs {
 fn app() -> Html {
     let matrix = use_state(|| MatrixState {
         on: false,
-        brightness: 128,
+        brightness: 255,
     });
     let state = use_state(|| SimulatorState::Stopped);
 
