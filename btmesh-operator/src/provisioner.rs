@@ -57,15 +57,13 @@ impl Operator {
                 );
                 log::info!("Using topic {} for commands", topic);
                 let uuid = spec.device.to_ascii_lowercase();
-                Self::ensure_alias(device, &uuid);
-                self.update_device(device, status.clone()).await;
+                let mut updated = false;
+                updated |= Self::ensure_alias(device, &uuid);
 
                 if device.metadata.deletion_timestamp.is_none() {
-                    log::info!(
-                        "Device {} is active, setting finalizer and sending provisioning message",
-                        device.metadata.name
-                    );
-                    device.metadata.ensure_finalizer("btmesh-operator");
+                    log::info!("Device {} is active", device.metadata.name);
+                    updated |= device.metadata.ensure_finalizer("btmesh-operator");
+                    self.update_device(device, status.clone(), updated).await;
 
                     // Send provisioning command for this device
                     if status.address.is_none() {
@@ -85,6 +83,7 @@ impl Operator {
                         }
                     }
                 } else {
+                    self.update_device(device, status.clone(), updated).await;
                     log::info!(
                         "Device {} is being deleted, sending reset command",
                         device.metadata.name
@@ -104,16 +103,24 @@ impl Operator {
         }
     }
 
-    pub async fn update_device(&self, device: &mut Device, status: BtMeshStatus) {
-        if let Ok(_) = device.set_section::<BtMeshStatus>(status) {
-            match self.registry.update_device(&device).await {
-                Ok(_) => log::debug!("Device {} status updated", device.metadata.name),
-                Err(e) => {
-                    log::warn!(
-                        "Device {} status update error: {:?}",
-                        device.metadata.name,
-                        e
-                    );
+    pub async fn update_device(&self, device: &mut Device, status: BtMeshStatus, update: bool) {
+        let updated = if let Some(Ok(s)) = device.section::<BtMeshStatus>() {
+            status != s || update
+        } else {
+            update
+        };
+
+        if updated {
+            if let Ok(_) = device.set_section::<BtMeshStatus>(status) {
+                match self.registry.update_device(&device).await {
+                    Ok(_) => log::debug!("Device {} status updated", device.metadata.name),
+                    Err(e) => {
+                        log::warn!(
+                            "Device {} status update error: {:?}",
+                            device.metadata.name,
+                            e
+                        );
+                    }
                 }
             }
         }
@@ -150,7 +157,7 @@ impl Operator {
         Ok(())
     }
 
-    fn ensure_alias(device: &mut Device, alias: &str) {
+    fn ensure_alias(device: &mut Device, alias: &str) -> bool {
         let mut aliases: Vec<String> = device
             .spec
             .get("alias")
@@ -166,14 +173,17 @@ impl Operator {
             })
             .unwrap_or(Vec::new());
 
+        let mut ret = false;
         let alias = alias.to_string();
         if !aliases.contains(&alias) {
             aliases.push(alias);
+            ret = true;
         }
 
         device
             .spec
             .insert("alias".to_string(), serde_json::json!(aliases));
+        ret
     }
 
     pub async fn process_events(
@@ -235,6 +245,7 @@ impl Operator {
                                         }
                                     };
 
+                                    let mut updated = false;
                                     match &event.status {
                                         BtMeshDeviceState::Reset { error } => {
                                             if let Some(error) = error {
@@ -248,7 +259,9 @@ impl Operator {
                                             } else {
                                                 status.conditions.update("Provisioned", false);
                                                 status.conditions.update("Provisioning", false);
-                                                device.metadata.remove_finalizer("btmesh-operator");
+                                                updated |= device
+                                                    .metadata
+                                                    .remove_finalizer("btmesh-operator");
                                             }
                                         }
                                         // If we're provisioned, update the status and insert alias in spec if its not already there
@@ -258,7 +271,7 @@ impl Operator {
                                             status.address = Some(*address);
                                             let a = address.to_be_bytes();
                                             let alias = format!("{:02x}{:02x}", a[0], a[1]);
-                                            Self::ensure_alias(&mut device, &alias);
+                                            updated |= Self::ensure_alias(&mut device, &alias);
                                         }
                                         BtMeshDeviceState::Provisioning { error } => {
                                             status.conditions.update("Provisioning", true);
@@ -273,7 +286,7 @@ impl Operator {
                                             status.conditions.update("Provisioned", condition);
                                         }
                                     }
-                                    self.update_device(&mut device, status).await;
+                                    self.update_device(&mut device, status, updated).await;
                                 }
                             }
                         }
@@ -327,7 +340,7 @@ pub struct BtMeshSpec {
 
 dialect!(BtMeshStatus [Section::Status => "btmesh"]);
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+#[derive(Serialize, Deserialize, Debug, Clone, Eq, PartialEq)]
 pub struct BtMeshStatus {
     pub conditions: Conditions,
     pub address: Option<u16>,
