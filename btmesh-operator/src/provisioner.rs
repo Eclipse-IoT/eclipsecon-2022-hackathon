@@ -57,7 +57,8 @@ impl Operator {
                     self.application, device.metadata.name,
                 );
                 log::info!("Using topic {} for commands", topic);
-                Self::ensure_alias(device, &spec.device);
+                let uuid = spec.device.to_ascii_lowercase();
+                Self::ensure_alias(device, &uuid);
                 self.update_device(device, status.clone()).await;
 
                 if device.metadata.deletion_timestamp.is_none() {
@@ -71,7 +72,7 @@ impl Operator {
                     if let BtMeshDeviceState::Provisioning { error: _ } = status.state {
                         if let Ok(command) = serde_json::to_vec(&BtMeshCommand {
                             command: BtMeshOperation::Provision {
-                                device: spec.device.clone(),
+                                device: uuid.clone(),
                             },
                         }) {
                             let message = mqtt::Message::new(topic, &command[..], 1);
@@ -87,9 +88,7 @@ impl Operator {
                     );
                     if let Some(address) = &status.address {
                         if let Ok(command) = serde_json::to_vec(&BtMeshCommand {
-                            command: BtMeshOperation::Reset {
-                                address: address.clone(),
-                            },
+                            command: BtMeshOperation::Reset { address: *address },
                         }) {
                             let message = mqtt::Message::new(topic, &command[..], 1);
                             if let Err(e) = self.client.publish(message).await {

@@ -195,8 +195,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                                 sleep(Duration::from_secs(5)).await;
 
 
-                                let topic = format!("btmesh/{}", uuid);
-                                println!("Sending message to topic {}", uuid);
+                                let topic = format!("btmesh/{}", uuid.as_simple().to_string());
+                                println!("Sending message to topic {}", topic);
                                 let status = BtMeshEvent {
                                     status: BtMeshDeviceState::Provisioned {
                                         address: unicast,
@@ -220,7 +220,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                                    status: BtMeshDeviceState::Provisioning { error: Some(reason) }
                                  };
 
-                                let topic = format!("btmesh/{}", uuid);
+                                let topic = format!("btmesh/{}", uuid.as_simple().to_string());
                                 let data = serde_json::to_string(&status)?;
                                 let message = mqtt::Message::new(topic, data.as_bytes(), 1);
                                 if let Err(e) = mqtt_client.publish(message).await {
@@ -297,6 +297,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                                                         }
                                                     };
 
+                                                    let topic = format!("btmesh/{}", device);
                                                     let data = serde_json::to_string(&status)?;
                                                     let message = mqtt::Message::new(topic, data.as_bytes(), 1);
                                                     if let Err(e) = mqtt_client.publish(message).await {
