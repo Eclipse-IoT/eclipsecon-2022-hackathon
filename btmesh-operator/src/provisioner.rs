@@ -88,6 +88,7 @@ impl Operator {
                         "Device {} is being deleted, sending reset command",
                         device.metadata.name
                     );
+                    log::debug!("Device state: {:?}", device);
                     if let Some(address) = &status.address {
                         if let Ok(command) = serde_json::to_vec(&BtMeshCommand {
                             command: BtMeshOperation::Reset { address: *address },
@@ -110,8 +111,10 @@ impl Operator {
             update
         };
 
+        log::info!("Updating device: {}", updated);
         if updated {
             if let Ok(_) = device.set_section::<BtMeshStatus>(status) {
+                log::debug!("Updating device state: {:?}", device);
                 match self.registry.update_device(&device).await {
                     Ok(_) => log::debug!("Device {} status updated", device.metadata.name),
                     Err(e) => {
@@ -274,9 +277,10 @@ impl Operator {
                                                 } else {
                                                     status.conditions.update("Provisioned", false);
                                                     status.conditions.update("Provisioning", false);
-                                                    updated |= device
+                                                    device
                                                         .metadata
                                                         .remove_finalizer("btmesh-operator");
+                                                    updated = true;
                                                 }
                                             }
                                             // If we're provisioned, update the status and insert alias in spec if its not already there
