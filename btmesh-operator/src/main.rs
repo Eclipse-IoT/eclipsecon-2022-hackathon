@@ -70,7 +70,7 @@ async fn main() -> anyhow::Result<()> {
 
     let mqtt_opts = mqtt::CreateOptionsBuilder::new()
         .server_uri(mqtt_uri)
-        .client_id("btmesh-provisioning-operator")
+        .client_id("btmesh-operator")
         .persistence(mqtt::PersistenceType::None)
         .finalize();
     let mut mqtt_client = mqtt::AsyncClient::new(mqtt_opts)?;
