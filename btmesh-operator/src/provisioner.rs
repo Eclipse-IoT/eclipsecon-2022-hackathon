@@ -223,8 +223,7 @@ impl Operator {
                                 self.provision_devices(devices).await;
                             } else if subject == "btmesh" {
                                 log::debug!("Got event on btmesh channel: {:?}", e);
-                                let device =
-                                    self.registry.get_device(&self.application, device).await;
+
                                 let event: Option<BtMeshEvent> = match e.data() {
                                     Some(Data::Json(v)) => serde_json::from_value(v.clone())
                                         .map(|e| Some(e))
@@ -232,61 +231,79 @@ impl Operator {
                                     _ => None,
                                 };
 
-                                if let (Some(event), Ok(Some(mut device))) = (event, device) {
-                                    device.metadata.ensure_finalizer("btmesh-operator");
-                                    let mut status: BtMeshStatus = if let Some(Ok(status)) =
-                                        device.section::<BtMeshStatus>()
-                                    {
-                                        status
-                                    } else {
-                                        BtMeshStatus {
-                                            address: None,
-                                            conditions: Default::default(),
-                                        }
-                                    };
-
-                                    let mut updated = false;
-                                    match &event.status {
-                                        BtMeshDeviceState::Reset { error } => {
-                                            if let Some(error) = error {
-                                                let mut condition = ConditionStatus::default();
-                                                condition.status = Some(true);
-                                                condition.reason =
-                                                    Some("Error resetting device".to_string());
-                                                condition.message = Some(error.clone());
-                                                status.conditions.update("Provisioned", condition);
-                                                status.conditions.update("Provisioning", false);
-                                            } else {
-                                                status.conditions.update("Provisioned", false);
-                                                status.conditions.update("Provisioning", false);
-                                                updated |= device
-                                                    .metadata
-                                                    .remove_finalizer("btmesh-operator");
-                                            }
-                                        }
-                                        // If we're provisioned, update the status and insert alias in spec if its not already there
-                                        BtMeshDeviceState::Provisioned { address } => {
-                                            status.conditions.update("Provisioned", true);
-                                            status.conditions.update("Provisioning", false);
-                                            status.address = Some(*address);
+                                if let Some(event) = event {
+                                    // Reset events are not sent on behalf of devices
+                                    let device =
+                                        if let BtMeshDeviceState::Reset { address, error: _ } =
+                                            event.status
+                                        {
                                             let a = address.to_be_bytes();
-                                            let alias = format!("{:02x}{:02x}", a[0], a[1]);
-                                            updated |= Self::ensure_alias(&mut device, &alias);
-                                        }
-                                        BtMeshDeviceState::Provisioning { error } => {
-                                            status.conditions.update("Provisioning", true);
-                                            let mut condition = ConditionStatus::default();
-                                            if let Some(error) = error {
-                                                condition.status = Some(false);
-                                                condition.reason =
-                                                    Some("Error provisioning device".to_string());
-                                                condition.message = Some(error.clone());
-                                            }
+                                            format!("{:02x}{:02x}", a[0], a[1])
+                                        } else {
+                                            device
+                                        };
 
-                                            status.conditions.update("Provisioned", condition);
+                                    let device =
+                                        self.registry.get_device(&self.application, device).await;
+                                    if let Ok(Some(mut device)) = device {
+                                        device.metadata.ensure_finalizer("btmesh-operator");
+                                        let mut status: BtMeshStatus = if let Some(Ok(status)) =
+                                            device.section::<BtMeshStatus>()
+                                        {
+                                            status
+                                        } else {
+                                            BtMeshStatus {
+                                                address: None,
+                                                conditions: Default::default(),
+                                            }
+                                        };
+
+                                        let mut updated = false;
+                                        match &event.status {
+                                            BtMeshDeviceState::Reset { address: _, error } => {
+                                                if let Some(error) = error {
+                                                    let mut condition = ConditionStatus::default();
+                                                    condition.status = Some(true);
+                                                    condition.reason =
+                                                        Some("Error resetting device".to_string());
+                                                    condition.message = Some(error.clone());
+                                                    status
+                                                        .conditions
+                                                        .update("Provisioned", condition);
+                                                    status.conditions.update("Provisioning", false);
+                                                } else {
+                                                    status.conditions.update("Provisioned", false);
+                                                    status.conditions.update("Provisioning", false);
+                                                    updated |= device
+                                                        .metadata
+                                                        .remove_finalizer("btmesh-operator");
+                                                }
+                                            }
+                                            // If we're provisioned, update the status and insert alias in spec if its not already there
+                                            BtMeshDeviceState::Provisioned { address } => {
+                                                status.conditions.update("Provisioned", true);
+                                                status.conditions.update("Provisioning", false);
+                                                status.address = Some(*address);
+                                                let a = address.to_be_bytes();
+                                                let alias = format!("{:02x}{:02x}", a[0], a[1]);
+                                                updated |= Self::ensure_alias(&mut device, &alias);
+                                            }
+                                            BtMeshDeviceState::Provisioning { error } => {
+                                                status.conditions.update("Provisioning", true);
+                                                let mut condition = ConditionStatus::default();
+                                                if let Some(error) = error {
+                                                    condition.status = Some(false);
+                                                    condition.reason = Some(
+                                                        "Error provisioning device".to_string(),
+                                                    );
+                                                    condition.message = Some(error.clone());
+                                                }
+
+                                                status.conditions.update("Provisioned", condition);
+                                            }
                                         }
+                                        self.update_device(&mut device, status, updated).await;
                                     }
-                                    self.update_device(&mut device, status, updated).await;
                                 }
                             }
                         }
@@ -328,7 +345,7 @@ pub enum BtMeshDeviceState {
     Provisioned { address: u16 },
 
     #[serde(rename = "reset")]
-    Reset { error: Option<String> },
+    Reset { address: u16, error: Option<String> },
 }
 
 dialect!(BtMeshSpec [Section::Spec => "btmesh"]);
