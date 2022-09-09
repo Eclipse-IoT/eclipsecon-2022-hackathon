@@ -221,6 +221,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                                  };
 
                                 let topic = format!("btmesh/{}", uuid.as_simple().to_string());
+                                println!("Sending message to topic {}", topic);
                                 let data = serde_json::to_string(&status)?;
                                 let message = mqtt::Message::new(topic, data.as_bytes(), 1);
                                 if let Err(e) = mqtt_client.publish(message).await {
