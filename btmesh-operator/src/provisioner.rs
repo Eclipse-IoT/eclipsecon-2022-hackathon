@@ -150,7 +150,7 @@ impl Operator {
     fn ensure_alias(device: &mut Device, alias: &str) {
         let mut aliases: Vec<String> = device
             .spec
-            .get("aliases")
+            .get("alias")
             .map(|s| {
                 if let Some(v) = s.as_array() {
                     v.iter()
@@ -170,7 +170,7 @@ impl Operator {
 
         device
             .spec
-            .insert("aliases".to_string(), serde_json::json!(aliases));
+            .insert("alias".to_string(), serde_json::json!(aliases));
     }
 
     pub async fn process_events(
