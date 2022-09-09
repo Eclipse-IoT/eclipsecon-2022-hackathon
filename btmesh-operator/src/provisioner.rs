@@ -60,6 +60,10 @@ impl Operator {
                 self.update_device(device, status.clone()).await;
 
                 if device.metadata.deletion_timestamp.is_none() {
+                    log::info!(
+                        "Device {} is active, setting finalizer and sending provisioning message",
+                        device.metadata.name
+                    );
                     device.metadata.ensure_finalizer("btmesh-operator");
 
                     // Send provisioning command for this device
@@ -76,6 +80,10 @@ impl Operator {
                         }
                     }
                 } else {
+                    log::info!(
+                        "Device {} is being deleted, sending reset command",
+                        device.metadata.name
+                    );
                     if let Some(address) = &status.address {
                         if let Ok(command) = serde_json::to_vec(&BtMeshCommand {
                             command: BtMeshOperation::Reset {
@@ -109,6 +117,7 @@ impl Operator {
     }
 
     pub async fn reconcile_devices(&self) {
+        log::info!("Reconciling devices with interval {:?}", self.interval);
         loop {
             let devices = self
                 .registry
@@ -168,6 +177,7 @@ impl Operator {
         &self,
         mut stream: paho_mqtt::AsyncReceiver<Option<mqtt::Message>>,
     ) {
+        log::info!("Processing events events");
         loop {
             if let Some(m) = stream.next().await {
                 if let Some(m) = m {
@@ -189,6 +199,7 @@ impl Operator {
                             }
 
                             if subject == "devices" {
+                                log::debug!("Got event on devices channel: {:?}", e);
                                 let devices = self
                                     .registry
                                     .list_devices(&self.application, None)
@@ -198,6 +209,7 @@ impl Operator {
 
                                 self.provision_devices(devices).await;
                             } else if subject == "btmesh" {
+                                log::debug!("Got event on btmesh channel: {:?}", e);
                                 let device =
                                     self.registry.get_device(&self.application, device).await;
                                 let event: Option<BtMeshEvent> = match e.data() {
