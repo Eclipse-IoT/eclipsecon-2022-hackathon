@@ -237,11 +237,10 @@ impl Operator {
                                 if let Some(event) = event {
                                     // Reset events are not sent on behalf of devices
                                     let device =
-                                        if let BtMeshDeviceState::Reset { address, error: _ } =
-                                            event.status
+                                        if let BtMeshDeviceState::Reset { device, error: _ } =
+                                            &event.status
                                         {
-                                            let a = address.to_be_bytes();
-                                            format!("{:02x}{:02x}", a[0], a[1])
+                                            device.clone()
                                         } else {
                                             device
                                         };
@@ -263,7 +262,7 @@ impl Operator {
 
                                         let mut updated = false;
                                         match &event.status {
-                                            BtMeshDeviceState::Reset { address: _, error } => {
+                                            BtMeshDeviceState::Reset { device: _, error } => {
                                                 if let Some(error) = error {
                                                     let mut condition = ConditionStatus::default();
                                                     condition.status = Some(true);
@@ -353,7 +352,10 @@ pub enum BtMeshDeviceState {
     Provisioned { address: u16 },
 
     #[serde(rename = "reset")]
-    Reset { address: u16, error: Option<String> },
+    Reset {
+        device: String,
+        error: Option<String>,
+    },
 }
 
 dialect!(BtMeshSpec [Section::Spec => "btmesh"]);
