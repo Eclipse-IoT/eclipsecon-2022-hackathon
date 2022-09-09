@@ -2,6 +2,17 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: web-simulator
+  annotations:
+    image.openshift.io/triggers: |
+      [
+        {
+          "from": {
+            "kind":"ImageStreamTag",
+            "name":"web-simulator:latest"
+          },
+          "fieldPath":"spec.template.spec.containers[?(@.name==\"server\")].image"
+        }
+      ]
   labels:
     app.kubernetes.io/name: web-simulator
     app.kubernetes.io/instance: eclipsecon-2022

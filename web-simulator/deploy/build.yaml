@@ -1,0 +1,16 @@
+kind: BuildConfig
+apiVersion: build.openshift.io/v1
+metadata:
+  name: web-simulator
+spec:
+  source:
+    git:
+      uri: https://github.com/eclipse-iot/eclipsecon-2022-hackathon
+    contextDir: web-simulator
+  strategy:
+    dockerStrategy:
+      dockerfilePath: Dockerfile
+  output:
+    to:
+      kind: ImageStreamTag
+      name: web-simulator:latest
