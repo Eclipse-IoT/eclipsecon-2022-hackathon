@@ -20,8 +20,9 @@ sudo /usr/libexec/bluetooth/bluetooth-meshd --config ${PWD}/config --storage ${P
 ## Starting the provisioner
 
 ```
+# Make sure you pick a start address that doesn't conflict with others in the same mesh
 cd provisioner
-RUST_LOG=info cargo run -- --token 84783e12f11c4dcd
+RUST_LOG=info cargo run -- --token 84783e12f11c4dcd --start-address 0x00c0
 ```
 
 ## Starting the gateway
@@ -42,17 +43,14 @@ DEVICE_UUID=<uuid> cargo run --release
 
 ## Provision microbit
 
-```
-echo '{"device":"<uuid>"}' | http POST https://api.sandbox.drogue.cloud/api/command/v1alpha1/apps/eclipsecon-hackathon/devices/provisioner command==provision "Authorization:Bearer $(drg whoami -t)"
-```
-
-## Create device in Drogue Cloud
-
-Make a note of the assigned address from either the provisioner console or the microbit device console, and create (using 00bf as an example address here):
+To provision the microbit, we create a new device and set the UUID:
 
 ```
-drg create device 00bf --application eclipsecon-hackathon
-drg set gateway 00bf gateway --app eclipsecon-hackathon
+drg create device mydevice --app eclipsecon-hackathon --spec '{"btmesh":{"device":"<UUID>"},"gatewaySelector":{"matchNames":["provisioner"]}}'
 ```
+
+The operator will reconcile the state of the device and send the provisioning command to the device.
+
+You can look at the status section of the device to see when it has been successfully provisioned.
 
 ## Optional: Running the simulator
