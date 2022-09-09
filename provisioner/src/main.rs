@@ -196,6 +196,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 
                                 let topic = format!("btmesh/{}", uuid);
+                                println!("Sending message to topic {}", uuid);
                                 let status = BtMeshEvent {
                                     status: BtMeshDeviceState::Provisioned {
                                         address: unicast,

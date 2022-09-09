@@ -56,6 +56,7 @@ impl Operator {
                     "command/{}/{}/btmesh",
                     self.application, device.metadata.name,
                 );
+                log::info!("Using topic {} for commands", topic);
                 Self::ensure_alias(device, &spec.device);
                 self.update_device(device, status.clone()).await;
 
@@ -220,6 +221,7 @@ impl Operator {
                                 };
 
                                 if let (Some(event), Ok(Some(mut device))) = (event, device) {
+                                    device.metadata.ensure_finalizer("btmesh-operator");
                                     let mut status: BtMeshStatus = if let Some(Ok(status)) =
                                         device.section::<BtMeshStatus>()
                                     {
@@ -270,7 +272,6 @@ impl Operator {
                                             status.conditions.update("Provisioned", condition);
                                         }
                                     }
-
                                     self.update_device(&mut device, status).await;
                                 }
                             }

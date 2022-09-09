@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class DeviceSpec {
-    private GatewaySelector selector;
+    private GatewaySelector gatewaySelector;
     private DeviceAliases alias;
 
     public GatewaySelector getSelector() {
