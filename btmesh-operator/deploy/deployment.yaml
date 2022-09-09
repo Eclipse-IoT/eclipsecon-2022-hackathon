@@ -64,6 +64,8 @@ spec:
                 name: drogue-config
           - name: MQTT_GROUP_ID
             value: btmesh-operator
+          - name: RECONCILE_INTERVAL
+            value: 20s
         ports:
         - name: endpoint
           containerPort: 8080
