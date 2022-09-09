@@ -254,7 +254,7 @@ impl Operator {
                                             status.conditions.update("Provisioned", true);
                                             status.conditions.update("Provisioning", false);
                                             status.address = Some(*address);
-                                            let a = address.to_le_bytes();
+                                            let a = address.to_be_bytes();
                                             let alias = format!("{:02x}{:02x}", a[0], a[1]);
                                             Self::ensure_alias(&mut device, &alias);
                                         }
