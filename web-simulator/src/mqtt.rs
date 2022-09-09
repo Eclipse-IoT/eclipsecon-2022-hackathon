@@ -357,6 +357,14 @@ impl Inner {
     }
 }
 
+impl Drop for Inner {
+    fn drop(&mut self) {
+        if self.client.connected() {
+            self.client.disconnect();
+        }
+    }
+}
+
 fn convert_message(value: JsValue) -> Result<MqttMessage, String> {
     if let Some(msg) = value.dyn_ref::<Message>() {
         Ok(MqttMessage {
