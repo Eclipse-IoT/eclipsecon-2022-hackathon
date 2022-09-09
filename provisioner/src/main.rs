@@ -9,7 +9,7 @@ use bluer::{
     },
     Uuid,
 };
-use btmesh_common::address::{LabelUuid, VirtualAddress};
+use btmesh_common::address::LabelUuid;
 use btmesh_models::{
     foundation::configuration::{
         app_key::AppKeyMessage, model_publication::PublishAddress, ConfigurationClient,
@@ -19,15 +19,12 @@ use btmesh_models::{
     sensor::SENSOR_SETUP_SERVER,
     Message, Model,
 };
-use btmesh_operator::{
-    BtMeshCommand, BtMeshDeviceState, BtMeshEvent, BtMeshOperation, BtMeshStatus,
-};
+use btmesh_operator::{BtMeshCommand, BtMeshDeviceState, BtMeshEvent, BtMeshOperation};
 use clap::Parser;
 use clap_num::maybe_hex;
 use dbus::Path;
 use futures::{pin_mut, StreamExt};
 use paho_mqtt as mqtt;
-use serde_json::Value;
 use std::{sync::Arc, time::Duration};
 use tokio::{signal, sync::mpsc, time::sleep};
 use tokio_stream::wrappers::ReceiverStream;
@@ -198,12 +195,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                                 sleep(Duration::from_secs(5)).await;
 
 
-                                // TODO: Publish this message on the btmesh channel for the device
-                                let address = format!("{:04x}", unicast);
-                                let topic = format!("btmesh/{}", address);
+                                let topic = format!("btmesh/{}", uuid);
                                 let status = BtMeshEvent {
                                     status: BtMeshDeviceState::Provisioned {
-                                        address,
+                                        address: unicast,
                                     },
                                 };
 
@@ -220,10 +215,19 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                             ProvisionerMessage::AddNodeFailed(uuid, reason) => {
                                 println!("Failed to add node {:?}: '{:?}'", uuid, reason);
 
-                                // let status = BtMeshEvent {
-                                //   status: BtMeshDeviceState::Provisioning { error }
-                                // }
-                                // TODO Publish this message on the btmesh channel for the device
+                                 let status = BtMeshEvent {
+                                   status: BtMeshDeviceState::Provisioning { error: Some(reason) }
+                                 };
+
+                                let topic = format!("btmesh/{}", uuid);
+                                let data = serde_json::to_string(&status)?;
+                                let message = mqtt::Message::new(topic, data.as_bytes(), 1);
+                                if let Err(e) = mqtt_client.publish(message).await {
+                                    log::warn!(
+                                        "Error publishing provisioning status: {:?}",
+                                        e
+                                    );
+                                }
                             }
                         }
                     },
@@ -283,13 +287,23 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                                         if let Ok(uuid) = Uuid::parse_str(&device) {
                                             match node.management.add_node(uuid).await {
                                                 Ok(_) => {
-
+                                                    // Handled in AddNodeComplete
                                                 }
                                                 Err(e) => {
-                                                    // let status = BtMeshEvent {
-                                                    //   status: BtMeshDeviceState::Provisioning { error }
-                                                    // }
-                                                    // TODO Publish this message on the btmesh channel for the device
+                                                    let status = BtMeshEvent {
+                                                        status: BtMeshDeviceState::Provisioning {
+                                                            error: Some(e.to_string())
+                                                        }
+                                                    };
+
+                                                    let data = serde_json::to_string(&status)?;
+                                                    let message = mqtt::Message::new(topic, data.as_bytes(), 1);
+                                                    if let Err(e) = mqtt_client.publish(message).await {
+                                                        log::warn!(
+                                                            "Error publishing provisioning status: {:?}",
+                                                            e
+                                                        );
+                                                    }
                                                 }
                                             }
                                         }
@@ -297,8 +311,29 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                                     BtMeshOperation::Reset {
                                         address
                                     } => {
-                                        // TODO: Send reset to device and respond to cloud when done
-                                        todo!()
+                                        let topic = format!("btmesh/{}", address);
+                                        let error = match node.reset(element_path.clone(), address).await {
+                                            Ok(_) => {
+                                                None
+                                            }
+                                            Err(e) => {
+                                                Some(e.to_string())
+                                            }
+                                        };
+                                        let status = BtMeshEvent {
+                                            status: BtMeshDeviceState::Reset {
+                                                error
+                                            }
+                                        };
+
+                                        let data = serde_json::to_string(&status)?;
+                                        let message = mqtt::Message::new(topic, data.as_bytes(), 1);
+                                        if let Err(e) = mqtt_client.publish(message).await {
+                                            log::warn!(
+                                                "Error publishing reset status: {:?}",
+                                                e
+                                            );
+                                        }
                                     }
                                 }
                             }

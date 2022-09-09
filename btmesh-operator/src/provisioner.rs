@@ -221,8 +221,20 @@ impl Operator {
                                     };
 
                                     match &event.status {
-                                        BtMeshDeviceState::Reset => {
-                                            device.metadata.remove_finalizer("btmesh-operator");
+                                        BtMeshDeviceState::Reset { error } => {
+                                            if let Some(error) = error {
+                                                let mut condition = ConditionStatus::default();
+                                                condition.status = Some(true);
+                                                condition.reason =
+                                                    Some("Error resetting device".to_string());
+                                                condition.message = Some(error.clone());
+                                                status.conditions.update("Provisioned", condition);
+                                                status.conditions.update("Provisioning", false);
+                                            } else {
+                                                status.conditions.update("Provisioned", false);
+                                                status.conditions.update("Provisioning", false);
+                                                device.metadata.remove_finalizer("btmesh-operator");
+                                            }
                                         }
                                         // If we're provisioned, update the status and insert alias in spec if its not already there
                                         BtMeshDeviceState::Provisioned { address } => {
@@ -289,7 +301,7 @@ pub enum BtMeshDeviceState {
     Provisioned { address: u16 },
 
     #[serde(rename = "reset")]
-    Reset,
+    Reset { error: Option<String> },
 }
 
 dialect!(BtMeshSpec [Section::Spec => "btmesh"]);
