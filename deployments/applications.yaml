@@ -64,3 +64,28 @@ spec:
       kind: Deployment
       jqPathExpressions:
         - '.spec.template.spec.containers[] | .image'
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: eclipsecon-2022-web-simulator
+spec:
+  project: eclipsecon-2022
+  source:
+    repoURL: 'https://github.com/eclipse-iot/eclipsecon-2022-hackathon/'
+    path: web-simulator/deploy
+    targetRevision: HEAD
+    directory:
+      jsonnet:
+        tlas:
+          - name: ''
+            value: ''
+  destination:
+    name: in-cluster
+    namespace: eclipsecon-2022
+    server: ''
+  ignoreDifferences:
+    - group: apps
+      kind: Deployment
+      jqPathExpressions:
+        - '.spec.template.spec.containers[] | .image'
