@@ -27,6 +27,17 @@ Create thing:
 ----
 # http $HTTP_OPTS POST https://api-eclipsecon-2022.apps.sandbox.drogue.world/api/v1alpha1/things metadata:='{"name": "00aa/sensor", "application": "default"}'
 http $HTTP_OPTS POST https://api-eclipsecon-2022.apps.sandbox.drogue.world/api/v1alpha1/things metadata:='{"application": "default", "name": "00aa/sensor" }' 'reconciliation[changed][hierarchy][javaScript]=@hierarchy.js' 'reconciliation[deleting][hierarchy][javaScript]=@hierarchy.js'
+http $HTTP_OPTS PUT https://api-eclipsecon-2022.apps.sandbox.drogue.world/api/v1alpha1/things/default/things/00aa/annotations 'io.drogue/group=btmesh/eclipsecon2022'
+----
+
+Synthetics:
+
+[source,shell]
+----
+DEVICE=simulator2
+for i in noise temperature batteryLevel acceleration; do
+  http $HTTP_OPTS PUT https://api-eclipsecon-2022.apps.sandbox.drogue.world/api/v1alpha1/things/default/things/${DEVICE}%2Fsensor/syntheticStates/${i} javaScript=@syn_${i}.js
+done
 ----
 
 Get:

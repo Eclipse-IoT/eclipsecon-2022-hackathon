@@ -126,6 +126,7 @@ function register(reg) {
 
 switch (context.action) {
     case "changed": {
+        // FIXME: need to unregister previous state first, if it changed
         register(true);
         break;
     }
