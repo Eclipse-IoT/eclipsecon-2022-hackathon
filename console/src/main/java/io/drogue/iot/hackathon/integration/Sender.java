@@ -38,21 +38,4 @@ public class Sender {
 
         return MqttMessage.of(topic, command.getPayload(), MqttQoS.AT_LEAST_ONCE);
     }
-
-    @Incoming("provisioner-commands")
-    @Outgoing("commands")
-    public Message<byte[]> gatewayCommands(ProvisioningCommand command) {
-        LOG.info("Request to send provisioner command: {}", command);
-        var topic = "command/" + this.applicationName + "/provisioner/provision";
-
-        LOG.info("Sending to topic: {}", topic);
-        var m = new ObjectMapper();
-        try {
-            byte[] payload = m.writeValueAsBytes(command);
-            return MqttMessage.of(topic, payload, MqttQoS.AT_LEAST_ONCE);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
 }

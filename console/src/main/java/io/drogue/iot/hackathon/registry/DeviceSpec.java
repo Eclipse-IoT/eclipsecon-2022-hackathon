@@ -2,26 +2,36 @@ package io.drogue.iot.hackathon.registry;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import java.util.List;
+
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class DeviceSpec {
     private GatewaySelector gatewaySelector;
-    private DeviceAliases alias;
+    private List<String> alias;
 
-    public GatewaySelector getSelector() {
-        return selector;
+    private BtMeshSpec btmesh;
+
+    public GatewaySelector getGatewaySelector() {
+        return gatewaySelector;
     }
 
-    public DeviceSpec setSelector(GatewaySelector selector) {
-        this.selector = selector;
-        return this;
+    public void setGatewaySelector(GatewaySelector gatewaySelector) {
+        this.gatewaySelector = gatewaySelector;
     }
 
-    public DeviceAliases getAlias() {
+    public List<String> getAlias() {
         return alias;
     }
 
-    public DeviceSpec setAlias(DeviceAliases alias) {
+    public void setAlias(List<String> alias) {
         this.alias = alias;
-        return this;
+    }
+
+    public BtMeshSpec getBtmesh() {
+        return btmesh;
+    }
+
+    public void setBtmesh(BtMeshSpec btmesh) {
+        this.btmesh = btmesh;
     }
 }

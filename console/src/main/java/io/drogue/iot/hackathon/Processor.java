@@ -95,7 +95,7 @@ public class Processor {
     @Transactional
     public void claimDevice(final String claimId, final String userId, final boolean canCreate) {
         var claim = service.claimDevice(claimId, userId, canCreate);
-        registry.createDevice(claimId, Collections.singletonList(claim.deviceId));
+        registry.createDevice(claimId, claim.deviceId);
     }
 
     @Transactional
