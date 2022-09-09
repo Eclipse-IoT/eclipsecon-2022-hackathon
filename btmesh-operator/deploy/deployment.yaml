@@ -36,7 +36,7 @@ spec:
         image: btmesh-operator:latest
         env:
           - name: RUST_LOG
-            value: info
+            value: btmesh_operator=debug
           - name: DROGUE_APPLICATION
             valueFrom:
               secretKeyRef:
