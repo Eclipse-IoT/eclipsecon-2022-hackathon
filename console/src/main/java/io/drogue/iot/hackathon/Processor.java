@@ -44,22 +44,13 @@ public class Processor {
 
     private static final Logger LOG = LoggerFactory.getLogger(Processor.class);
 
-    private volatile DisplaySettings displaySettings = null;
-
     @Inject
     @Channel("display-changes")
     @Broadcast
     Emitter<DisplaySettings> displayChanges;
 
     public void updateDisplaySettings(DisplaySettings settings) {
-        LOG.info("Changing settings to {}", settings);
-        this.displaySettings = settings;
-        this.displayChanges.send(this.displaySettings);
-
-    }
-
-    public DisplaySettings getDisplaySettings() {
-        return this.displaySettings;
+        this.displayChanges.send(settings);
     }
 
     @Incoming("display-changes")
@@ -99,7 +90,7 @@ public class Processor {
     }
 
     @Transactional
-    public void releaseDevice (final String userId) {
+    public void releaseDevice(final String userId) {
         var claim = service.getDeviceClaimFor(userId);
         claim.ifPresent(deviceClaim -> registry.deleteDevice(deviceClaim.id));
         service.releaseDevice(userId);

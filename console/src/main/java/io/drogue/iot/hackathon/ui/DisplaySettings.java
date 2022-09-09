@@ -7,5 +7,6 @@ public class DisplaySettings {
     public String device;
 
     public Integer brightness;
-    public Boolean enabled;
+
+    public boolean enabled;
 }
