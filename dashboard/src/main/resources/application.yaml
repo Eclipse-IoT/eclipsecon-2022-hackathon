@@ -4,13 +4,3 @@ drogue:
   doppelgaenger:
     api: https://api-eclipsecon-2022.apps.sandbox.drogue.world
     rootId: /btmesh/eclipsecon2022
-
-"%dev":
-  quarkus:
-    oidc-client:
-      auth-server-url: "https://sso-eclipsecon-2022.apps.sandbox.drogue.world/realms/doppelgaenger"
-      # client-id: dashboard
-      client-id: services
-      credentials:
-        #secret: "H9PD9lPxXt3cvsQqpx1rnnbcwPXg8XoP"
-        secret: "qs4co0UnNTzIg0aGRJUHXD7rwbJHu93H"
