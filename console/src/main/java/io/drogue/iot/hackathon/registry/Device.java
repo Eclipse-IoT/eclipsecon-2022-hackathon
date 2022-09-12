@@ -7,6 +7,8 @@ public class Device {
     private Metadata metadata;
     private DeviceSpec spec;
 
+    private DeviceStatus status;
+
     public Metadata getMetadata() {
         return metadata;
     }
@@ -22,6 +24,15 @@ public class Device {
 
     public Device setSpec(DeviceSpec spec) {
         this.spec = spec;
+        return this;
+    }
+
+    public DeviceStatus getStatus() {
+        return status;
+    }
+
+    public Device setStatus(DeviceStatus status) {
+        this.status = status;
         return this;
     }
 }

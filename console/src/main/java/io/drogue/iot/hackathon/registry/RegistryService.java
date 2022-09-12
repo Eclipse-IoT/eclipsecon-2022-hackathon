@@ -32,4 +32,8 @@ public interface RegistryService {
     @DELETE
     @Path("/apps/{application}/devices/{device}")
     void deleteDevice(@PathParam("application") String application, @PathParam("device") String device);
+
+    @GET
+    @Path("/apps/{application}/devices/{device}")
+    Device getDevice(@PathParam("application") String application, @PathParam("device") String device);
 }

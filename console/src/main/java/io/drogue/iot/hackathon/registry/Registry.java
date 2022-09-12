@@ -70,4 +70,8 @@ public class Registry {
     public void deleteDevice(String deviceId) {
         registryService.deleteDevice(applicationName, deviceId);
     }
+
+    public Device getDevice(String device) {
+        return registryService.getDevice(applicationName, device);
+    }
 }
