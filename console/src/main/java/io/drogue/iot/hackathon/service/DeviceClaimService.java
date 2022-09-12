@@ -15,6 +15,9 @@ public class DeviceClaimService {
     @Inject
     EntityManager em;
 
+    @Inject
+    IdMap idMap;
+
     @Transactional
     public Optional<DeviceClaim> getDeviceClaimFor(final String userId) {
         var cb = em.getCriteriaBuilder();
@@ -41,6 +44,10 @@ public class DeviceClaimService {
                 claim = new Claims();
                 claim.setId(claimId);
                 // if we auto-create a claim, the deviceId is equal to the claimId
+                var deviceId = idMap.get(claimId);
+                if (deviceId == null) {
+                    throw new InvalidClaimIdException(claimId);
+                }
                 claim.setDeviceId(claimId);
             } else {
                 throw new AlreadyClaimedException(claimId);
