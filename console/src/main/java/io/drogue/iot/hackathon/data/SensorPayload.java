@@ -21,6 +21,14 @@ public class SensorPayload {
         this.noise = noise;
     }
 
+    public Acceleration getAcceleration() {
+        return this.acceleration;
+    }
+
+    public void setAcceleration(Acceleration acceleration) {
+        this.acceleration = acceleration;
+    }
+
     @Override
     public String toString() {
         return "SensorPayload{" +
