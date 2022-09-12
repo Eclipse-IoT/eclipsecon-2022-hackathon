@@ -35,5 +35,6 @@ public interface RegistryService {
 
     @GET
     @Path("/apps/{application}/devices/{device}")
+    @Produces(MediaType.APPLICATION_JSON)
     Device getDevice(@PathParam("application") String application, @PathParam("device") String device);
 }
