@@ -26,14 +26,12 @@ cargo build --release
 
 ```
 # Make sure you pick a start address that doesn't conflict with others in the same mesh
-cd provisioner
 RUST_LOG=info ./target/release/eclipsecon-provisioner --token 84783e12f11c4dcd --start-address 0x00bf
 ```
 
 ## Starting the gateway
 
 ```
-cd gateway
 RUST_LOG=info ./target/release/eclipsecon-gateway --token dd26596e54e78fa2
 ```
 
