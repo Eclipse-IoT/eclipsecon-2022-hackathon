@@ -29,11 +29,13 @@ class State {
         ws.onopen = () => {
             this.#setState({connected: true});
         };
-        ws.onclose = () => {
+        ws.onclose = (event) => {
+            console.info("onClose", event);
             this.#setState({connected: false});
             this.#reconnect();
         }
-        ws.onerror = () => {
+        ws.onerror = (event) => {
+            console.info("onError", event);
             this.#setState({connected: false});
             this.#reconnect();
         }
