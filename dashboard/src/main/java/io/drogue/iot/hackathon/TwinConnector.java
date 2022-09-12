@@ -254,4 +254,7 @@ public class TwinConnector {
         unsubscribe(thingId);
     }
 
+    public boolean isConnected() {
+        return this.connecting == null;
+    }
 }
