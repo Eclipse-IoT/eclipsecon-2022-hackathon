@@ -7,7 +7,7 @@ class State {
     constructor(target) {
         this.#target = target;
         const uri = new URL(document.documentURI);
-        if (uri.protocol === "https") {
+        if (uri.protocol === "https:") {
             uri.protocol = "wss";
         } else {
             uri.protocol = "ws";
