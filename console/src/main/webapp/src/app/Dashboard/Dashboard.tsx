@@ -78,7 +78,7 @@ const Dashboard: React.FunctionComponent = () => {
           <Toolbar>
             <ToolbarContent>
               <ToolbarItem variant="label">Claimed</ToolbarItem>
-              <ToolbarItem>{service.payload?.deviceId}</ToolbarItem>
+              <ToolbarItem>{service.payload?.id}</ToolbarItem>
               <ToolbarItem>
                 <Button variant="secondary" isDanger
                         onClick={() => onReleaseDevice(service.payload?.deviceId)}>Release</Button>
