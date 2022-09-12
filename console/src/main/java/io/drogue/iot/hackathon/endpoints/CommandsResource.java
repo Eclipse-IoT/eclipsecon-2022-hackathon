@@ -9,6 +9,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
 import io.drogue.iot.hackathon.Processor;
+import io.drogue.iot.hackathon.registry.Registry;
 import io.drogue.iot.hackathon.service.DeviceClaimService;
 import io.drogue.iot.hackathon.ui.DisplaySettings;
 import io.quarkus.security.Authenticated;
@@ -33,6 +34,9 @@ public class CommandsResource {
     @Inject
     DeviceClaimService service;
 
+    @Inject
+    Registry registry;
+
     @POST
     @Path("/display")
     @Consumes(MediaType.APPLICATION_JSON)
@@ -45,11 +49,20 @@ public class CommandsResource {
             throw new BadRequestException("No claimed device");
         }
 
-        var settings = new DisplaySettings();
-        settings.device = claim.get().id;
-        settings.enabled = command.enabled;
-        settings.brightness = command.brightness;
+        var device = registry.getDevice(claim.get().id);
+        if (device.getStatus() != null) {
+            if (device.getStatus().getBtmesh() != null) {
+                if (device.getStatus().getBtmesh().getAddress() != null) {
+                    String address = String.format("%04x", device.getStatus().getBtmesh().getAddress());
 
-        this.processor.updateDisplaySettings(settings);
+                    var settings = new DisplaySettings();
+                    settings.device = address;
+                    settings.enabled = command.enabled;
+                    settings.brightness = command.brightness;
+
+                    this.processor.updateDisplaySettings(settings);
+                }
+            }
+        }
     }
 }

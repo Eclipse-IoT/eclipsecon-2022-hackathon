@@ -59,27 +59,17 @@ public class Processor {
     @OnOverflow(value = OnOverflow.Strategy.LATEST)
     public DeviceCommand displayCommand(DisplaySettings settings) {
 
-        var device = registry.getDevice(settings.device);
-        if (device.getStatus() != null) {
-            if (device.getStatus().getBtmesh() != null) {
-                if (device.getStatus().getBtmesh().getAddress() != null) {
+        var display = new OnOffSet(settings.enabled);
+        display.setLocation((short) 0x100);
+        var commandPayload = new CommandPayload(display);
+        var command = new DeviceCommand();
 
-                    var display = new OnOffSet(settings.enabled);
-                    display.setLocation((short) 0x100);
-                    var commandPayload = new CommandPayload(display);
-                    var command = new DeviceCommand();
+        command.setDeviceId(settings.device);
+        command.setPayload(commandPayload);
 
-                    String address = String.format("%04x", device.getStatus().getBtmesh().getAddress());
-                    command.setDeviceId(address);
-                    command.setPayload(commandPayload);
+        LOG.info("Sending command: {} to address {}", command, settings.device);
 
-                    LOG.info("Sending command: {} to address {}", command, address);
-
-                    return command;
-                }
-            }
-        }
-        return null;
+        return command;
     }
 
     @Incoming("event-stream")
