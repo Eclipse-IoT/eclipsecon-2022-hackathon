@@ -28,6 +28,7 @@ impl OnOff {
                     match message {
                         GenericOnOffMessage::Get => {}
                         GenericOnOffMessage::Set(val) => {
+                            defmt::info!("Enabling display: {}", val.on_off != 0);
                             return val.on_off != 0;
                         }
                         GenericOnOffMessage::SetUnacknowledged(val) => {
@@ -79,8 +80,11 @@ impl OnOff {
 
     #[allow(unused_variables)]
     async fn jukebox(speaker: &mut Speaker) {
-        // TODO Speaker
-        // - Modify this section to play a riff (a collection of notes) on the speaker using the speaker instance
+        loop {
+            // TODO Speaker
+            // - Modify this section to play a riff (a collection of notes) on the speaker using the speaker instance
+            Timer::after(Duration::from_secs(60)).await;
+        }
     }
 }
 
