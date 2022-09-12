@@ -1,0 +1,9 @@
+apiVersion: v2
+name: eclipsecon-2022-dashboard
+description: EclipseCon 2022 Dashboard
+
+type: application
+
+version: 0.1.0
+
+appVersion: "0.1.0"

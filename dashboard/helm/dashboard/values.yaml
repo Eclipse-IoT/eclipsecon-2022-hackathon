@@ -1,0 +1,8 @@
+oidc:
+  authServer: https://sso-eclipsecon-2022.apps.sandbox.drogue.world/realms/eclipsecon
+  # clientSecretName is not the secret itself, but the name of a Kubernetes secret, containing the client id and secret
+  clientSecretName: keycloak-client-secret-services
+  # clientIdKey is the key containing the client ID in the secret referenced by 'clientSecretName'
+  clientIdKey: CLIENT_ID
+  # clientSecretKey is the key containing the client ID in the secret referenced by 'clientSecretName'
+  clientSecretKey: CLIENT_SECRET

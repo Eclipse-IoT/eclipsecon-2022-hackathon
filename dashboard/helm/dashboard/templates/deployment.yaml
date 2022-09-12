@@ -1,0 +1,57 @@
+kind: Deployment
+apiVersion: apps/v1
+
+metadata:
+  name: dashboard
+  annotations:
+    image.openshift.io/triggers: |
+      [
+        {
+          "from": {
+            "kind":"ImageStreamTag",
+            "name":"dashboard:latest"
+          },
+          "fieldPath":"spec.template.spec.containers[?(@.name==\"service\")].image"
+        }
+      ]
+  labels:
+    deployment: dashboard
+
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      deployment: dashboard
+  template:
+    metadata:
+      labels:
+        deployment: dashboard
+    spec:
+      containers:
+        - name: service
+          image: quay.io/ctron/eclipsecon-2022-dashboard:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+              name: service
+          livenessProbe:
+            httpGet:
+              port: 8080
+              path: /q/health/live
+          readinessProbe:
+            httpGet:
+              port: 8080
+              path: /q/health/ready
+          env:
+            - name: QUARKUS_OIDC_CLIENT_AUTH_SERVER_URL
+              value: {{ .Values.oidc.authServer | quote }}
+            - name: QUARKUS_OIDC_CLIENT_CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.oidc.clientSecretName }}
+                  key: {{ .Values.oidc.clientIdKey }}
+            - name: QUARKUS_OIDC_CLIENT_CREDENTIALS_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.oidc.clientSecretName }}
+                  key: {{ .Values.oidc.clientSecretKey }}

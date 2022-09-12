@@ -1,0 +1,21 @@
+kind: BuildConfig
+apiVersion: build.openshift.io/v1
+metadata:
+  name: dashboard
+spec:
+  triggers:
+    - type: ImageChange
+  source:
+    git:
+      uri: https://github.com/eclipse-iot/eclipsecon-2022-hackathon
+    contextDir: dashboard
+  strategy:
+    dockerStrategy:
+      dockerfilePath: Dockerfile
+      from:
+        kind: ImageStreamTag
+        name: "ubi9-minimal:latest"
+  output:
+    to:
+      kind: ImageStreamTag
+      name: dashboard:latest
