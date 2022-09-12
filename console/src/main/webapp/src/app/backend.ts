@@ -4,6 +4,7 @@ import { EndpointsContext } from "@app/index";
 import { AuthContextProps } from "oidc-react/build/src/AuthContextInterface";
 
 export interface DeviceClaim {
+  id: string | null;
   deviceId: string | null;
 }
 
