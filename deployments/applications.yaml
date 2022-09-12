@@ -89,3 +89,23 @@ spec:
       kind: Deployment
       jqPathExpressions:
         - '.spec.template.spec.containers[] | .image'
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: eclipsecon-2022-dashboard
+spec:
+  project: eclipsecon-2022
+  source:
+    repoURL: 'https://github.com/Eclipse-IoT/eclipsecon-2022-hackathon/'
+    path: dashboard/helm/dashboard
+    targetRevision: HEAD
+  destination:
+    name: in-cluster
+    namespace: eclipsecon-2022
+    server: ''
+  ignoreDifferences:
+    - group: apps
+      kind: Deployment
+      jqPathExpressions:
+        - '.spec.template.spec.containers[] | .image'
