@@ -48,7 +48,7 @@ public class DeviceClaimService {
                 if (deviceId == null) {
                     throw new InvalidClaimIdException(claimId);
                 }
-                claim.setDeviceId(claimId);
+                claim.setDeviceId(deviceId);
             } else {
                 throw new AlreadyClaimedException(claimId);
             }
