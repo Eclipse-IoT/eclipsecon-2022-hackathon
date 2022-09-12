@@ -46,7 +46,7 @@ DEVICE_UUID=<uuid> cargo run --release
 To provision the microbit, we create a new device and set the UUID:
 
 ```
-drg create device mydevice --app eclipsecon-hackathon --spec '{"btmesh":{"device":"<UUID>"},"gatewaySelector":{"matchNames":["provisioner"]}}'
+drg create device mydevice --app eclipsecon-hackathon --spec '{"btmesh":{"device":"<UUID>"},"gatewaySelector":{"matchNames":["provisioner", "gateway1", "gateway2", "gateway3", "gateway4", "gateway5"]}}'
 ```
 
 The operator will reconcile the state of the device and send the provisioning command to the device.
