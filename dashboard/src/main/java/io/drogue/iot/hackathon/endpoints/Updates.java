@@ -40,10 +40,10 @@ public class Updates {
 
     @Incoming(UPDATES)
     void update(StateHolder.State state) {
-        logger.info("State update: {}", state);
+        logger.debug("State update: {}", state);
         var renderedState = Templates.state(state).render();
-        logger.info("Rendered: {}", renderedState);
-        logger.info("Broadcasting to {} sessions", this.sessions.size());
+        logger.trace("Rendered: {}", renderedState);
+        logger.debug("Broadcasting to {} sessions", this.sessions.size());
         for (var session : this.sessions.values()) {
             session.getAsyncRemote().sendText(renderedState);
         }
