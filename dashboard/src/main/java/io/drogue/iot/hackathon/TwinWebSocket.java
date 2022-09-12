@@ -18,31 +18,16 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-
 import io.drogue.iot.hackathon.model.BasicFeature;
 import io.drogue.iot.hackathon.model.Thing;
-import io.quarkus.runtime.annotations.RegisterForReflection;
+import io.drogue.iot.hackathon.model.ThingRequest;
+import io.drogue.iot.hackathon.model.ThingRequestType;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
 
 @ClientEndpoint
 public class TwinWebSocket {
     private static final Logger logger = LoggerFactory.getLogger(TwinWebSocket.class);
-
-    enum Type {
-        @JsonProperty("subscribe")
-        Subscribe,
-        @JsonProperty("unsubscribe")
-        Unsubscribe
-    }
-
-    @RegisterForReflection
-    static class ThingRequest {
-        public Type type;
-
-        public String thing;
-    }
 
     @ConfigProperty(name = "drogue.doppelgaenger.rootId")
     String rootId;
@@ -69,14 +54,14 @@ public class TwinWebSocket {
 
     public void subscribe(String thingId) throws Exception {
         var r = new ThingRequest();
-        r.type = Type.Subscribe;
+        r.type = ThingRequestType.Subscribe;
         r.thing = thingId;
         this.session.getAsyncRemote().sendText(Json.encode(r));
     }
 
     public void unsubscribe(String thingId) throws Exception {
         var r = new ThingRequest();
-        r.type = Type.Unsubscribe;
+        r.type = ThingRequestType.Unsubscribe;
         r.thing = thingId;
         this.session.getAsyncRemote().sendText(Json.encode(r));
     }
