@@ -10,7 +10,7 @@ bluer = { version = "0.15.0", features = ["full"] }
 btmesh-common = { version = "0.1.0" }
 btmesh-models = { version = "0.1.0" }
 heapless = "0.7"
-btmesh-operator = { path = "../btmesh-operator" }
+btmesh-operator = { git = "https://github.com/drogue-iot/btmesh-operator.git", branch = "main" }
 
 dbus = { version = "0.9"}
 dbus-tokio = { version = "0.7", optional = true }

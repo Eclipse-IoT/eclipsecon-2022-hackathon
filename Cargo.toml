@@ -7,7 +7,6 @@ members = [
   "model-converter",
   "web-simulator",
   "provisioner",
-  "btmesh-operator",
 ]
 
 [patch.crates-io]
