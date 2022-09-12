@@ -1,8 +1,12 @@
 #![feature(generic_associated_types)]
 
-use bluer::mesh::{
-    application::{Application, ApplicationMessage},
-    element::*,
+use bluer::{
+    mesh::{
+        application::{Application, ApplicationMessage},
+        element::*,
+        node::Node,
+    },
+    Uuid,
 };
 use btmesh_models::{
     generic::{
@@ -22,12 +26,15 @@ use futures::StreamExt;
 use sensor_model::*;
 use std::{sync::Arc, time::Duration};
 use tokio::{signal, sync::mpsc, time::sleep};
+use tokio_stream::wrappers::ReceiverStream;
 
 #[derive(Parser)]
 #[clap(author, version, about, long_about = None)]
 struct Args {
     #[clap(short, long)]
-    token: String,
+    token: Option<String>,
+    #[clap(short, long, conflicts_with = "token")]
+    join: bool,
     #[clap(short, long, default_value_t = 10)]
     publish_interval: u64,
 }
@@ -83,33 +90,48 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let registered = mesh.application(root_path.clone(), sim).await?;
 
-    let node = mesh.attach(root_path.clone(), &args.token).await?;
+    let mut node: Option<Node> = None;
+    match args.token {
+        Some(token) => {
+            println!("Attaching with token {}", token);
+            node = Some(mesh.attach(root_path.clone(), &token).await?);
+        }
+        None => {
+            let device_id = Uuid::new_v4();
+            println!("Joining device: {}", device_id.as_simple());
+
+            mesh.join(root_path.clone(), device_id).await?;
+        }
+    }
 
     println!("Device ready. Press Ctrl+C to quit.");
 
     let mut interval = tokio::time::interval(Duration::from_secs(args.publish_interval));
+    let mut app_stream = ReceiverStream::new(app_rx);
     loop {
         tokio::select! {
             _ = signal::ctrl_c() => break,
             _ = interval.tick() => {
-                let battery = GenericBatteryMessage::Status(GenericBatteryStatus::new(0, 0, 0, GenericBatteryFlags {
-                    presence: GenericBatteryFlagsPresence::NotPresent,
-                    indicator: GenericBatteryFlagsIndicator::Unknown,
-                    charging: GenericBatteryFlagsCharging::NotChargeable
-                }));
+                if let Some(ref node) = node {
+                    let battery = GenericBatteryMessage::Status(GenericBatteryStatus::new(0, 0, 0, GenericBatteryFlags {
+                        presence: GenericBatteryFlagsPresence::NotPresent,
+                        indicator: GenericBatteryFlagsIndicator::Unknown,
+                        charging: GenericBatteryFlagsCharging::NotChargeable
+                    }));
 
-                let data = SensorPayload {
-                    temperature: 22,
-                    acceleration: Default::default(),
-                    noise: 0,
-                };
+                    let data = SensorPayload {
+                        temperature: 22,
+                        acceleration: Default::default(),
+                        noise: 0,
+                    };
 
-                let sensor = SensorMessage::Status(SensorStatus::new(data));
-                println!("Publishing battery status");
-                node.publish::<GenericBatteryServer>(battery, front.clone()).await?;
+                    let sensor = SensorMessage::Status(SensorStatus::new(data));
+                    println!("Publishing battery status");
+                    node.publish::<GenericBatteryServer>(battery, front.clone()).await?;
 
-                println!("Publishing sensor status");
-                node.publish::<Sensor>(sensor, front.clone()).await?;
+                    println!("Publishing sensor status");
+                    node.publish::<Sensor>(sensor, front.clone()).await?;
+                }
             }
             evt = element_control.next() => {
                 match evt {
@@ -133,21 +155,23 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 }
                 println!("Got message?!");
             }
-            app_evt = app_rx.recv() => match app_evt {
-                Some(msg) => {
-                    match msg {
-                        ApplicationMessage::JoinComplete(token) => {
-                            println!("Joined with token {:016x}", token);
-                            println!("Attaching");
-                            let _node = mesh.attach(root_path.clone(), &format!("{:016x}", token)).await?;
-                        },
-                        ApplicationMessage::JoinFailed(reason) => {
-                            println!("Failed to join: {}", reason);
-                            break;
-                        },
-                    }
-                },
-                None => break,
+            app_evt = app_stream.next() => {
+                match app_evt {
+                    Some(msg) => {
+                        match msg {
+                            ApplicationMessage::JoinComplete(token) => {
+                                println!("Joined with token {:016x}", token);
+                                println!("Attaching");
+                                node = Some(mesh.attach(root_path.clone(), &format!("{:016x}", token)).await?);
+                            },
+                            ApplicationMessage::JoinFailed(reason) => {
+                                println!("Failed to join: {}", reason);
+                                break;
+                            },
+                        }
+                    },
+                    None => break,
+                }
             }
         }
     }
