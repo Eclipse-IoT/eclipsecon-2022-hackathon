@@ -16,20 +16,25 @@ mkdir -p ${PWD}/lib
 sudo /usr/libexec/bluetooth/bluetooth-meshd --config ${PWD}/config --storage ${PWD}/lib --debug
 ```
 
+## Build the project
+
+```
+cargo build --release
+```
 
 ## Starting the provisioner
 
 ```
 # Make sure you pick a start address that doesn't conflict with others in the same mesh
 cd provisioner
-RUST_LOG=info cargo run -- --token 84783e12f11c4dcd --start-address 0x00c0
+RUST_LOG=info ./target/release/eclipsecon-provisioner --token 84783e12f11c4dcd --start-address 0x00bf
 ```
 
 ## Starting the gateway
 
 ```
 cd gateway
-RUST_LOG=info cargo run -- --token dd26596e54e78fa2
+RUST_LOG=info ./target/release/eclipsecon-gateway --token dd26596e54e78fa2
 ```
 
 
