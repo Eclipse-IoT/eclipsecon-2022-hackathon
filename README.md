@@ -4,13 +4,13 @@ This repository contains software, firmware and documentation for the EclipseCon
 
 ## Claiming your device
 
-If you received a micro:bit at the event, it should have an ID sticker on the back side of the box. Power on the device using the USB cable or the battery connector, go to the [console](), log in and then enter the ID to claim the device so that it gets created, provisioned and associated with your account. In the console, you can see the status of your device. You can also release the claim on the device so that it can be provisioned again.
+If you received a micro:bit at the event, it should have an ID sticker on the back side of the box. Power on the device using the USB cable or the battery connector, go to the [console](https://console-eclipsecon-2022.apps.sandbox.drogue.world/), log in and then enter the ID to claim the device so that it gets created, provisioned and associated with your account. In the console, you can see the status of your device. You can also release the claim on the device so that it can be provisioned again.
 
 Once claimed and while powered, the device will emit sensor readings, battery status and button events, and is also able to respond to commands sent from the console.
 
 Before the hackathon starts, feel free to play around with a sample applications we have made:
 
-* TODO
+* [Console](https://github.com/Eclipse-IoT/eclipsecon-2022-hackathon/tree/main/console)
 
 ## Hackathon
 

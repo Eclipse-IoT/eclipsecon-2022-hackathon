@@ -2,10 +2,6 @@ drogue:
   application:
     name: eclipsecon-hackathon
 
-  api:
-    user: lulf
-    key: drg_IGYR66_XbrjUXQC4brnP33mBn3R4ioS66rwrE1Pb5ay
-
   integration:
     mqtt:
       host: mqtt-integration.sandbox.drogue.cloud
