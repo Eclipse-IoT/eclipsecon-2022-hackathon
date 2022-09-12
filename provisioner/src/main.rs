@@ -12,8 +12,9 @@ use bluer::{
 use btmesh_common::address::LabelUuid;
 use btmesh_models::{
     foundation::configuration::{
-        app_key::AppKeyMessage, model_publication::{PublishAddress, PublishPeriod, Resolution, PublishRetransmit}, ConfigurationClient,
-        ConfigurationMessage, ConfigurationServer,
+        app_key::AppKeyMessage,
+        model_publication::{PublishAddress, PublishPeriod, PublishRetransmit, Resolution},
+        ConfigurationClient, ConfigurationMessage, ConfigurationServer,
     },
     generic::{battery::GENERIC_BATTERY_SERVER, onoff::GENERIC_ONOFF_SERVER},
     sensor::SENSOR_SETUP_SERVER,

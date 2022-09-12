@@ -7,9 +7,11 @@ import io.quarkus.runtime.annotations.RegisterForReflection;
  */
 @RegisterForReflection
 public class CommandPayload {
+    private final Long address;
     private final OnOffSet display;
 
-    public CommandPayload(OnOffSet display) {
+    public CommandPayload(Long address, OnOffSet display) {
+        this.address = address;
         this.display = display;
     }
 
@@ -17,10 +19,15 @@ public class CommandPayload {
         return display;
     }
 
+    public Long getAddress() {
+        return address;
+    }
+
     @Override
     public String toString() {
-        return "DeviceCommand{" +
-                "display=" + display +
+        return "CommandPayload{" +
+                "address=" + address +
+                ", display=" + display +
                 '}';
     }
 }

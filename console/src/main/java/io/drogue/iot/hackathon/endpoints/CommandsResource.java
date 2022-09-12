@@ -53,10 +53,9 @@ public class CommandsResource {
         if (device.getStatus() != null) {
             if (device.getStatus().getBtmesh() != null) {
                 if (device.getStatus().getBtmesh().getAddress() != null) {
-                    String address = String.format("%04x", device.getStatus().getBtmesh().getAddress());
-
                     var settings = new DisplaySettings();
-                    settings.device = address;
+                    settings.device = claim.get().id;
+                    settings.address = device.getStatus().getBtmesh().getAddress();
                     settings.enabled = command.enabled;
                     settings.brightness = command.brightness;
 

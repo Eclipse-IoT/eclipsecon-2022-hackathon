@@ -61,7 +61,7 @@ public class Processor {
 
         var display = new OnOffSet(settings.enabled);
         display.setLocation((short) 0x100);
-        var commandPayload = new CommandPayload(display);
+        var commandPayload = new CommandPayload(settings.address, display);
         var command = new DeviceCommand();
 
         command.setDeviceId(settings.device);
