@@ -1,7 +1,6 @@
-package io.drogue.iot.hackathon;
+package io.drogue.iot.hackathon.endpoints;
 
 import java.net.URI;
-import java.util.Map;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -9,25 +8,19 @@ import javax.inject.Inject;
 import javax.websocket.CloseReason;
 import javax.websocket.ContainerProvider;
 import javax.websocket.Session;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.drogue.iot.hackathon.model.BasicFeature;
+import io.drogue.iot.hackathon.StateHolder;
+import io.drogue.iot.hackathon.TwinConnection;
 import io.quarkus.oidc.client.OidcClient;
-import io.quarkus.qute.CheckedTemplate;
-import io.quarkus.qute.TemplateInstance;
 import io.quarkus.runtime.Startup;
 import io.quarkus.scheduler.Scheduled;
 
 @Startup
-@Path("/")
 public class Overview {
     private static final Logger logger = LoggerFactory.getLogger(TwinConnection.class);
 
@@ -77,14 +70,4 @@ public class Overview {
         logger.info("State: {}", this.state.getState());
     }
 
-    @CheckedTemplate
-    public static class Templates {
-        public static native TemplateInstance index(Map<String, Map<String, BasicFeature>> state);
-    }
-
-    @GET
-    @Produces(MediaType.TEXT_HTML)
-    public TemplateInstance index() {
-        return Templates.index(this.state.getState());
-    }
 }

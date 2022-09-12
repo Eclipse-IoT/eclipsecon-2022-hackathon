@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en-US">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,shrink-to-fit=no">
+
+    <meta name="application-name" content="EclipseCon 2022 IoT Dashboard">
+    <title>Dashboard | EclipseCon 2022</title>
+    <link rel="icon" type="image/svg+xml" href="/images/favicon.svg">
+
+    <link rel="stylesheet" href="/webjars/patternfly__patternfly/patternfly.min.css">
+    <script src="state.js" defer></script>
+
+</head>
+
+<body>
+
+<div class="pf-c-page">
+    <header class="pf-c-page__header">
+        <div class="pf-c-page__header-brand">
+            <a href="https://drogue.io" target="_blank" class="pf-c-page__header-brand-link">
+                <img class="pf-c-brand" src="/images/logo.png" alt="Drogue IoT Logo"/>
+            </a>
+        </div>
+    </header>
+    <main class="pf-c-page__main" id="content">
+    </main>
+</div>
+
+</body>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        new State(document.getElementById("content"));
+    });
+
+</script>
+
+</html>

@@ -1,0 +1,52 @@
+<tr role="row">
+    <th
+            class="pf-m-truncate pf-m-border-right pf-c-table__sticky-column"
+            role="columnheader"
+            scope="col"
+            style="--pf-c-table__sticky-column--MinWidth: 100px;"
+    >
+        {device.key}
+    </th>
+
+    <td
+            class="pf-m-nowrap"
+            role="cell"
+    >
+        {#if device.value.containsKey("temperature")}
+            {device.value.get("temperature").value} °C
+        {/if}
+    </td>
+
+    <td
+            class="pf-m-nowrap"
+            role="cell"
+    >
+        {#if device.value.containsKey("noise")}
+            {device.value.get("noise").value}
+        {/if}
+    </td>
+
+    <td
+            class="pf-m-nowrap"
+            role="cell"
+    >
+        {#if device.value.containsKey("acceleration")}
+            {device.value.get("acceleration").value.x} / {device.value.get("acceleration").value.y} / {device.value.get("acceleration").value.z}
+        {/if}
+    </td>
+
+    <td
+            class="pf-m-nowrap"
+            role="cell"
+    >
+        {#if device.value.containsKey("batteryLevel")}
+            {#if device.value.get("batteryLevel").value != null}
+                {device.value.get("batteryLevel").value}
+                {#else}
+                <i>N/A</i>
+            {/if}
+        {/if}
+    </td>
+
+</tr>
+

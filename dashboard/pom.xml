@@ -17,6 +17,8 @@
         <quarkus.platform.group-id>io.quarkus</quarkus.platform.group-id>
         <quarkus.platform.version>2.12.0.Final</quarkus.platform.version>
         <surefire-plugin.version>3.0.0-M7</surefire-plugin.version>
+
+        <webjars.patternfly.version>4.214.1</webjars.patternfly.version>
     </properties>
     <dependencyManagement>
         <dependencies>
@@ -26,6 +28,11 @@
                 <version>${quarkus.platform.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.webjars.npm</groupId>
+                <artifactId>patternfly__patternfly</artifactId>
+                <version>${webjars.patternfly.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -61,6 +68,16 @@
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-rest-client-reactive-jackson</artifactId>
+        </dependency>
+
+        <!-- webjars -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-webjars-locator</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.webjars.npm</groupId>
+            <artifactId>patternfly__patternfly</artifactId>
         </dependency>
 
         <!-- for ticking -->
@@ -137,47 +154,6 @@
                     </systemPropertyVariables>
                 </configuration>
             </plugin>
-
-            <plugin>
-                <groupId>com.github.eirslett</groupId>
-                <artifactId>frontend-maven-plugin</artifactId>
-                <version>1.11.2</version>
-                <configuration>
-                    <workingDirectory>${project.basedir}/src/main/webapp</workingDirectory>
-                    <installDirectory>target</installDirectory>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>install node and npm</id>
-                        <goals>
-                            <goal>install-node-and-npm</goal>
-                        </goals>
-                        <configuration>
-                            <nodeVersion>v16.17.0</nodeVersion>
-                            <npmVersion>8.18.0</npmVersion>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>npm install</id>
-                        <goals>
-                            <goal>npm</goal>
-                        </goals>
-                        <configuration>
-                            <arguments>install</arguments>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>npm run build</id>
-                        <goals>
-                            <goal>npm</goal>
-                        </goals>
-                        <configuration>
-                            <arguments>run build:quarkus</arguments>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-
         </plugins>
     </build>
     <profiles>
