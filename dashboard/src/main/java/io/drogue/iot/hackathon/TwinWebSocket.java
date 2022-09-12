@@ -14,6 +14,7 @@ import javax.websocket.OnMessage;
 import javax.websocket.OnOpen;
 import javax.websocket.Session;
 
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,8 +27,8 @@ import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
 
 @ClientEndpoint
-public class TwinConnection {
-    private static final Logger logger = LoggerFactory.getLogger(TwinConnection.class);
+public class TwinWebSocket {
+    private static final Logger logger = LoggerFactory.getLogger(TwinWebSocket.class);
 
     enum Type {
         @JsonProperty("subscribe")
@@ -43,7 +44,8 @@ public class TwinConnection {
         public String thing;
     }
 
-    private final String rootId = "/btmesh/eclipsecon2022";
+    @ConfigProperty(name = "drogue.doppelgaenger.rootId")
+    String rootId;
 
     private Session session;
 

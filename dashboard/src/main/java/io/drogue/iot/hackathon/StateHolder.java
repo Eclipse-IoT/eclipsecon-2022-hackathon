@@ -16,6 +16,9 @@ import io.vertx.core.json.Json;
 
 @ApplicationScoped
 public class StateHolder {
+
+    public static final String UPDATES = "updates";
+
     private final State state = new State();
 
     public static class State {
@@ -46,7 +49,7 @@ public class StateHolder {
     }
 
     @Inject
-    @Channel("updates")
+    @Channel(UPDATES)
     @Broadcast
     Emitter<State> updates;
 

@@ -3,6 +3,7 @@ drogue:
 
   doppelgaenger:
     api: https://api-eclipsecon-2022.apps.sandbox.drogue.world
+    rootId: /btmesh/eclipsecon2022
 
 "%dev":
   quarkus:

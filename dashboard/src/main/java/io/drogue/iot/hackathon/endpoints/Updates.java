@@ -1,9 +1,12 @@
 package io.drogue.iot.hackathon.endpoints;
 
+import static io.drogue.iot.hackathon.StateHolder.UPDATES;
+
 import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.websocket.OnClose;
 import javax.websocket.OnError;
@@ -12,13 +15,18 @@ import javax.websocket.Session;
 import javax.websocket.server.ServerEndpoint;
 
 import org.eclipse.microprofile.reactive.messaging.Incoming;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import io.drogue.iot.hackathon.StateHolder;
 import io.quarkus.qute.CheckedTemplate;
 import io.quarkus.qute.TemplateInstance;
 
 @ServerEndpoint("/api/updates/v1alpha1/events")
+@ApplicationScoped
 public class Updates {
+
+    private static final Logger logger = LoggerFactory.getLogger(Updates.class);
 
     @CheckedTemplate
     public static class Templates {
@@ -30,9 +38,12 @@ public class Updates {
     @Inject
     StateHolder state;
 
-    @Incoming("updates")
+    @Incoming(UPDATES)
     void update(StateHolder.State state) {
+        logger.info("State update: {}", state);
         var renderedState = Templates.state(state).render();
+        logger.info("Rendered: {}", renderedState);
+        logger.info("Broadcasting to {} sessions", this.sessions.size());
         for (var session : this.sessions.values()) {
             session.getAsyncRemote().sendText(renderedState);
         }
@@ -40,16 +51,19 @@ public class Updates {
 
     @OnOpen
     void onOpen(Session session) {
+        logger.info("onOpen[{}]", session.getId());
         addSession(session);
     }
 
     @OnClose
     void onClose(Session session) throws IOException {
+        logger.info("onClose[{}]", session.getId());
         removeSession(session);
     }
 
     @OnError
     void onError(Session session, Throwable error) throws IOException {
+        logger.info("onError[{}]", session.getId(), error);
         removeSession(session);
     }
 
@@ -60,9 +74,7 @@ public class Updates {
     }
 
     void removeSession(Session session) throws IOException {
-        session = this.sessions.remove(session.getId());
-        if (session != null) {
-            session.close();
-        }
+        this.sessions.remove(session.getId());
+        session.close();
     }
 }
