@@ -87,8 +87,10 @@ fn telemetry2json(msg: RawMessage) -> Option<Value> {
         return Some(json!({ "button": {"on": set.on_off == 1, "location": location }}));
     }
 
-    if let Ok(Some(SensorMessage::Status(status))) = SensorClient::parse(&opcode, parameters) {
+    if let Ok(Some(SensorMessage::Status(mut status))) = SensorClient::parse(&opcode, parameters) {
         println!("Received sensor status {:?}", status);
+        // Temperature is in half degrees
+        status.data.temperature /= 2;
         return Some(json!( {
             "sensor": {
                 "payload": serde_json::to_value(&status.data).unwrap(),
