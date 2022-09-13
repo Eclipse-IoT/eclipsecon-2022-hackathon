@@ -25,13 +25,12 @@ cargo build --release
 ## Starting the gateway
 
 ```
-# Make sure you pick a start address that doesn't conflict with others in the same mesh. The lowest address is 00ac
-RUST_LOG=info ./target/release/eclipsecon-gateway --token dd26596e54e78fa2 --provisioner-token 84783e12f11c4dcd --provisioner-start-address 0x0100
+RUST_LOG=info ./target/release/eclipsecon-gateway --token dd26596e54e78fa2 --provisioner-token 84783e12f11c4dcd
 ```
 
 ## Running the microbit
 
-Flash the microbit with the desired UUID which you will use when provisioning via Drogue Cloud.
+Flash the microbit with the desired UUID which you will use when provisioning via Drogue Cloud. If you wish to use the [console](https://console-eclipsecon-2022.apps.sandbox.drogue.world/), you must choose a UUID present in [idmap.json](https://github.com/Eclipse-IoT/eclipsecon-2022-hackathon/blob/main/console/src/main/resources/META-INF/resources/idmap.json).
 
 NOTE: Make sure the UUID is a 16 byte hex string without the '-' characters!
 
@@ -39,7 +38,7 @@ NOTE: Make sure the UUID is a 16 byte hex string without the '-' characters!
 DEVICE_UUID=<uuid> cargo run --release
 ```
 
-## Provision microbit
+## Provision the device using the command line
 
 To provision the microbit, we create a new device and set the UUID:
 
@@ -51,4 +50,24 @@ The operator will reconcile the state of the device and send the provisioning co
 
 You can look at the status section of the device to see when it has been successfully provisioned.
 
+## Provision microbit using the console
+
+Go to the [console](https://console-eclipsecon-2022.apps.sandbox.drogue.world/) and use the claim id corresponding to the UUID you chose earlier.
+
 ## Optional: Running the simulator
+
+
+## Troubleshooting
+
+### Device gets provisioned but does not send any events
+
+Make sure your meshd state is reset:
+
+```
+# Stop meshd and gateway
+
+sudo git clean -x -f -d meshd
+
+# Start meshd
+# Start gateway
+```
