@@ -95,6 +95,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mqtt_commands = mqtt_client.get_stream(100);
     mqtt_client.subscribe("command/inbox/#", 1).await?;
 
+    let session = bluer::Session::new().await?;
+    let mesh = session.mesh().await?;
+
     let (commands_tx, commands_rx) = broadcast::channel(10);
 
     let mut tasks = Vec::new();
@@ -112,6 +115,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             start_address
         );
         tasks.push(tokio::spawn(provisioner::run(
+            mesh.clone(),
             provisioner::Config::new(token, start_address),
             commands_tx.subscribe(),
             mqtt_client.clone(),
@@ -119,6 +123,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     }
 
     tasks.push(tokio::spawn(gateway::run(
+        mesh,
         gateway::Config::new(args.token),
         commands_rx,
         mqtt_client,
