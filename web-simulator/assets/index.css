@@ -1,6 +1,10 @@
 
-.config {
-    text-align: left;
+input[type="range"].has-output {
+  width: calc(100% - 5rem) !important;
+}
+
+output.slider {
+  width: 4rem !important;
 }
 
 .doton {

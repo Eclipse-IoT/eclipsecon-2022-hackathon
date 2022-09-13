@@ -1,4 +1,4 @@
-use crate::{borrowed::json2command, Publisher};
+use crate::{borrowed::json2command, publisher::Publisher};
 use anyhow::{anyhow, Context};
 use gloo_utils::format::JsValueSerdeExt;
 use sensor_model::RawMessage;

@@ -1,4 +1,4 @@
-use crate::Publisher;
+use crate::publisher::Publisher;
 use sensor_model::RawMessage;
 use yew::{html, Callback, Html};
 
