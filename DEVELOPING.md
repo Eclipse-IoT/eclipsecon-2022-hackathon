@@ -24,8 +24,10 @@ cargo build --release
 
 ## Starting the gateway
 
+NOTE: Choose a start address between 0x00ab and 0x7fff at random to avoid conflict with others.
+
 ```
-RUST_LOG=info ./target/release/eclipsecon-gateway --token dd26596e54e78fa2 --provisioner-token 84783e12f11c4dcd
+RUST_LOG=info ./target/release/eclipsecon-gateway --token dd26596e54e78fa2 --provisioner-token 84783e12f11c4dcd --provisioner-start-address 0x0100
 ```
 
 ## Running the microbit
