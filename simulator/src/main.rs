@@ -27,6 +27,7 @@ use sensor_model::*;
 use std::{sync::Arc, time::Duration};
 use tokio::{signal, sync::mpsc, time::sleep};
 use tokio_stream::wrappers::ReceiverStream;
+use serde_derive::{Serialize, Deserialize};
 
 #[derive(Parser)]
 #[clap(author, version, about, long_about = None)]
@@ -37,6 +38,14 @@ struct Args {
     join: bool,
     #[clap(short, long, default_value_t = 10)]
     publish_interval: u64,
+    #[clap(short, long, conflicts_with = "token")]
+    config: Option<String>,
+}
+
+#[derive(Default, Debug, Serialize, Deserialize)]
+struct NodeConfig {
+    token:  Option<String>,
+    unicast_address: Option<String>,
 }
 
 type Sensor = SensorServer;
@@ -91,16 +100,27 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let registered = mesh.application(root_path.clone(), sim).await?;
 
     let mut node: Option<Node> = None;
+    let mut cfg: NodeConfig = confy::load("node", None)?;
+    let file = confy::get_configuration_file_path("node", None)?;
+    println!("The configuration file path is: {:#?}", file);
+
     match args.token {
         Some(token) => {
             println!("Attaching with token {}", token);
             node = Some(mesh.attach(root_path.clone(), &token).await?);
         }
         None => {
-            let device_id = Uuid::new_v4();
-            println!("Joining device: {}", device_id.as_simple());
-
-            mesh.join(root_path.clone(), device_id).await?;
+            match cfg.token {
+                Some(tk) => {
+                    println!("Attaching with token {}", tk);
+                    node = Some(mesh.attach(root_path.clone(), &tk).await?);
+                },
+                None => {
+                    let device_id = Uuid::new_v4();
+                    println!("Joining device: {}", device_id.as_simple());
+                    mesh.join(root_path.clone(), device_id).await?;
+                }
+            }
         }
     }
 
@@ -161,6 +181,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                         match msg {
                             ApplicationMessage::JoinComplete(token) => {
                                 println!("Joined with token {:016x}", token);
+                                cfg.token = Some(format!("{:016x}", token));
+                                confy::store("node",None, &cfg)?;
                                 println!("Attaching");
                                 node = Some(mesh.attach(root_path.clone(), &format!("{:016x}", token)).await?);
                             },
