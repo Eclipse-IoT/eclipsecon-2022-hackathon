@@ -117,7 +117,7 @@ pub async fn run(
                                 let label = LabelUuid::new(Uuid::parse_str("f0bfd803cde184133096f003ea4a3dc2")?.into_bytes()).map_err(|_| std::fmt::Error)?;
                                 let pub_address = PublishAddress::Virtual(label);
                                 log::info!("Add pub-set for sensor server");
-                                node.pub_set(element_path.clone(), unicast, pub_address, 0, PublishPeriod::new(4, Resolution::Seconds1), PublishRetransmit::from(5), SENSOR_SETUP_SERVER).await?;
+                                node.pub_set(element_path.clone(), unicast, pub_address, 0, PublishPeriod::new(1, Resolution::Seconds1), PublishRetransmit::from(0), SENSOR_SETUP_SERVER).await?;
                                 sleep(Duration::from_secs(4)).await;
                                 log::info!("Add pub-set for battery server");
                                 node.pub_set(element_path.clone(), unicast, pub_address, 0, PublishPeriod::new(60, Resolution::Seconds1), PublishRetransmit::from(5), GENERIC_BATTERY_SERVER).await?;
@@ -178,26 +178,12 @@ pub async fn run(
                                 log::info!("Received element message: {:?}", received);
                             },
                             ElementMessage::DevKey(received) => {
-                                log::info!("Received dev key message: {:?}", received);
-                                match ConfigurationServer::parse(&received.opcode, &received.parameters).map_err(|_| std::fmt::Error)? {
+                                log::info!("Received devkey message with opcode {:?}", received.opcode);
+                                match ConfigurationClient::parse(&received.opcode, &received.parameters).map_err(|_| std::fmt::Error)? {
                                     Some(message) => {
-                                        match message {
-                                            ConfigurationMessage::AppKey(key) => {
-                                                match key {
-                                                    AppKeyMessage::Status(status) => {
-                                                        log::info!("Received keys {:?} {:?}", status.indexes.net_key(), status.indexes.app_key());
-                                                    },
-                                                    _ => log::info!("Received key message {:?}", key.opcode()),
-                                                }
-                                            },
-                                            _ => {
-                                                log::info!("Received configuration message {:?}", message.opcode());
-                                            }
-                                        }
+                                        log::info!("Received configuration message: {:?}", message);
                                     },
-                                    None => {
-                                        log::info!("Received no configuration message");
-                                    },
+                                    None => {},
                                 }
                             }
                         }

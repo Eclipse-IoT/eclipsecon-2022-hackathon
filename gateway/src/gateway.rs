@@ -136,7 +136,7 @@ pub async fn run(
                                 }
                             },
                             ElementMessage::DevKey(received) => {
-                                log::info!("Received dev key message: {:?}", received);
+                                log::info!("Gateway Received dev key message: {:?}", received);
                             }
                         }
                     },
