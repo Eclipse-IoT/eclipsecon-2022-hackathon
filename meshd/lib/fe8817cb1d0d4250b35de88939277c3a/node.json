@@ -83,7 +83,7 @@
   ],
   "IVindex":0,
   "IVupdate":0,
-  "unicastAddress":"00bc",
+  "unicastAddress":"00aa",
   "token":"dd26596e54e78fa2",
   "deviceKey":"28cd6088144ce431a736c0d3e506128b",
   "netKeys":[
@@ -100,5 +100,5 @@
       "key":"8e0a245c38a136e7d6e8429d562da959"
     }
   ],
-  "sequenceNumber":25
+  "sequenceNumber": 1
 }
