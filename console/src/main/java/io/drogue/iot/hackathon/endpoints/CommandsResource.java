@@ -43,19 +43,19 @@ public class CommandsResource {
     @Produces()
     public void updateDisplay(DisplayState command) {
 
-        var claim = service.getDeviceClaimFor(identity.getPrincipal().getName());
+        var claim = this.service.getDeviceClaimFor(this.identity.getPrincipal().getName());
 
         if (claim.isEmpty()) {
             throw new BadRequestException("No claimed device");
         }
 
-        var device = registry.getDevice(claim.get().id);
-        if (device.getStatus() != null) {
-            if (device.getStatus().getBtmesh() != null) {
-                if (device.getStatus().getBtmesh().getAddress() != null) {
+        var device = this.registry.getDevice(claim.get().id);
+        if (device.isPresent() && device.get().getStatus() != null) {
+            if (device.get().getStatus().getBtmesh() != null) {
+                if (device.get().getStatus().getBtmesh().getAddress() != null) {
                     var settings = new DisplaySettings();
                     settings.device = claim.get().id;
-                    settings.address = device.getStatus().getBtmesh().getAddress();
+                    settings.address = device.get().getStatus().getBtmesh().getAddress();
                     settings.enabled = command.enabled;
                     settings.brightness = command.brightness;
 

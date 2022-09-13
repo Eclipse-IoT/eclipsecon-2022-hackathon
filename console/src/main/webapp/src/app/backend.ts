@@ -6,6 +6,7 @@ import { AuthContextProps } from "oidc-react/build/src/AuthContextInterface";
 export interface DeviceClaim {
   id: string | null;
   deviceId: string | null;
+  password: string | null;
 }
 
 interface ServiceInit {
@@ -36,6 +37,7 @@ interface EndpointsInner {
   authServerUrl: string;
   api?: string;
   ws?: string;
+  simulatorUrl?: string,
 }
 
 export class Endpoints {
@@ -101,6 +103,10 @@ export class Endpoints {
 
   ws(path?: string): string {
     return this.url(this.wsBase, path);
+  }
+
+  get simulatorUrl(): string | undefined {
+    return this.inner.simulatorUrl;
   }
 }
 
@@ -232,4 +238,21 @@ const releaseDevice = async (endpoints: Endpoints, deviceId: string, accessToken
     });
 };
 
-export { useEndpoints, useGameService, claimDevice, releaseDevice, setDisplay };
+const createSimulator = async (endpoints: Endpoints, accessToken?: string): Promise<Response> => {
+  const url = endpoints.api("/api/deviceClaims/v1alpha1/simulator");
+
+  return await fetch(url, {
+    method: "PUT",
+    headers: new Headers({
+      "Authorization": "Bearer " + accessToken
+    })
+  })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(`Request failed: ${response.status}: ${response.statusText}`);
+      }
+      return response;
+    });
+};
+
+export { useEndpoints, useGameService, claimDevice, releaseDevice, setDisplay, createSimulator };

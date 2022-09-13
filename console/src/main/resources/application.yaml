@@ -7,6 +7,9 @@ drogue:
       host: mqtt-integration.sandbox.drogue.cloud
       port: 443
 
+console:
+  simulatorUrl: https://web-simulator-eclipsecon-2022.apps.sandbox.drogue.world/
+
 mp:
   messaging:
     incoming:

@@ -6,6 +6,7 @@ import {
   EmptyState,
   EmptyStateBody,
   EmptyStateIcon,
+  EmptyStateSecondaryActions,
   Form,
   FormGroup,
   FormHelperText,
@@ -13,10 +14,18 @@ import {
   ModalVariant,
   PageSection,
   TextInput,
-  Title, Toolbar, ToolbarContent, ToolbarItem
+  Title,
+  Toolbar,
+  ToolbarContent,
+  ToolbarItem
 } from "@patternfly/react-core";
-import { claimDevice, releaseDevice, useGameService } from "@app/backend";
-import { ExclamationCircleIcon, MicrochipIcon } from "@patternfly/react-icons";
+import { claimDevice, createSimulator, DeviceClaim, releaseDevice, useGameService } from "@app/backend";
+import {
+  ExclamationCircleIcon,
+  ExternalLinkAltIcon,
+  ExternalLinkSquareAltIcon,
+  MicrochipIcon
+} from "@patternfly/react-icons";
 import { EndpointsContext, ToastsContext } from "@app/index";
 import { useAuth } from "oidc-react";
 import { DeviceState } from "@app/DeviceState/DeviceState";
@@ -70,6 +79,27 @@ const Dashboard: React.FunctionComponent = () => {
     }
   };
 
+  const onCreateSimulator = async () => {
+    try {
+      await createSimulator(endpoints, auth.userData?.access_token);
+      toasts.addAlert?.(AlertVariant.success, "Simulator created", 5000);
+    } catch (err) {
+      toasts.addAlert?.(AlertVariant.danger, `Failed to create simulator: ${err}`);
+    }
+    reload();
+  };
+
+  const openSimulator = (simulator: string, claim: DeviceClaim) => {
+    const url = new URL(simulator);
+    if (claim.id) {
+      url.searchParams.append("device", claim.id);
+    }
+    if (claim.password) {
+      url.searchParams.append("password", claim.password);
+    }
+    window.open(simulator, "ece-web-simulator", "noopener,noreferrer");
+  };
+
   if (service.status === "loaded") {
     let content;
     if (service.payload?.deviceId !== undefined) {
@@ -80,6 +110,10 @@ const Dashboard: React.FunctionComponent = () => {
               <ToolbarItem variant="label">Claimed</ToolbarItem>
               <ToolbarItem>{service.payload?.id}</ToolbarItem>
               <ToolbarItem>
+                {(service.payload?.id?.startsWith("simulator-") && endpoints.simulatorUrl !== undefined) && (
+                  <Button variant="link" icon={<ExternalLinkSquareAltIcon />} iconPosition="right"
+                          onClick={() => openSimulator(endpoints.simulatorUrl as string, service.payload)}>Simulator</Button>
+                )}
                 <Button variant="secondary" isDanger
                         onClick={() => onReleaseDevice(service.payload?.deviceId)}>Release</Button>
               </ToolbarItem>
@@ -103,6 +137,9 @@ const Dashboard: React.FunctionComponent = () => {
               You do not yet claimed a device.
             </EmptyStateBody>
             <Button variant="primary" onClick={handleModalToggle}>Claim device</Button>
+            <EmptyStateSecondaryActions>
+              <Button variant="link" onClick={onCreateSimulator}>Create simulator</Button>
+            </EmptyStateSecondaryActions>
           </EmptyState>
 
           <Modal

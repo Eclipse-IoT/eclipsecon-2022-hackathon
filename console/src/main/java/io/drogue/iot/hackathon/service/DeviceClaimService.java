@@ -7,7 +7,7 @@ import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.transaction.Transactional;
 
-import io.drogue.iot.hackathon.model.Claims;
+import io.drogue.iot.hackathon.model.Claim;
 
 @ApplicationScoped
 public class DeviceClaimService {
@@ -15,40 +15,28 @@ public class DeviceClaimService {
     @Inject
     EntityManager em;
 
-    @Inject
-    IdMap idMap;
-
     @Transactional
     public Optional<DeviceClaim> getDeviceClaimFor(final String userId) {
-        var cb = em.getCriteriaBuilder();
-        var cr = cb.createQuery(Claims.class);
-        var root = cr.from(Claims.class);
+        var cb = this.em.getCriteriaBuilder();
+        var cr = cb.createQuery(Claim.class);
+        var root = cr.from(Claim.class);
         cr.select(root).where(cb.equal(root.get("claimedBy"), userId));
 
-        return em.createQuery(cr)
+        return this.em.createQuery(cr)
                 .getResultStream()
                 .findFirst()
-                .map(claim -> {
-                    var result = new DeviceClaim();
-                    result.id = claim.getId();
-                    result.deviceId = claim.getDeviceId();
-                    return result;
-                });
+                .map(claim -> new DeviceClaim(claim.getId(), claim.getDeviceId()));
     }
 
     @Transactional
     public DeviceClaim claimDevice(final String claimId, final String userId, final boolean canCreate) throws AlreadyClaimedException {
-        var claim = this.em.find(Claims.class, claimId);
+        var claim = this.em.find(Claim.class, claimId);
         if (claim == null || claim.getClaimedBy() != null) {
             if (claim == null && canCreate) {
-                claim = new Claims();
+                claim = new Claim();
                 claim.setId(claimId);
                 // if we auto-create a claim, the deviceId is equal to the claimId
-                var deviceId = idMap.get(claimId);
-                if (deviceId == null) {
-                    throw new InvalidClaimIdException(claimId);
-                }
-                claim.setDeviceId(deviceId);
+                claim.setDeviceId(claimId);
             } else {
                 throw new AlreadyClaimedException(claimId);
             }
@@ -57,18 +45,15 @@ public class DeviceClaimService {
         claim.setClaimedBy(userId);
         this.em.persist(claim);
 
-        var result = new DeviceClaim();
-        result.id = claimId;
-        result.deviceId = claim.getDeviceId();
-        return result;
+        return new DeviceClaim(claimId, claim.getDeviceId());
     }
 
     @Transactional
     public boolean releaseDevice(final String userId) {
 
-        var cb = em.getCriteriaBuilder();
-        var cr = cb.createCriteriaDelete(Claims.class);
-        var root = cr.from(Claims.class);
+        var cb = this.em.getCriteriaBuilder();
+        var cr = cb.createCriteriaDelete(Claim.class);
+        var root = cr.from(Claim.class);
         cr.where(cb.equal(root.get("claimedBy"), userId));
 
         var updates = this.em.createQuery(cr).executeUpdate();
@@ -78,11 +63,24 @@ public class DeviceClaimService {
 
     @Transactional
     public boolean deleteClaim(final String claimId) {
-        var cb = em.getCriteriaBuilder();
-        var cr = cb.createCriteriaDelete(Claims.class);
-        var root = cr.from(Claims.class);
+        var cb = this.em.getCriteriaBuilder();
+        var cr = cb.createCriteriaDelete(Claim.class);
+        var root = cr.from(Claim.class);
         cr.where(cb.equal(root.get("id"), claimId));
 
         return this.em.createQuery(cr).executeUpdate() > 0;
+    }
+
+    /**
+     * Create a new claim, ignoring existing entries.
+     *
+     * @param id The claim id.
+     * @param deviceId The device id.
+     */
+    public void createClaim(String id, String deviceId) {
+        var claim = new Claim();
+        claim.setId(id);
+        claim.setDeviceId(deviceId);
+        this.em.merge(claim);
     }
 }

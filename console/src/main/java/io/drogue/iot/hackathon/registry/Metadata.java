@@ -2,9 +2,13 @@ package io.drogue.iot.hackathon.registry;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import io.quarkus.runtime.annotations.RegisterForReflection;
+
+@RegisterForReflection
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Metadata {
     private String name;
+
     private String application;
 
     public String getName() {

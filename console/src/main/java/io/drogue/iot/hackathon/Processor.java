@@ -1,8 +1,11 @@
 package io.drogue.iot.hackathon;
 
+import java.util.UUID;
+
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
+import javax.ws.rs.WebApplicationException;
 
 import org.eclipse.microprofile.reactive.messaging.Channel;
 import org.eclipse.microprofile.reactive.messaging.Emitter;
@@ -21,8 +24,6 @@ import io.drogue.iot.hackathon.service.DeviceClaimService;
 import io.drogue.iot.hackathon.ui.DisplaySettings;
 import io.quarkus.runtime.Startup;
 import io.smallrye.reactive.messaging.annotations.Broadcast;
-
-import java.util.Collections;
 
 /**
  * Process device events.
@@ -88,14 +89,29 @@ public class Processor {
 
     @Transactional
     public void claimDevice(final String claimId, final String userId, final boolean canCreate) {
-        var claim = service.claimDevice(claimId, userId, canCreate);
-        registry.createDevice(claimId, claim.deviceId);
+        var claim = this.service.claimDevice(claimId, userId, canCreate);
+        this.registry.createDevice(claimId, claim.deviceId);
+    }
+
+    @Transactional
+    public void claimSimulatorDevice(final String userId) {
+        var id = "simulator-" + UUID.randomUUID();
+        var pwd = UUID.randomUUID().toString();
+        this.service.claimDevice(id, userId, true);
+        this.registry.createSimulatorDevice(id, pwd);
     }
 
     @Transactional
     public void releaseDevice(final String userId) {
-        var claim = service.getDeviceClaimFor(userId);
-        claim.ifPresent(deviceClaim -> registry.deleteDevice(deviceClaim.id));
-        service.releaseDevice(userId);
+        var claim = this.service.getDeviceClaimFor(userId);
+        try {
+            claim.ifPresent(deviceClaim -> this.registry.deleteDevice(deviceClaim.id));
+        } catch (WebApplicationException e) {
+            if (e.getResponse().getStatus() != 404) {
+                // ignore 404
+                throw e;
+            }
+        }
+        this.service.releaseDevice(userId);
     }
 }

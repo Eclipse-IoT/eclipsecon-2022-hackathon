@@ -13,7 +13,7 @@ import javax.persistence.Table;
                 @Index(columnList = ("deviceId"), unique = true),
         }
 )
-public class Claims {
+public class Claim {
     /**
      * The claim ID/name, as printed on the box.
      */
@@ -35,7 +35,7 @@ public class Claims {
     private String claimedBy;
 
     public String getId() {
-        return id;
+        return this.id;
     }
 
     public void setId(String id) {
@@ -43,7 +43,7 @@ public class Claims {
     }
 
     public String getDeviceId() {
-        return deviceId;
+        return this.deviceId;
     }
 
     public void setDeviceId(String deviceId) {
@@ -55,6 +55,6 @@ public class Claims {
     }
 
     public String getClaimedBy() {
-        return claimedBy;
+        return this.claimedBy;
     }
 }

@@ -5,13 +5,20 @@ import org.eclipse.microprofile.rest.client.ext.ClientHeadersFactory;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.ws.rs.core.MultivaluedMap;
+
 import java.util.Base64;
 
+import io.quarkus.runtime.annotations.RegisterForReflection;
+
+@RegisterForReflection
 @ApplicationScoped
 public class RegisterAuthHeaderFactory implements ClientHeadersFactory {
 
-    @ConfigProperty(name = "drogue.api.user") String user;
-    @ConfigProperty(name = "drogue.api.key") String key;
+    @ConfigProperty(name = "drogue.api.user")
+    String user;
+
+    @ConfigProperty(name = "drogue.api.key")
+    String key;
 
     @Override
     public MultivaluedMap<String, String> update(MultivaluedMap<String, String> incomingHeaders, MultivaluedMap<String, String> clientOutgoingHeaders) {

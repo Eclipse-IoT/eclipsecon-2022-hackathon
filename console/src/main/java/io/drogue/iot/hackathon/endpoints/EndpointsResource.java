@@ -23,8 +23,15 @@ public class EndpointsResource {
         @ConfigProperty(name = "quarkus.oidc.auth-server-url")
         String authServerUrl;
 
+        @ConfigProperty(name = "console.simulatorUrl")
+        String simulatorUrl;
+
         public String getAuthServerUrl() {
-            return authServerUrl;
+            return this.authServerUrl;
+        }
+
+        public String getSimulatorUrl() {
+            return this.simulatorUrl;
         }
     }
 
