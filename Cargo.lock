@@ -1027,6 +1027,7 @@ dependencies = [
  "log",
  "paho-mqtt 0.11.1",
  "pin-project",
+ "rand",
  "sensor-model",
  "serde_json",
  "tokio",

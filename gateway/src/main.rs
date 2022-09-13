@@ -4,7 +4,8 @@ use clap::Parser;
 use clap_num::maybe_hex;
 use eclipsecon_gateway::{gateway, provisioner};
 use paho_mqtt as mqtt;
-use std::{sync::Arc, time::Duration};
+use rand::{rngs::OsRng, seq::SliceRandom};
+use std::time::Duration;
 use tokio::{signal, sync::broadcast};
 
 #[derive(Parser)]
@@ -16,7 +17,7 @@ struct Args {
     drogue_mqtt_uri: String,
     #[clap(long, env, default_value = "eclipsecon-hackathon")]
     drogue_application: String,
-    #[clap(long, env, default_value = "gateway1")]
+    #[clap(long, env)]
     drogue_device: String,
     #[clap(long, env, default_value = "hey-rodney")]
     drogue_password: String,
@@ -29,7 +30,7 @@ struct Args {
     #[clap(long)]
     provisioner_token: Option<String>,
     #[clap(long, parse(try_from_str=maybe_hex))]
-    provisioner_start_address: Option<u32>,
+    provisioner_start_address: Option<u16>,
 }
 
 #[tokio::main(flavor = "current_thread")]
@@ -91,19 +92,27 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     mqtt_client.connect(conn_opts).await?;
 
-    log::info!("Gateway ready. Press Ctrl+C to quit.");
-
     let mqtt_commands = mqtt_client.get_stream(100);
     mqtt_client.subscribe("command/inbox/#", 1).await?;
-
-    let mqtt_client = Arc::new(mqtt_client);
 
     let (commands_tx, commands_rx) = broadcast::channel(10);
 
     let mut tasks = Vec::new();
     if let Some(token) = args.provisioner_token {
+        let start_address: u16 = args.provisioner_start_address.unwrap_or({
+            // TODO: Specific for this deployment
+            let lowest: u16 = 0x00ab;
+            let highest: u16 = 0x7fff;
+            let devices = 50;
+            let ranges: Vec<u16> = (lowest..highest).step_by(devices).collect();
+            *ranges.choose(&mut OsRng).unwrap_or(&0)
+        });
+        log::info!(
+            "Enabling provisioner with start address 0x{:04x}",
+            start_address
+        );
         tasks.push(tokio::spawn(provisioner::run(
-            provisioner::Config::new(token, 0x00ab),
+            provisioner::Config::new(token, start_address),
             commands_tx.subscribe(),
             mqtt_client.clone(),
         )));
@@ -114,7 +123,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         commands_rx,
         mqtt_client,
     )));
+    tokio::time::sleep(Duration::from_secs(5)).await;
 
+    log::info!("Gateway ready. Press Ctrl+C to quit.");
     loop {
         tokio::select! {
             _ = signal::ctrl_c() => {
@@ -127,11 +138,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     let payload = command.payload();
                     commands_tx.send((topic.to_string(), payload.into()))?;
                 }
+                tokio::time::sleep(Duration::from_secs(1)).await;
             }
         }
     }
 
-    println!("Shutting down!");
     futures::future::join_all(tasks).await;
 
     Ok(())
