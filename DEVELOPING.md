@@ -22,23 +22,18 @@ sudo /usr/libexec/bluetooth/bluetooth-meshd --config ${PWD}/config --storage ${P
 cargo build --release
 ```
 
-## Starting the provisioner
-
-```
-# Make sure you pick a start address that doesn't conflict with others in the same mesh
-RUST_LOG=info ./target/release/eclipsecon-provisioner --token 84783e12f11c4dcd --start-address 0x00bf
-```
-
 ## Starting the gateway
 
 ```
-RUST_LOG=info ./target/release/eclipsecon-gateway --token dd26596e54e78fa2
+# Make sure you pick a start address that doesn't conflict with others in the same mesh. The lowest address is 00ac
+RUST_LOG=info ./target/release/eclipsecon-gateway --token dd26596e54e78fa2 --provisioner-token 84783e12f11c4dcd --provisioner-start-address 0x0100
 ```
-
 
 ## Running the microbit
 
 Flash the microbit with the desired UUID which you will use when provisioning via Drogue Cloud.
+
+NOTE: Make sure the UUID is a 16 byte hex string without the '-' characters!
 
 ```
 DEVICE_UUID=<uuid> cargo run --release
@@ -49,7 +44,7 @@ DEVICE_UUID=<uuid> cargo run --release
 To provision the microbit, we create a new device and set the UUID:
 
 ```
-drg create device mydevice --app eclipsecon-hackathon --spec '{"btmesh":{"device":"<UUID>"},"gatewaySelector":{"matchNames":["provisioner", "gateway1", "gateway2", "gateway3", "gateway4", "gateway5"]}}'
+drg create device mydevice --app eclipsecon-hackathon --spec '{"btmesh":{"device":"<UUID>"},"gatewaySelector":{"matchNames":["gateway1", "gateway2", "gateway3", "gateway4", "gateway5"]}}'
 ```
 
 The operator will reconcile the state of the device and send the provisioning command to the device.

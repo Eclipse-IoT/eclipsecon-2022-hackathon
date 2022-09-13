@@ -489,7 +489,7 @@ dependencies = [
 [[package]]
 name = "btmesh-operator"
 version = "0.1.0"
-source = "git+https://github.com/drogue-iot/btmesh-operator.git?branch=main#6fc7bc9ee3572271d5cd3c2920e9660af3668836"
+source = "git+https://github.com/drogue-iot/btmesh-operator.git?branch=main#9382efccdf540b2564d549734d07dfcdf8ec1948"
 dependencies = [
  "anyhow",
  "base64 0.13.0",
@@ -1010,44 +1010,7 @@ dependencies = [
 name = "eclipsecon-gateway"
 version = "0.1.0"
 dependencies = [
- "bluer",
- "btmesh-common",
- "btmesh-models",
- "clap",
- "dbus",
- "dbus-crossroads",
- "dbus-tokio",
- "env_logger",
- "futures",
- "heapless",
- "hex",
- "log",
- "paho-mqtt 0.11.1",
- "pin-project",
- "sensor-model",
- "serde_json",
- "tokio",
- "tokio-stream",
-]
-
-[[package]]
-name = "eclipsecon-model-converter"
-version = "0.1.0"
-dependencies = [
- "actix-web",
- "btmesh-common",
- "btmesh-models",
- "cloudevents-sdk",
- "env_logger",
- "heapless",
- "sensor-model",
- "serde_json",
-]
-
-[[package]]
-name = "eclipsecon-provisioner"
-version = "0.1.0"
-dependencies = [
+ "anyhow",
  "bluer",
  "btmesh-common",
  "btmesh-models",
@@ -1067,8 +1030,21 @@ dependencies = [
  "sensor-model",
  "serde_json",
  "tokio",
- "tokio-stream",
  "uuid 1.1.2",
+]
+
+[[package]]
+name = "eclipsecon-model-converter"
+version = "0.1.0"
+dependencies = [
+ "actix-web",
+ "btmesh-common",
+ "btmesh-models",
+ "cloudevents-sdk",
+ "env_logger",
+ "heapless",
+ "sensor-model",
+ "serde_json",
 ]
 
 [[package]]

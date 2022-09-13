@@ -6,7 +6,6 @@ members = [
   "simulator",
   "model-converter",
   "web-simulator",
-  "provisioner",
 ]
 
 [patch.crates-io]
