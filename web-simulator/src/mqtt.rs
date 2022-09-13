@@ -532,6 +532,7 @@ impl Publisher for MqttPublisher {
 
 impl Drop for MqttPublisher {
     fn drop(&mut self) {
+        self.client.lock().unwrap().inner.client.disconnect();
         self.opts.on_connection_state.emit(html!("Stopped"));
     }
 }
