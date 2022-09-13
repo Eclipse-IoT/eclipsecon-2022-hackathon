@@ -106,7 +106,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             // TODO: Specific for this deployment
             let lowest: u16 = 0x00ab;
             let highest: u16 = 0x7fff;
-            let devices = 50;
+            let devices = 150;
             let ranges: Vec<u16> = (lowest..highest).step_by(devices).collect();
             *ranges.choose(&mut OsRng).unwrap_or(&0)
         });

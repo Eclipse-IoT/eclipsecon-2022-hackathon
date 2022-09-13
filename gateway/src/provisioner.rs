@@ -117,10 +117,10 @@ pub async fn run(
                                 let label = LabelUuid::new(Uuid::parse_str("f0bfd803cde184133096f003ea4a3dc2")?.into_bytes()).map_err(|_| std::fmt::Error)?;
                                 let pub_address = PublishAddress::Virtual(label);
                                 log::info!("Add pub-set for sensor server");
-                                node.pub_set(element_path.clone(), unicast, pub_address, 0, PublishPeriod::new(10, Resolution::Seconds1), PublishRetransmit::from(5), SENSOR_SETUP_SERVER).await?;
+                                node.pub_set(element_path.clone(), unicast, pub_address, 0, PublishPeriod::new(4, Resolution::Seconds1), PublishRetransmit::from(5), SENSOR_SETUP_SERVER).await?;
                                 sleep(Duration::from_secs(4)).await;
                                 log::info!("Add pub-set for battery server");
-                                node.pub_set(element_path.clone(), unicast, pub_address, 0, PublishPeriod::new(10, Resolution::Seconds1), PublishRetransmit::from(5), GENERIC_BATTERY_SERVER).await?;
+                                node.pub_set(element_path.clone(), unicast, pub_address, 0, PublishPeriod::new(60, Resolution::Seconds1), PublishRetransmit::from(5), GENERIC_BATTERY_SERVER).await?;
                                 sleep(Duration::from_secs(5)).await;
 
 
