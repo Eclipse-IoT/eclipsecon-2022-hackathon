@@ -36,6 +36,7 @@ struct Args {
 #[tokio::main(flavor = "current_thread")]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     env_logger::init();
+    console_subscriber::init();
     let args = Args::parse();
 
     let mqtt_uri = args.drogue_mqtt_uri;
