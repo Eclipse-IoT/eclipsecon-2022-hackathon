@@ -120,7 +120,6 @@ spec:
               # create clients - api
               ID=$(kcadm get clients -r "${REALM}" --query "clientId=api" --fields id --format csv --noquotes)
               CLIENT_OPTS=()
-              CLIENT_OPTS+=(-s 'secret={{ .Values.keycloak.clients.frontend.secret | toJson }}')
               CLIENT_OPTS+=(-s 'redirectUris={{ .Values.keycloak.clients.frontend.redirectUris | toJson }}')
               if [[ -n "$ID" ]]; then
                 # TODO: replace with update once https://github.com/keycloak/keycloak/issues/12484 is fixed
