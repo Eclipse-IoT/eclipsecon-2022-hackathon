@@ -404,7 +404,7 @@ impl App {
 
         match (url, application, device, password, interval) {
             (Some(url), Some(application), Some(device), Some(password), Some(interval)) => {
-                let url = reqwest::Url::parse(&format!("{}/v1/sensor", url)).unwrap();
+                let url = Url::parse(&format!("{}/v1/sensor", url)).unwrap();
                 let username = format!("{}@{}", device, application);
 
                 let on_command = ctx.link().batch_callback(|command: RawMessage| {
