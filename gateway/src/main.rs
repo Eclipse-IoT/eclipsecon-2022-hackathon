@@ -43,12 +43,14 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let mqtt_opts = mqtt::CreateOptionsBuilder::new()
         .server_uri(mqtt_uri.clone())
+        .mqtt_version(mqtt::MQTT_VERSION_5)
         .client_id("btmesh-gateway")
         .persistence(mqtt::PersistenceType::None)
         .finalize();
     let mut mqtt_client = mqtt::AsyncClient::new(mqtt_opts)?;
 
     let mut conn_opts = mqtt::ConnectOptionsBuilder::new();
+    conn_opts.clean_start(true);
     conn_opts.user_name(format!(
         "{}@{}",
         args.drogue_device, args.drogue_application
