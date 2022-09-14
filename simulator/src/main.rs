@@ -114,13 +114,16 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 node = Some(mesh.attach(root_path.clone(), &tk).await?);
             }
             None => {
-                let device_id = args.device.unwrap();
-                if let Ok(uuid) = Uuid::parse_str(&device_id) {
-                    println!("Joining device: {}", uuid.as_simple());
-                    mesh.join(root_path.clone(), uuid).await?;
-                } else {
-                    panic!("Error parsing device id");
-                }
+                let device_id = match args.device {
+                    Some(id) => {
+                        Uuid::parse_str(&id)?
+                    },
+                    None => {
+                        Uuid::new_v4()
+                    }
+                };
+                println!("Joining device: {}", device_id.as_simple());
+                mesh.join(root_path.clone(), device_id).await?;
             }
         },
     }
