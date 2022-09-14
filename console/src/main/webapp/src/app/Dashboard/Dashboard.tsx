@@ -92,12 +92,12 @@ const Dashboard: React.FunctionComponent = () => {
   const openSimulator = (simulator: string, claim: DeviceClaim) => {
     const url = new URL(simulator);
     if (claim.id) {
-      url.searchParams.append("device", claim.id);
+      url.searchParams.set("device", claim.id);
     }
     if (claim.password) {
-      url.searchParams.append("password", claim.password);
+      url.searchParams.set("password", claim.password);
     }
-    window.open(simulator, "ece-web-simulator", "noopener,noreferrer");
+    window.open(url.toString(), "ece-web-simulator", "noopener,noreferrer");
   };
 
   if (service.status === "loaded") {
