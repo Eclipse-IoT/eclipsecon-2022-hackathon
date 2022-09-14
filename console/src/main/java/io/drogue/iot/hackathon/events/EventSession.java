@@ -9,7 +9,6 @@ import javax.websocket.Session;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.drogue.iot.hackathon.data.DeviceEvent;
 import io.drogue.iot.hackathon.data.DeviceState;
 import io.drogue.iot.hackathon.utils.DummyRoutingContext;
 import io.quarkus.oidc.AccessTokenCredential;
@@ -18,7 +17,7 @@ import io.quarkus.security.identity.SecurityIdentity;
 import io.quarkus.security.identity.request.TokenAuthenticationRequest;
 import io.quarkus.vertx.http.runtime.security.HttpSecurityUtils;
 import io.smallrye.mutiny.Multi;
-import io.smallrye.mutiny.Uni;
+import io.smallrye.mutiny.infrastructure.Infrastructure;
 import io.smallrye.mutiny.subscription.Cancellable;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
@@ -90,10 +89,11 @@ public class EventSession implements AutoCloseable {
         HttpSecurityUtils.setRoutingContextAttribute(request, new DummyRoutingContext());
         this.identityProviderManager
                 .authenticate(request)
+                .runSubscriptionOn(Infrastructure.getDefaultWorkerPool())
                 .subscribe()
                 .with(this::setIdentity, (error) -> {
                     logger.warn("Failed to validate token", error);
-                    context.close(new CloseReason(CloseReason.CloseCodes.UNEXPECTED_CONDITION, String.format("Failed to validate token: %s", error.getMessage())));
+                    this.context.close(new CloseReason(CloseReason.CloseCodes.UNEXPECTED_CONDITION, String.format("Failed to validate token: %s", error.getMessage())));
                 });
     }
 
