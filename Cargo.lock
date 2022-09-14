@@ -473,7 +473,7 @@ dependencies = [
 [[package]]
 name = "bluer"
 version = "0.15.0"
-source = "git+https://github.com/dejanb/bluer.git?branch=mesh#a07c118406c61e3ad35ac46419c182c30ba138cd"
+source = "git+https://github.com/dejanb/bluer.git?branch=mesh#d771e3b51ee04506e65deee1d7490b6e692b457d"
 dependencies = [
  "btmesh-common",
  "btmesh-models",
