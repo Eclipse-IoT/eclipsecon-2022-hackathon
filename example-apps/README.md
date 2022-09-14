@@ -1,6 +1,6 @@
 # Example application
 
-This repository contains a simple java app that subscribe to the various endpoints and display the events to 
+This repository contains simple java apps that subscribe to the various endpoints and display the events to 
 the console. It's designed to be dead simple, so you can look around and grab the building blocks to 
 get going with your own ideas !
 
