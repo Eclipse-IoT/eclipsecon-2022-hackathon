@@ -457,7 +457,7 @@ impl MqttPublisher {
                             log::info!("JSON: {json}");
                             json2command(&json).map(|msg| {
                                 log::info!("JSON message: {msg:?}");
-                                msg.1
+                                msg
                             })
                         } else {
                             None
