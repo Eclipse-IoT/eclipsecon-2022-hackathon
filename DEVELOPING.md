@@ -25,8 +25,10 @@ cargo build --release
 
 NOTE: Choose a start address between 0x00ab and 0x7fff at random to avoid conflict with others.
 
+Ensure the [default Drogue Cloud connection settings](https://github.com/Eclipse-IoT/eclipsecon-2022-hackathon/blob/main/gateway/src/main.rs) match your environment!
+
 ```
-RUST_LOG=info ./target/release/eclipsecon-gateway --token dd26596e54e78fa2 --provisioner-token 84783e12f11c4dcd --provisioner-start-address 0x0100
+RUST_LOG=info ./target/release/eclipsecon-gateway --drogue-device gateway1 --drogue-application eclipsecon-hackathon --token dd26596e54e78fa2 --provisioner-token 84783e12f11c4dcd --provisioner-start-address 0x0100
 ```
 
 ## Running the microbit
@@ -36,6 +38,7 @@ Flash the microbit with the desired UUID which you will use when provisioning vi
 NOTE: Make sure the UUID is a 16 byte hex string without the '-' characters!
 
 ```
+cd firmware
 DEVICE_UUID=<uuid> cargo run --release
 ```
 
