@@ -5,7 +5,7 @@ import { AuthContextProps } from "oidc-react/build/src/AuthContextInterface";
 
 export interface DeviceClaim {
   id: string | null;
-  deviceId: string | null;
+  provisioningId: string | null;
   password: string | null;
 }
 
@@ -152,6 +152,7 @@ const useGameService = (): [Service<DeviceClaim>, DispatchWithoutAction] => {
     const url = endpoints?.api("/api/deviceClaims/v1alpha1");
 
     fetch(url, {
+      cache: "no-cache",
       headers: new Headers({
         "Authorization": "Bearer " + auth.userData?.access_token
       })
@@ -199,10 +200,10 @@ const setDisplay = async (endpoints: Service<Endpoints>, auth: AuthContextProps,
 
 };
 
-const claimDevice = async (endpoints: Endpoints, deviceId: string, accessToken?: string): Promise<Response> => {
+const claimDevice = async (endpoints: Endpoints, claimId: string, accessToken?: string): Promise<Response> => {
 
   const url = endpoints.api("/api/deviceClaims/v1alpha1?" + new URLSearchParams({
-    deviceId
+    claimId
   }));
 
   return await fetch(url, {
@@ -219,10 +220,8 @@ const claimDevice = async (endpoints: Endpoints, deviceId: string, accessToken?:
     });
 };
 
-const releaseDevice = async (endpoints: Endpoints, deviceId: string, accessToken?: string): Promise<Response> => {
-  const url = endpoints.api("/api/deviceClaims/v1alpha1?" + new URLSearchParams({
-    deviceId
-  }));
+const releaseDevice = async (endpoints: Endpoints, accessToken?: string): Promise<Response> => {
+  const url = endpoints.api("/api/deviceClaims/v1alpha1");
 
   return await fetch(url, {
     method: "DELETE",

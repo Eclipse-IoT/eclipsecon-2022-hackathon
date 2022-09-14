@@ -19,15 +19,14 @@ import {
   ToolbarContent,
   ToolbarItem
 } from "@patternfly/react-core";
-import { claimDevice, createSimulator, DeviceClaim, releaseDevice, useGameService } from "@app/backend";
 import {
   ExclamationCircleIcon,
-  ExternalLinkAltIcon,
   ExternalLinkSquareAltIcon,
   MicrochipIcon
 } from "@patternfly/react-icons";
-import { EndpointsContext, ToastsContext } from "@app/index";
 import { useAuth } from "oidc-react";
+import { claimDevice, createSimulator, DeviceClaim, releaseDevice, useGameService } from "@app/backend";
+import { EndpointsContext, ToastsContext } from "@app/index";
 import { DeviceState } from "@app/DeviceState/DeviceState";
 import { DeviceControl } from "@app/DisplayCommand/DeviceControl";
 
@@ -59,9 +58,9 @@ const Dashboard: React.FunctionComponent = () => {
     reload();
   };
 
-  const onReleaseDevice = async (deviceId) => {
+  const onReleaseDevice = async () => {
     try {
-      await releaseDevice(endpoints, deviceId, auth.userData?.access_token);
+      await releaseDevice(endpoints, auth.userData?.access_token);
       toasts.addAlert?.(AlertVariant.success, "Released device", 5000);
     } catch (err) {
       toasts.addAlert?.(AlertVariant.danger, `Failed to release device: ${err}`);
@@ -102,7 +101,7 @@ const Dashboard: React.FunctionComponent = () => {
 
   if (service.status === "loaded") {
     let content;
-    if (service.payload?.deviceId !== undefined) {
+    if (service.payload?.provisioningId !== undefined) {
       content = (<React.Fragment>
         <PageSection variant="light">
           <Toolbar>
@@ -115,7 +114,7 @@ const Dashboard: React.FunctionComponent = () => {
                           onClick={() => openSimulator(endpoints.simulatorUrl as string, service.payload)}>Simulator</Button>
                 )}
                 <Button variant="secondary" isDanger
-                        onClick={() => onReleaseDevice(service.payload?.deviceId)}>Release</Button>
+                        onClick={() => onReleaseDevice()}>Release</Button>
               </ToolbarItem>
             </ToolbarContent>
           </Toolbar>
