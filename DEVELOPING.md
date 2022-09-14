@@ -12,7 +12,6 @@ sudo systemctl disable bluetooth
 sudo systemctl stop bluetooth
 
 cd meshd
-mkdir -p ${PWD}/lib
 sudo /usr/libexec/bluetooth/bluetooth-meshd --config ${PWD}/config --storage ${PWD}/lib --debug
 ```
 
