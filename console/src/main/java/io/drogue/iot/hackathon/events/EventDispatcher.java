@@ -23,6 +23,7 @@ import io.drogue.iot.hackathon.data.DeviceState;
 import io.drogue.iot.hackathon.service.DeviceClaimService;
 import io.quarkus.security.identity.IdentityProviderManager;
 import io.quarkus.security.identity.SecurityIdentity;
+import io.smallrye.common.constraint.NotNull;
 import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.infrastructure.Infrastructure;
@@ -60,7 +61,7 @@ public class EventDispatcher {
     @Incoming("event-stream")
     @OnOverflow(value = OnOverflow.Strategy.LATEST)
     void onMessage(DeviceEvent event) {
-        if (event.getDeviceId() == null || event.getPayload() == null) {
+        if (event.getDeviceId() == null || event.getPayload() == null || event.getPayload().getState() == null) {
             return;
         }
         broadcast(event.getDeviceId(), event);
@@ -75,7 +76,7 @@ public class EventDispatcher {
         this.subscriptions.clear();
     }
 
-    void broadcast(String deviceId, DeviceEvent event) {
+    void broadcast(@NotNull String deviceId, DeviceEvent event) {
         logger.info("Broadcast event: {}", event);
 
         final DeviceState newState;
