@@ -4,6 +4,14 @@ apiVersion: apps/v1
 metadata:
   name: console
   annotations:
+    app.openshift.io/connects-to: |
+      [
+        {
+          "apiVersion":"apps/v1",
+          "kind":"StatefulSet",
+          "name":"eclipsecon-2022-console-postgresql"
+        }
+      ]
     image.openshift.io/triggers: |
       [
         {
