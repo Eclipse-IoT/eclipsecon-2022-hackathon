@@ -69,6 +69,8 @@ public class CommandsResource {
             var address = device.getStatus().getBtmesh().getAddress();
             logger.info("Settings btmesh address: {}", address);
             settings.address = address;
+        } else {
+            settings.address = 0L;
         }
 
         logger.info("Sending display command: {}", settings);
