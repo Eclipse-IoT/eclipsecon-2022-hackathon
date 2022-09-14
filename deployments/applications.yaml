@@ -109,3 +109,28 @@ spec:
       kind: Deployment
       jqPathExpressions:
         - '.spec.template.spec.containers[] | .image'
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: eclipsecon-2022-sso-realm
+spec:
+  project: eclipsecon-2022
+  source:
+    repoURL: 'https://github.com/Eclipse-IoT/eclipsecon-2022-hackathon/'
+    path: deployments/sso-eclipsecon
+    targetRevision: HEAD
+    helm:
+      valueFiles:
+        - values.yaml
+      values: |-
+        keycloak:
+          clients:
+            frontend:
+              secret: <client secret>
+          adminUsers:
+            admin: <admin password>
+  destination:
+    name: in-cluster
+    namespace: eclipsecon-2022
+    server: ''

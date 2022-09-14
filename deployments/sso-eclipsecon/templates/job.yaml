@@ -2,7 +2,7 @@
 kind: ConfigMap
 apiVersion: v1
 metadata:
-  name: post-install-keycloak-config
+  name: eclipsecon-realm-init-data
 data:
   client-frontend.json: |
     {
@@ -23,7 +23,7 @@ data:
 kind: Job
 apiVersion: batch/v1
 metadata:
-  name: post-install-keycloak
+  name: eclipsecon-realm-setup
   annotations:
     argocd.argoproj.io/hook: Sync
     argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
