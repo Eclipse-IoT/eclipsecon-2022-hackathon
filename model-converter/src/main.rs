@@ -44,7 +44,7 @@ async fn convert_command(mut event: Event) -> Event {
 
 fn json2command(data: &Value) -> Option<RawMessage> {
     if let Value::Object(data) = data {
-        if let Some(Value::Object(state)) = data.get("button") {
+        if let Some(Value::Object(state)) = data.get("display") {
             let location = state["location"].as_u64().unwrap_or(0);
             let on = state["on"].as_bool().unwrap_or(false);
             let set = GenericOnOffSet {
