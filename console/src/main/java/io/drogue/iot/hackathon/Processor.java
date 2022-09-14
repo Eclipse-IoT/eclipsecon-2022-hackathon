@@ -7,9 +7,10 @@ import javax.inject.Inject;
 import javax.transaction.Transactional;
 import javax.ws.rs.WebApplicationException;
 
+import org.eclipse.microprofile.reactive.messaging.Channel;
+import org.eclipse.microprofile.reactive.messaging.Emitter;
 import org.eclipse.microprofile.reactive.messaging.Incoming;
 import org.eclipse.microprofile.reactive.messaging.OnOverflow;
-import org.eclipse.microprofile.reactive.messaging.Outgoing;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,10 +44,13 @@ public class Processor {
 
     private static final Logger LOG = LoggerFactory.getLogger(Processor.class);
 
-    @Outgoing("device-commands")
+    @Inject
+    @Channel("device-commands")
     @Broadcast
     @OnOverflow(value = OnOverflow.Strategy.LATEST)
-    public DeviceCommand displayCommand(DisplaySettings settings) {
+    Emitter<DeviceCommand> deviceCommands;
+
+    public void displayCommand(DisplaySettings settings) {
 
         var display = new OnOffSet(settings.enabled);
         display.setLocation((short) 0x100);
@@ -58,7 +62,7 @@ public class Processor {
 
         LOG.info("Sending command: {} to address {}", command, settings.device);
 
-        return command;
+        this.deviceCommands.send(command);
     }
 
     @Incoming("event-stream")
