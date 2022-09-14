@@ -24,27 +24,26 @@ use clap::Parser;
 use dbus::Path;
 use futures::StreamExt;
 use sensor_model::*;
+use serde_derive::{Deserialize, Serialize};
 use std::{sync::Arc, time::Duration};
 use tokio::{signal, sync::mpsc, time::sleep};
-use tokio_stream::wrappers::ReceiverStream;
-use serde_derive::{Serialize, Deserialize};
 
 #[derive(Parser)]
 #[clap(author, version, about, long_about = None)]
 struct Args {
     #[clap(short, long)]
     token: Option<String>,
-    #[clap(short, long, conflicts_with = "token")]
-    join: bool,
     #[clap(short, long, default_value_t = 10)]
     publish_interval: u64,
     #[clap(short, long, conflicts_with = "token")]
     config: Option<String>,
+    #[clap(long, conflicts_with = "token")]
+    device: Option<String>,
 }
 
 #[derive(Default, Debug, Serialize, Deserialize)]
 struct NodeConfig {
-    token:  Option<String>,
+    token: Option<String>,
     unicast_address: Option<String>,
 }
 
@@ -59,7 +58,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mesh = session.mesh().await?;
 
     let (mut element_control, element_handle) = element_control();
-    let (app_tx, app_rx) = mpsc::channel(1);
+    let (app_tx, mut app_rx) = mpsc::channel(1);
 
     let root_path = Path::from("/simulator");
     let app_path = Path::from(format!("{}/{}", root_path.clone(), "application"));
@@ -109,25 +108,26 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             println!("Attaching with token {}", token);
             node = Some(mesh.attach(root_path.clone(), &token).await?);
         }
-        None => {
-            match cfg.token {
-                Some(tk) => {
-                    println!("Attaching with token {}", tk);
-                    node = Some(mesh.attach(root_path.clone(), &tk).await?);
-                },
-                None => {
-                    let device_id = Uuid::new_v4();
-                    println!("Joining device: {}", device_id.as_simple());
-                    mesh.join(root_path.clone(), device_id).await?;
+        None => match cfg.token {
+            Some(tk) => {
+                println!("Attaching with token {}", tk);
+                node = Some(mesh.attach(root_path.clone(), &tk).await?);
+            }
+            None => {
+                let device_id = args.device.unwrap();
+                if let Ok(uuid) = Uuid::parse_str(&device_id) {
+                    println!("Joining device: {}", uuid.as_simple());
+                    mesh.join(root_path.clone(), uuid).await?;
+                } else {
+                    panic!("Error parsing device id");
                 }
             }
-        }
+        },
     }
 
     println!("Device ready. Press Ctrl+C to quit.");
 
     let mut interval = tokio::time::interval(Duration::from_secs(args.publish_interval));
-    let mut app_stream = ReceiverStream::new(app_rx);
     loop {
         tokio::select! {
             _ = signal::ctrl_c() => break,
@@ -147,10 +147,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
                     let sensor = SensorMessage::Status(SensorStatus::new(data));
                     println!("Publishing battery status");
-                    node.publish::<GenericBatteryServer>(battery, front.clone()).await?;
+                    let _ = node.publish::<GenericBatteryServer>(battery, front.clone()).await;
 
                     println!("Publishing sensor status");
-                    node.publish::<Sensor>(sensor, front.clone()).await?;
+                    let _ = node.publish::<Sensor>(sensor, front.clone()).await;
                 }
             }
             evt = element_control.next() => {
@@ -158,6 +158,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     Some(msg) => {
                         match msg {
                             ElementMessage::Received(received) => {
+                                println!("Received: {:?}", received);
                                 if let Ok(Some(GenericOnOffMessage::Set(m))) = GenericOnOffServer::parse(&received.opcode, &received.parameters) {
                                     if m.on_off == 1 {
                                         println!("Turn ON");
@@ -175,7 +176,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                 }
                 println!("Got message?!");
             }
-            app_evt = app_stream.next() => {
+            app_evt = app_rx.recv() => {
                 match app_evt {
                     Some(msg) => {
                         match msg {
