@@ -75,7 +75,7 @@ spec:
 #              value: "/var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt"
 
             - name: REALM
-              value: eclipsecon2
+              value: eclipsecon
 
           volumeMounts:
             - mountPath: /etc/init-data
