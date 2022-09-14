@@ -14,7 +14,7 @@ use serde_json::{json, Value};
 
 #[post("/telemetry")]
 async fn convert_telemetry(mut event: Event) -> Event {
-    println!("Received Event: {:?}", event);
+    log::info!("Received Event: {:?}", event);
     if let Some(Data::Json(data)) = event.data() {
         if let Ok(data) = serde_json::from_value::<RawMessage>(data.clone()) {
             let converted = telemetry2json(data);
@@ -32,7 +32,7 @@ async fn convert_telemetry(mut event: Event) -> Event {
 
 #[post("/command")]
 async fn convert_command(mut event: Event) -> Event {
-    println!("Received Command: {:?}", event);
+    log::info!("Received Command: {:?}", event);
     if let Some(Data::Json(data)) = event.data() {
         if let Some(output) = json2command(data) {
             let output = serde_json::to_value(output).unwrap();
@@ -88,7 +88,7 @@ fn telemetry2json(msg: RawMessage) -> Option<Value> {
     }
 
     if let Ok(Some(SensorMessage::Status(mut status))) = SensorClient::parse(&opcode, parameters) {
-        println!("Received sensor status {:?}", status);
+        log::info!("Received sensor status {:?}", status);
         // Temperature is in half degrees
         status.data.temperature /= 2;
         return Some(json!( {
@@ -102,7 +102,7 @@ fn telemetry2json(msg: RawMessage) -> Option<Value> {
     if let Ok(Some(GenericBatteryMessage::Status(status))) =
         GenericBatteryClient::parse(&opcode, parameters)
     {
-        println!("Received battery status {:?}", status);
+        log::info!("Received battery status {:?}", status);
         return Some(json!( {
             "battery": {
                 "level": status.battery_level,
