@@ -26,7 +26,7 @@ extern "C" {
     fn connected(this: &Client) -> bool;
 
     #[wasm_bindgen(method)]
-    fn disconnect(this: &Client);
+    fn disconnect(this: &Client) -> Result<(), JsValue>;
 
     #[wasm_bindgen(method)]
     fn subscribe(this: &Client, filter: &str, options: &JsValue);
@@ -532,7 +532,7 @@ impl Publisher for MqttPublisher {
 
 impl Drop for MqttPublisher {
     fn drop(&mut self) {
-        self.client.lock().unwrap().inner.client.disconnect();
+        let _ = self.client.lock().unwrap().inner.client.disconnect();
         self.opts.on_connection_state.emit(html!("Stopped"));
     }
 }
