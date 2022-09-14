@@ -15,6 +15,10 @@ data:
       "directAccessGrantsEnabled": false,
       "serviceAccountsEnabled": false,
       "fullScopeAllowed": true,
+      "forgotPassword": false,
+      "attributes": {
+        "access.token.lifespan": "300"
+      },
       "webOrigins": [
         "+"
       ]
