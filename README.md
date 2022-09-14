@@ -14,6 +14,10 @@ Before the hackathon starts, feel free to play around with a sample applications
 * [Console](https://github.com/Eclipse-IoT/eclipsecon-2022-hackathon/tree/main/console)
 * [Dashboard](https://github.com/Eclipse-IoT/eclipsecon-2022-hackathon/tree/main/dashboard)
 
+## Login
+
+You will need to create a user in the Keycloak instance. You will be directed to this instance during the login process. You can choose to either manually create an account and select a password, or use GitHub as identity provider. It is required to enter an e-mail address, however the address is not checked and will not be used. 
+
 ## Hackathon
 
 For the hackathon, an instance of [Drogue IoT](https://www.drogue.io) as well as local Bluetooth Mesh gateways are provided for you to use. The hackathon itself includes example tasks where you can:
