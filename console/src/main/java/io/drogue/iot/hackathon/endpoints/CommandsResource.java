@@ -58,22 +58,20 @@ public class CommandsResource {
             throw new BadRequestException("No claimed device");
         }
 
+        var deviceName = claim.get().getId();
+        var settings = new DisplaySettings();
+        settings.device = deviceName;
+        settings.enabled = command.enabled;
+        settings.brightness = command.brightness;
+
         var device = this.registry.getDevice(claim.get().getId()).orElse(null);
-
-        logger.info("Linked device: {}", device);
-
-        if (device != null && device.getStatus() != null) {
-            if (device.getStatus().getBtmesh() != null) {
-                if (device.getStatus().getBtmesh().getAddress() != null) {
-                    var settings = new DisplaySettings();
-                    settings.device = claim.get().getId();
-                    settings.address = device.getStatus().getBtmesh().getAddress();
-                    settings.enabled = command.enabled;
-                    settings.brightness = command.brightness;
-
-                    this.processor.displayCommand(settings);
-                }
-            }
+        if (device != null && device.getStatus() != null && device.getStatus().getBtmesh() != null && device.getStatus().getBtmesh().getAddress() != null) {
+            var address = device.getStatus().getBtmesh().getAddress();
+            logger.info("Settings btmesh address: {}", address);
+            settings.address = address;
         }
+
+        logger.info("Sending display command: {}", settings);
+        this.processor.displayCommand(settings);
     }
 }
