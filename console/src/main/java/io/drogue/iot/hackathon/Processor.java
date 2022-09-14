@@ -7,8 +7,6 @@ import javax.inject.Inject;
 import javax.transaction.Transactional;
 import javax.ws.rs.WebApplicationException;
 
-import org.eclipse.microprofile.reactive.messaging.Channel;
-import org.eclipse.microprofile.reactive.messaging.Emitter;
 import org.eclipse.microprofile.reactive.messaging.Incoming;
 import org.eclipse.microprofile.reactive.messaging.OnOverflow;
 import org.eclipse.microprofile.reactive.messaging.Outgoing;
@@ -45,16 +43,6 @@ public class Processor {
 
     private static final Logger LOG = LoggerFactory.getLogger(Processor.class);
 
-    @Inject
-    @Channel("display-changes")
-    @Broadcast
-    Emitter<DisplaySettings> displayChanges;
-
-    public void updateDisplaySettings(DisplaySettings settings) {
-        this.displayChanges.send(settings);
-    }
-
-    @Incoming("display-changes")
     @Outgoing("device-commands")
     @Broadcast
     @OnOverflow(value = OnOverflow.Strategy.LATEST)
