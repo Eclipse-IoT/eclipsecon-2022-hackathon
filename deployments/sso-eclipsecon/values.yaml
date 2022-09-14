@@ -1,6 +1,8 @@
 keycloak:
   url: https://sso-eclipsecon-2022.apps.sandbox.drogue.world
   identityProviders: []
+  postInstall:
+    image: quay.io/keycloak/keycloak:19.0.2
   clients:
     frontend:
       # secret: <client secret>
