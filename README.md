@@ -21,7 +21,7 @@ For the hackathon, an instance of [Drogue IoT](https://www.drogue.io) as well as
 * Write firmware for the BBC micro:bit v2 in Rust. The firmware uses Bluetooth Mesh to send and receive data from the cloud applications.
 * Write Quarkus applications running locally and on OpenShift. The application consumes telemetry and produces commands using [cloud events](https://cloudevents.io/).
 
-For working on microcontroller firmare, have a look at the [firmware](firmware/) directory for more information and example tasks.
+For working on microcontroller firmware, have a look at the [firmware](firmware/) directory for more information and example tasks.
 
 For working on the quarkus application, have a look at the [example apps](example-apps/).
 
@@ -29,7 +29,13 @@ For working on the quarkus application, have a look at the [example apps](exampl
 
 If you don't have a BBC micro:bit, you can use on of the following ways to simulate a device:
 
-* A WASM-based simulator that connects to Drogue IoT, and which can run in any browser. Use this to prototype backend applications without needing to set up a bluetooth mesh network. Note this this uses HTTP unlike the gateway which uses MQTT. You can try the WASM-based simulator by entering https://web-simulator-eclipsecon-2022.apps.sandbox.drogue.world in your browser, configure the parameters and press 'Run'. The source for the simulator can be found [here](web-simulator/).
+* A WASM-based simulator that connects to Drogue IoT, and which can run in any browser. Use this to prototype backend applications without needing to set up a bluetooth mesh network. Note that this simulates a single device, not a full mesh.
+  
+  In the "Console" application, you can "claim" a simulator, by clicking on "create simulator" instead of claiming a device. This will set up your account for using a virtual device. It will also provide a link to the simulator, pre-configuring the access credentials.
+
+  The access information will also be shown in the console. You can also navigate manually to the WASM-based simulator by entering https://web-simulator-eclipsecon-2022.apps.sandbox.drogue.world in your browser, configure the parameters and press 'Run'.
+
+  The source for the simulator can be found [here](web-simulator/).
 
 * A bluetooth mesh node simulator that runs on any Linux host with bluez, and transports events via the gateway. This is mostly useful when you're working on the gateway as it requires a gateway to be deployed, but it also allows you to follow the full provisioning lifecycle.
 
