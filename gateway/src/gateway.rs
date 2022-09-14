@@ -155,28 +155,26 @@ pub async fn run(
                                     log::info!("Command is for {}", device);
                                     // Check if it's a device'y destination
                                     if let Ok(command) = serde_json::from_slice(&payload[..]) {
-                                        log::info!("Parsed command payload: {:?}", command);
-                                        if let Some(raw) = json2command(&command) {
-                                            let address: u16 = raw.address;
-                                            log::info!("Destination is {}", address);
-                                            let path = if raw.location == front_loc {
-                                                front.clone()
-                                            } else if raw.location == left_loc {
-                                                left.clone()
-                                            } else if raw.location == right_loc {
-                                                right.clone()
-                                            } else {
-                                                front.clone()
-                                            };
-                                            // TODO: Hmm, where to get this?
-                                            let app_key = 0;
-                                            match node.send(raw, path, address, app_key).await {
-                                                Ok(_) => {
-                                                    log::info!("Forwarded message to device");
-                                                }
-                                                Err(e) => {
-                                                    log::warn!("Error forwarding message to device: {:?}", e);
-                                                }
+                                        let raw: RawMessage = command;
+                                        let address: u16 = raw.address;
+                                        log::info!("Destination is {}", address);
+                                        let path = if raw.location == front_loc {
+                                            front.clone()
+                                        } else if raw.location == left_loc {
+                                            left.clone()
+                                        } else if raw.location == right_loc {
+                                            right.clone()
+                                        } else {
+                                            front.clone()
+                                        };
+                                        // TODO: Hmm, where to get this?
+                                        let app_key = 0;
+                                        match node.send(raw, path, address, app_key).await {
+                                            Ok(_) => {
+                                                log::info!("Forwarded message to device");
+                                            }
+                                            Err(e) => {
+                                                log::warn!("Error forwarding message to device: {:?}", e);
                                             }
                                         }
                                     }
@@ -198,39 +196,4 @@ pub async fn run(
     sleep(Duration::from_secs(1)).await;
 
     Ok(())
-}
-
-// Converts JSON message to BLE mesh message
-// TODO: This should eventually be done by the model-converter, but support
-// calling command hooks in drogue-cloud is not yet available.
-fn json2command(data: &Value) -> Option<RawMessage> {
-    if let Value::Object(data) = data {
-        if let Some(Value::Number(address)) = data.get("address") {
-            if let Some(Value::Object(state)) = data.get("display") {
-                let location = state["location"].as_u64().unwrap_or(0);
-                let on = state["on"].as_bool().unwrap_or(false);
-                let set = GenericOnOffSet {
-                    on_off: if on { 1 } else { 0 },
-                    tid: 0,
-                    transition_time: None,
-                    delay: None,
-                };
-                let msg = GenericOnOffMessage::Set(set);
-
-                let mut opcode: heapless::Vec<u8, 16> = heapless::Vec::new();
-                msg.opcode().emit(&mut opcode).unwrap();
-
-                let mut parameters: heapless::Vec<u8, 386> = heapless::Vec::new();
-                msg.emit_parameters(&mut parameters).unwrap();
-                let message = RawMessage {
-                    address: address.as_u64().unwrap() as u16,
-                    location: location as u16,
-                    opcode: opcode.to_vec(),
-                    parameters: parameters.to_vec(),
-                };
-                return Some(message);
-            }
-        }
-    }
-    None
 }

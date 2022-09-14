@@ -45,28 +45,31 @@ async fn convert_command(mut event: Event) -> Event {
 
 fn json2command(data: &Value) -> Option<RawMessage> {
     if let Value::Object(data) = data {
-        if let Some(Value::Object(state)) = data.get("display") {
-            let location = state["location"].as_u64().unwrap_or(0);
-            let on = state["on"].as_bool().unwrap_or(false);
-            let set = GenericOnOffSet {
-                on_off: if on { 1 } else { 0 },
-                tid: 0,
-                transition_time: None,
-                delay: None,
-            };
-            let msg = GenericOnOffMessage::Set(set);
+        if let Some(Value::Number(address)) = data.get("address") {
+            if let Some(Value::Object(state)) = data.get("display") {
+                let location = state["location"].as_u64().unwrap_or(0);
+                let on = state["on"].as_bool().unwrap_or(false);
+                let set = GenericOnOffSet {
+                    on_off: if on { 1 } else { 0 },
+                    tid: 0,
+                    transition_time: None,
+                    delay: None,
+                };
+                let msg = GenericOnOffMessage::Set(set);
 
-            let mut opcode: heapless::Vec<u8, 16> = heapless::Vec::new();
-            msg.opcode().emit(&mut opcode).unwrap();
+                let mut opcode: heapless::Vec<u8, 16> = heapless::Vec::new();
+                msg.opcode().emit(&mut opcode).unwrap();
 
-            let mut parameters: heapless::Vec<u8, 386> = heapless::Vec::new();
-            msg.emit_parameters(&mut parameters).unwrap();
-            let message = RawMessage {
-                location: location as u16,
-                opcode: opcode.to_vec(),
-                parameters: parameters.to_vec(),
-            };
-            return Some(message);
+                let mut parameters: heapless::Vec<u8, 386> = heapless::Vec::new();
+                msg.emit_parameters(&mut parameters).unwrap();
+                let message = RawMessage {
+                    address: address.as_u64().unwrap() as u16,
+                    location: location as u16,
+                    opcode: opcode.to_vec(),
+                    parameters: parameters.to_vec(),
+                };
+                return Some(message);
+            }
         }
     }
     None
