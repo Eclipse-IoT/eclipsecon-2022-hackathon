@@ -1,0 +1,147 @@
+---
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: post-install-keycloak-config
+data:
+  client-frontend.json: |
+    {
+      "clientId": "frontend",
+      "clientAuthenticatorType": "client-secret",
+      "enabled": true,
+      "publicClient": true,
+      "implicitFlowEnabled": false,
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "fullScopeAllowed": true,
+      "webOrigins": [
+        "+"
+      ]
+    }
+---
+kind: Job
+apiVersion: batch/v1
+metadata:
+  name: post-install-keycloak
+  annotations:
+    argocd.argoproj.io/hook: Sync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
+    argocd.argoproj.io/sync-wave: "0"
+    helm.sh/hook-weight: "5"
+    helm.sh/hook: post-install,post-upgrade
+    helm.sh/hook-delete-policy: before-hook-creation
+spec:
+  backoffLimit: 1000
+  completions: 1
+  parallelism: 1
+  ttlSecondsAfterFinished: 600
+  template:
+    spec:
+      restartPolicy: OnFailure
+
+      volumes:
+        - name: init-data
+          configMap:
+            name: eclipsecon-realm-init-data
+        - name: secret-data
+          emptyDir: {}
+
+      containers:
+        - name: post-install
+          image: ""
+          imagePullPolicy: IfNotPresent
+
+          env:
+            - name: ADMIN_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: sso-initial-admin
+                  key: username
+            - name: ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: sso-initial-admin
+                  key: password
+
+            - name: KEYCLOAK_URL
+              value: {{ .Values.keycloak.url | quote }}
+
+            - name: KCADM_PATH
+              value: {{ (.Values.keycloak.postInstall).kcAdmPath | default "/opt/keycloak/bin/kcadm.sh" }}
+
+            - name: CUSTOM_TRUSTSTORE
+              value: "/var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt"
+
+            - name: REALM
+              value: eclipsecon2
+
+          volumeMounts:
+            - mountPath: /etc/init-data
+              name: init-data
+            - mountPath: /var/secret-data
+              name: secret-data
+
+          command:
+            - bash
+            - -exc
+            - |
+
+              kcadm() { local cmd="$1" ; shift ; "$KCADM_PATH" "$cmd" --config /tmp/kcadm.config "$@" ; }
+
+              # set up trust store
+              if [[ -n "${CUSTOM_TRUSTSTORE}" ]]; then
+                keytool -importcert -noprompt -trustcacerts -file "${CUSTOM_TRUSTSTORE}" -keystore /tmp/truststore.jks -storepass temp1234 -storetype JKS
+                kcadm config truststore /tmp/truststore.jks --trustpass temp1234
+              fi
+
+              # log in to keycloak
+              kcadm config credentials config --server "$KEYCLOAK_URL" --realm master --user "$ADMIN_USERNAME" --password "$ADMIN_PASSWORD"
+
+              # create realm
+              REALM_OPTS=()
+              REALM_OPTS+=(-s enabled=true)
+              REALM_OPTS+=(-s "displayName=EclipseCon 2022 IoT Hackathon")
+              REALM_OPTS+=(-s registrationAllowed=true)
+              REALM_OPTS+=(-s resetPasswordAllowed=true)
+              REALM_OPTS+=(-s loginWithEmailAllowed=false)
+              REALM_OPTS+=(-s identityProviders='{{ mustToJson .Values.keycloak.identityProviders }}')
+              if kcadm get "realms/${REALM}" &> /dev/null ; then
+                # exists -> update
+                kcadm update "realms/${REALM}" "${REALM_OPTS[@]}"
+              else
+                # need to create
+                kcadm create realms -s "realm=${REALM}" "${REALM_OPTS[@]}"
+              fi
+
+              # create realm roles
+              kcadm create roles -r "${REALM}" -s name=device-admin || true
+
+              # create clients - api
+              ID=$(kcadm get clients -r "${REALM}" --query "clientId=api" --fields id --format csv --noquotes)
+              CLIENT_OPTS=()
+              CLIENT_OPTS+=(-s 'secret={{ .Values.keycloak.clients.frontend.secret | toJson }}')
+              CLIENT_OPTS+=(-s 'redirectUris={{ .Values.keycloak.clients.frontend.redirectUris | toJson }}')
+              if [[ -n "$ID" ]]; then
+                # TODO: replace with update once https://github.com/keycloak/keycloak/issues/12484 is fixed
+                # kcadm update "clients/${ID}" -r "${REALM}" -f /etc/init-data/client.json "${CLIENT_OPTS[@]}"
+                kcadm delete "clients/${ID}" -r "${REALM}"
+                kcadm create clients -r "${REALM}" -f /etc/init-data/client.json "${CLIENT_OPTS[@]}"
+              else
+                kcadm create clients -r "${REALM}" -f /etc/init-data/client.json "${CLIENT_OPTS[@]}"
+              fi
+
+              {{- range $k, $v := .Values.keycloak.adminUsers }}
+              # create user {{ $k }}
+              ID=$(kcadm get users -r "${REALM}" --query "username={{ $k }}" --fields id --format csv --noquotes)
+              if [[ -n "$ID" ]]; then
+                kcadm update "users/$ID" -r "${REALM}" -s enabled=true
+              else
+                kcadm create users -r "${REALM}" -s "username={{ $k }}" -s enabled=true
+              fi
+              kcadm add-roles -r "${REALM}" --uusername "{{ $k }}" --rolename device-admin
+
+              # set password
+              ID=$(kcadm get users -r "${REALM}" --query "username={{ $k }}" --fields id --format csv --noquotes)
+              kcadm update "users/${ID}/reset-password" -r "${REALM}" -s type=password -s "value={{ $v }}" -s temporary=false -n
+              {{- end }}

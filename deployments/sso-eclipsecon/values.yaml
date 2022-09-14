@@ -1,0 +1,12 @@
+keycloak:
+  url: https://sso-eclipsecon-2022.apps.sandbox.drogue.world
+  identityProviders: []
+  clients:
+    frontend:
+      # secret: <client secret>
+      redirectUris:
+        - "https://console-eclipsecon-2022.apps.sandbox.drogue.world/"
+  adminUsers:
+    # - <user>: <password>
+console:
+  url: https://console-eclipsecon-2022.apps.sandbox.drogue.world/
