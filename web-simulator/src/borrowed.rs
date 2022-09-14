@@ -1,5 +1,5 @@
 use btmesh_models::{
-    generic::onoff::{GenericOnOffMessage, Set},
+    generic::onoff::{GenericOnOffMessage, Set as GenericOnOffSet},
     Message,
 };
 use sensor_model::RawMessage;
@@ -7,10 +7,10 @@ use serde_json::Value;
 
 pub fn json2command(data: &Value) -> Option<RawMessage> {
     if let Value::Object(data) = data {
-        if let Some(Value::Object(state)) = data.get("display") {
+        if let Some(Value::Object(state)) = data.get("button") {
             let location = state["location"].as_u64().unwrap_or(0);
             let on = state["on"].as_bool().unwrap_or(false);
-            let set = Set {
+            let set = GenericOnOffSet {
                 on_off: if on { 1 } else { 0 },
                 tid: 0,
                 transition_time: None,
