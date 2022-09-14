@@ -117,7 +117,7 @@ pub async fn run(
                                 let mut parameters = Vec::new();
                                 parameters.extend_from_slice(&received.parameters);
                                 let message = RawMessage {
-                                    address: u16::from_le_bytes(received.src.as_bytes()),
+                                    address: Some(u16::from_le_bytes(received.src.as_bytes())),
                                     location: received.location.unwrap(),
                                     opcode: opcode.to_vec(),
                                     parameters,
@@ -156,25 +156,26 @@ pub async fn run(
                                     // Check if it's a device'y destination
                                     if let Ok(command) = serde_json::from_slice(&payload[..]) {
                                         let raw: RawMessage = command;
-                                        let address: u16 = raw.address;
-                                        log::info!("Destination is {}", address);
-                                        let path = if raw.location == front_loc {
-                                            front.clone()
-                                        } else if raw.location == left_loc {
-                                            left.clone()
-                                        } else if raw.location == right_loc {
-                                            right.clone()
-                                        } else {
-                                            front.clone()
-                                        };
-                                        // TODO: Hmm, where to get this?
-                                        let app_key = 0;
-                                        match node.send(raw, path, address, app_key).await {
-                                            Ok(_) => {
-                                                log::info!("Forwarded message to device");
-                                            }
-                                            Err(e) => {
-                                                log::warn!("Error forwarding message to device: {:?}", e);
+                                        if let Some(address) = raw.address {
+                                            log::info!("Destination is {}", address);
+                                            let path = if raw.location == front_loc {
+                                                front.clone()
+                                            } else if raw.location == left_loc {
+                                                left.clone()
+                                            } else if raw.location == right_loc {
+                                                right.clone()
+                                            } else {
+                                                front.clone()
+                                            };
+                                            // TODO: Hmm, where to get this?
+                                            let app_key = 0;
+                                            match node.send(raw, path, address, app_key).await {
+                                                Ok(_) => {
+                                                    log::info!("Forwarded message to device");
+                                                }
+                                                Err(e) => {
+                                                    log::warn!("Error forwarding message to device: {:?}", e);
+                                                }
                                             }
                                         }
                                     }

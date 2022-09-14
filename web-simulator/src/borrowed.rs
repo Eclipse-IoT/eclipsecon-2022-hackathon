@@ -27,6 +27,7 @@ pub fn json2command(data: &Value) -> Option<RawMessage> {
             let mut parameters: heapless::Vec<u8, 386> = heapless::Vec::new();
             msg.emit_parameters(&mut parameters).unwrap();
             let message = RawMessage {
+                address: None,
                 location: location as u16,
                 opcode: opcode.to_vec(),
                 parameters: parameters.to_vec(),

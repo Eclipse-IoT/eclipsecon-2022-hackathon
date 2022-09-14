@@ -16,6 +16,7 @@ pub trait PublisherExt: Publisher {
         msg.emit_parameters(&mut parameters)
             .map_err(|_| std::fmt::Error)?;
         let message = RawMessage {
+            address: None,
             location: 0,
             opcode: opcode.to_vec(),
             parameters: parameters.to_vec(),

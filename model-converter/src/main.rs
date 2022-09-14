@@ -63,7 +63,7 @@ fn json2command(data: &Value) -> Option<RawMessage> {
                 let mut parameters: heapless::Vec<u8, 386> = heapless::Vec::new();
                 msg.emit_parameters(&mut parameters).unwrap();
                 let message = RawMessage {
-                    address: address.as_u64().unwrap() as u16,
+                    address: Some(address.as_u64().unwrap() as u16),
                     location: location as u16,
                     opcode: opcode.to_vec(),
                     parameters: parameters.to_vec(),
@@ -164,6 +164,7 @@ mod tests {
         let mut parameters: heapless::Vec<u8, 386> = heapless::Vec::new();
         msg.emit_parameters(&mut parameters).unwrap();
         let message = RawMessage {
+            address: 0,
             location: 0,
             opcode: opcode.to_vec(),
             parameters: parameters.to_vec(),
