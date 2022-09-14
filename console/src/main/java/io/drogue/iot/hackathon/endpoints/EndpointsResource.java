@@ -13,7 +13,7 @@ import org.eclipse.microprofile.config.inject.ConfigProperty;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
 @Path("/.well-known/eclipsecon-2022/endpoints")
-@Consumes(MediaType.APPLICATION_JSON)
+@Consumes()
 @Produces(MediaType.APPLICATION_JSON)
 public class EndpointsResource {
 

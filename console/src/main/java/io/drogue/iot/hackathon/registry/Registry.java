@@ -14,9 +14,6 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import io.quarkus.runtime.Startup;
-
-@Startup
 @ApplicationScoped
 public class Registry {
     private static final Logger LOG = LoggerFactory.getLogger(Registry.class);

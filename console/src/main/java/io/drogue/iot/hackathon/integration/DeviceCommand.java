@@ -1,16 +1,18 @@
-package io.drogue.iot.hackathon.commands;
+package io.drogue.iot.hackathon.integration;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import io.drogue.iot.hackathon.data.CommandPayload;
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
 @RegisterForReflection
 public class DeviceCommand {
     private String deviceId;
+
     private CommandPayload payload;
 
     public String getDeviceId() {
-        return deviceId;
+        return this.deviceId;
     }
 
     public void setDeviceId(String deviceId) {
@@ -34,8 +36,8 @@ public class DeviceCommand {
     @Override
     public String toString() {
         return "DeviceCommand{" +
-                "deviceId='" + deviceId + '\'' +
-                ", payload=" + payload +
+                "deviceId='" + this.deviceId + '\'' +
+                ", payload=" + this.payload +
                 '}';
     }
 }

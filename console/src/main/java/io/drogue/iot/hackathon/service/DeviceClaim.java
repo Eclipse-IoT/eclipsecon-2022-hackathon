@@ -11,21 +11,21 @@ import io.quarkus.runtime.annotations.RegisterForReflection;
 @RegisterForReflection
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public class DeviceClaim {
-    public final String id;
+    private final String id;
 
-    public final String deviceId;
+    private final String provisioningId;
 
-    public final Optional<String> password;
+    private final Optional<String> password;
 
-    public DeviceClaim(String id, String deviceId) {
+    public DeviceClaim(String id, String provisioningId) {
         this.id = id;
-        this.deviceId = deviceId;
+        this.provisioningId = provisioningId;
         this.password = Optional.empty();
     }
 
-    public DeviceClaim(String id, String deviceId, Optional<String> password) {
+    public DeviceClaim(String id, String provisioningId, Optional<String> password) {
         this.id = id;
-        this.deviceId = deviceId;
+        this.provisioningId = provisioningId;
         this.password = Objects.requireNonNull(password);
     }
 
@@ -33,8 +33,8 @@ public class DeviceClaim {
         return this.id;
     }
 
-    public String getDeviceId() {
-        return this.deviceId;
+    public String getProvisioningId() {
+        return this.provisioningId;
     }
 
     public Optional<String> getPassword() {
@@ -45,12 +45,18 @@ public class DeviceClaim {
     public String toString() {
         return MoreObjects.toStringHelper(this)
                 .add("id", this.id)
-                .add("deviceId", this.deviceId)
+                .add("provisioningId", this.provisioningId)
                 .add("password", this.password.isPresent() ? "***" : "<empty>")
                 .toString();
     }
 
+    /**
+     * Create a new device claim, overriding the password information.
+     *
+     * @param password The password to set.
+     * @return The new instance.
+     */
     public DeviceClaim withPassword(final Optional<String> password) {
-        return new DeviceClaim(this.id, this.deviceId, password);
+        return new DeviceClaim(this.id, this.provisioningId, password);
     }
 }

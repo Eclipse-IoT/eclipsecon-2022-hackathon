@@ -1,12 +1,17 @@
 package io.drogue.iot.hackathon.data;
 
+import io.quarkus.runtime.annotations.RegisterForReflection;
+
+@RegisterForReflection
 public class SensorPayload {
     private Long temperature;
+
     private Acceleration acceleration;
+
     private Long noise;
 
     public Long getTemperature() {
-        return temperature;
+        return this.temperature;
     }
 
     public void setTemperature(Long temperature) {
@@ -14,7 +19,7 @@ public class SensorPayload {
     }
 
     public Long getNoise() {
-        return noise;
+        return this.noise;
     }
 
     public void setNoise(Long noise) {
@@ -32,9 +37,9 @@ public class SensorPayload {
     @Override
     public String toString() {
         return "SensorPayload{" +
-                "temperature=" + temperature +
-                ", acceleration=" + acceleration +
-                ", noise=" + noise +
+                "temperature=" + this.temperature +
+                ", acceleration=" + this.acceleration +
+                ", noise=" + this.noise +
                 '}';
     }
 }

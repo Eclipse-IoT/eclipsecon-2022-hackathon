@@ -101,7 +101,7 @@ public class EventDispatcher {
         return Multi.createFrom()
                 .uni(Uni.createFrom()
                         .item(() -> {
-                            return claimService.getDeviceClaimFor(identity.getPrincipal().getName());
+                            return this.claimService.getDeviceClaimFor(identity.getPrincipal().getName());
                         })
                         .runSubscriptionOn(Infrastructure.getDefaultWorkerPool())
                 )
@@ -110,8 +110,8 @@ public class EventDispatcher {
 
                     logger.info("Subscribe for: {}", claim);
                     if (claim.isPresent()) {
-                        var id = claim.get().id;
-                        var firstItem = Multi.createFrom().optional(Optional.ofNullable(latestState.get(id)));
+                        var id = claim.get().getId();
+                        var firstItem = Multi.createFrom().optional(Optional.ofNullable(this.latestState.get(id)));
                         var broadcast = getSubscription(id);
                         stream = firstItem.onCompletion()
                                 .switchTo(broadcast);

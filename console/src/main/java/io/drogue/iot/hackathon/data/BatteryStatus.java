@@ -1,11 +1,15 @@
 package io.drogue.iot.hackathon.data;
 
+import io.quarkus.runtime.annotations.RegisterForReflection;
+
+@RegisterForReflection
 public class BatteryStatus extends ModelElement {
     private byte level;
+
     private BatteryFlags flags;
 
     public byte getLevel() {
-        return level;
+        return this.level;
     }
 
     public void setLevel(byte level) {
@@ -13,7 +17,7 @@ public class BatteryStatus extends ModelElement {
     }
 
     public BatteryFlags getFlags() {
-        return flags;
+        return this.flags;
     }
 
     public void setFlags(BatteryFlags flags) {
@@ -23,9 +27,9 @@ public class BatteryStatus extends ModelElement {
     @Override
     public String toString() {
         return "BatteryStatus{" +
-                "level=" + level +
-                ", flags=" + flags +
-                ", location=" + location +
+                "level=" + this.level +
+                ", flags=" + this.flags +
+                ", location=" + this.location +
                 '}';
     }
 }

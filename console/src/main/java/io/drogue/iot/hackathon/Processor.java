@@ -15,13 +15,13 @@ import org.eclipse.microprofile.reactive.messaging.Outgoing;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.drogue.iot.hackathon.commands.DeviceCommand;
 import io.drogue.iot.hackathon.data.CommandPayload;
 import io.drogue.iot.hackathon.data.DeviceEvent;
+import io.drogue.iot.hackathon.data.DisplaySettings;
 import io.drogue.iot.hackathon.data.OnOffSet;
+import io.drogue.iot.hackathon.integration.DeviceCommand;
 import io.drogue.iot.hackathon.registry.Registry;
 import io.drogue.iot.hackathon.service.DeviceClaimService;
-import io.drogue.iot.hackathon.ui.DisplaySettings;
 import io.quarkus.runtime.Startup;
 import io.smallrye.reactive.messaging.annotations.Broadcast;
 
@@ -90,7 +90,7 @@ public class Processor {
     @Transactional
     public void claimDevice(final String claimId, final String userId, final boolean canCreate) {
         var claim = this.service.claimDevice(claimId, userId, canCreate);
-        this.registry.createDevice(claimId, claim.deviceId);
+        this.registry.createDevice(claimId, claim.getProvisioningId());
     }
 
     @Transactional
@@ -105,7 +105,7 @@ public class Processor {
     public void releaseDevice(final String userId) {
         var claim = this.service.getDeviceClaimFor(userId);
         try {
-            claim.ifPresent(deviceClaim -> this.registry.deleteDevice(deviceClaim.id));
+            claim.ifPresent(deviceClaim -> this.registry.deleteDevice(deviceClaim.getId()));
         } catch (WebApplicationException e) {
             if (e.getResponse().getStatus() != 404) {
                 // ignore 404

@@ -20,12 +20,15 @@ public class DeviceClaimService {
         var cb = this.em.getCriteriaBuilder();
         var cr = cb.createQuery(Claim.class);
         var root = cr.from(Claim.class);
-        cr.select(root).where(cb.equal(root.get("claimedBy"), userId));
+        cr.select(root)
+                .where(cb
+                        .equal(root.get("claimedBy"), userId
+                        ));
 
         return this.em.createQuery(cr)
                 .getResultStream()
                 .findFirst()
-                .map(claim -> new DeviceClaim(claim.getId(), claim.getDeviceId()));
+                .map(claim -> new DeviceClaim(claim.getId(), claim.getProvisioningId()));
     }
 
     @Transactional
@@ -35,8 +38,8 @@ public class DeviceClaimService {
             if (claim == null && canCreate) {
                 claim = new Claim();
                 claim.setId(claimId);
-                // if we auto-create a claim, the deviceId is equal to the claimId
-                claim.setDeviceId(claimId);
+                // if we auto-create a claim, the provisioningId is equal to the claimId
+                claim.setProvisioningId(claimId);
             } else {
                 throw new AlreadyClaimedException(claimId);
             }
@@ -45,7 +48,7 @@ public class DeviceClaimService {
         claim.setClaimedBy(userId);
         this.em.persist(claim);
 
-        return new DeviceClaim(claimId, claim.getDeviceId());
+        return new DeviceClaim(claimId, claim.getProvisioningId());
     }
 
     @Transactional
@@ -75,12 +78,12 @@ public class DeviceClaimService {
      * Create a new claim, ignoring existing entries.
      *
      * @param id The claim id.
-     * @param deviceId The device id.
+     * @param provisioningId The provisioning id.
      */
-    public void createClaim(String id, String deviceId) {
+    public void createClaim(String id, String provisioningId) {
         var claim = new Claim();
         claim.setId(id);
-        claim.setDeviceId(deviceId);
+        claim.setProvisioningId(provisioningId);
         this.em.merge(claim);
     }
 }

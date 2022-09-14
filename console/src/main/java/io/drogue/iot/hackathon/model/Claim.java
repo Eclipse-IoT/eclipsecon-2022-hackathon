@@ -8,30 +8,33 @@ import javax.persistence.Table;
 
 @Entity
 @Table(
+        name = "claims",
         indexes = {
-                @Index(columnList = ("claimedBy"), unique = true),
-                @Index(columnList = ("deviceId"), unique = true),
+                @Index(columnList = ("claimed_by"), unique = true),
         }
 )
 public class Claim {
     /**
      * The claim ID/name, as printed on the box.
+     * <p>
+     * Also used as "device name" in the device registry.
      */
     @Id
     @Column(nullable = false, unique = true)
     private String id;
 
     /**
-     * The device ID, as registered in Drogue IoT.
+     * The ID used for provisioning a device.
      */
-    @Column(nullable = false, unique = true)
-    private String deviceId;
+    @Column(nullable = false, unique = true, name = "provisioning_id")
+    private String provisioningId;
 
     /**
      * The name of the user claiming the device.
      * <p>
      * May be null.
      */
+    @Column(name = "claimed_by")
     private String claimedBy;
 
     public String getId() {
@@ -42,12 +45,12 @@ public class Claim {
         this.id = id;
     }
 
-    public String getDeviceId() {
-        return this.deviceId;
+    public String getProvisioningId() {
+        return this.provisioningId;
     }
 
-    public void setDeviceId(String deviceId) {
-        this.deviceId = deviceId;
+    public void setProvisioningId(String provisioningId) {
+        this.provisioningId = provisioningId;
     }
 
     public void setClaimedBy(String claimedBy) {

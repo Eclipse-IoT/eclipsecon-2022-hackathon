@@ -69,9 +69,9 @@ public class ClaimResource {
     }
 
     @PUT
-    public void claimDevice(@QueryParam("deviceId") final String deviceId) {
+    public void claimDevice(@QueryParam("claimId") final String claimId) {
         var canCreate = this.identity.hasRole("device-admin");
-        this.processor.claimDevice(deviceId, this.identity.getPrincipal().getName(), canCreate);
+        this.processor.claimDevice(claimId, this.identity.getPrincipal().getName(), canCreate);
     }
 
     @PUT

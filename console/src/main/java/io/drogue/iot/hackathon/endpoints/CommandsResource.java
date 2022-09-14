@@ -9,9 +9,9 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
 import io.drogue.iot.hackathon.Processor;
+import io.drogue.iot.hackathon.data.DisplaySettings;
 import io.drogue.iot.hackathon.registry.Registry;
 import io.drogue.iot.hackathon.service.DeviceClaimService;
-import io.drogue.iot.hackathon.ui.DisplaySettings;
 import io.quarkus.security.Authenticated;
 import io.quarkus.security.identity.SecurityIdentity;
 
@@ -49,12 +49,12 @@ public class CommandsResource {
             throw new BadRequestException("No claimed device");
         }
 
-        var device = this.registry.getDevice(claim.get().id);
+        var device = this.registry.getDevice(claim.get().getId());
         if (device.isPresent() && device.get().getStatus() != null) {
             if (device.get().getStatus().getBtmesh() != null) {
                 if (device.get().getStatus().getBtmesh().getAddress() != null) {
                     var settings = new DisplaySettings();
-                    settings.device = claim.get().id;
+                    settings.device = claim.get().getId();
                     settings.address = device.get().getStatus().getBtmesh().getAddress();
                     settings.enabled = command.enabled;
                     settings.brightness = command.brightness;
