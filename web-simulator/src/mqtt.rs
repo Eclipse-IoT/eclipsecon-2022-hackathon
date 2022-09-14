@@ -25,7 +25,7 @@ extern "C" {
     #[wasm_bindgen(method, getter)]
     fn connected(this: &Client) -> bool;
 
-    #[wasm_bindgen(method)]
+    #[wasm_bindgen(method, catch)]
     fn disconnect(this: &Client) -> Result<(), JsValue>;
 
     #[wasm_bindgen(method)]
@@ -360,7 +360,7 @@ impl Inner {
 impl Drop for Inner {
     fn drop(&mut self) {
         if self.client.connected() {
-            self.client.disconnect();
+            let _ = self.client.disconnect();
         }
     }
 }
@@ -455,7 +455,10 @@ impl MqttPublisher {
                         log::warn!("Failed to parse command: {err}");
                         if let Ok(json) = serde_json::from_slice(&msg.payload) {
                             log::info!("JSON: {json}");
-                            json2command(&json)
+                            json2command(&json).map(|msg| {
+                                log::info!("JSON message: {msg:?}");
+                                msg
+                            })
                         } else {
                             None
                         }
