@@ -22,7 +22,7 @@ public class DeviceClaimService {
         var root = cr.from(Claim.class);
         cr.select(root)
                 .where(cb
-                        .equal(root.get("claimed_by"), userId
+                        .equal(root.get("claimedBy"), userId
                         ));
 
         return this.em.createQuery(cr)
@@ -57,7 +57,7 @@ public class DeviceClaimService {
         var cb = this.em.getCriteriaBuilder();
         var cr = cb.createCriteriaDelete(Claim.class);
         var root = cr.from(Claim.class);
-        cr.where(cb.equal(root.get("claimed_by"), userId));
+        cr.where(cb.equal(root.get("claimedBy"), userId));
 
         var updates = this.em.createQuery(cr).executeUpdate();
 
