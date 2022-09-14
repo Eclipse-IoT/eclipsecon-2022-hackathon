@@ -23,9 +23,9 @@ use btmesh_operator::{BtMeshCommand, BtMeshDeviceState, BtMeshEvent, BtMeshOpera
 use dbus::Path;
 use futures::{pin_mut, StreamExt};
 use paho_mqtt as mqtt;
-use std::{collections::HashMap, sync::Arc, time::Duration};
+use std::{collections::HashSet, sync::Arc, time::Duration};
 use tokio::{
-    sync::{broadcast, mpsc, oneshot, Mutex},
+    sync::{broadcast, mpsc, Mutex},
     time::sleep,
 };
 
@@ -83,7 +83,8 @@ pub async fn run(
 
     let node = mesh.attach(root_path.clone(), &config.token).await?;
     pin_mut!(element_control);
-    let provisioning: Mutex<HashMap<Uuid, oneshot::Sender<()>>> = Mutex::new(HashMap::new());
+    let provisioning: Mutex<HashSet<Uuid>> = Mutex::new(HashSet::new());
+    let (provision_tx, mut provision_rx) = mpsc::channel(32);
 
     log::info!("Starting provisioner event loop");
     loop {
@@ -110,10 +111,7 @@ pub async fn run(
                                 node.bind(element_path.clone(), unicast, 0, GENERIC_BATTERY_SERVER).await?;
                                 sleep(Duration::from_secs(4)).await;
 
-                                // let label = LabelUuid {
-                                //     uuid: Uuid::parse_str("f0bfd803cde184133096f003ea4a3dc2")?.into_bytes(),
-                                //     address: VirtualAddress::new(8f32 as u16).map_err(|_| std::fmt::Error)?
-                                // };
+
                                 let label = LabelUuid::new(Uuid::parse_str("f0bfd803cde184133096f003ea4a3dc2")?.into_bytes()).map_err(|_| std::fmt::Error)?;
                                 let pub_address = PublishAddress::Virtual(label);
                                 log::info!("Add pub-set for sensor server");
@@ -140,9 +138,7 @@ pub async fn run(
                                         e
                                     );
                                 }
-                                if let Some(notify) = provisioning.lock().await.remove(&uuid) {
-                                    let _ = notify.send(());
-                                }
+                                provisioning.lock().await.remove(&uuid);
                             },
                             ProvisionerMessage::AddNodeFailed(uuid, reason) => {
                                 log::info!("Failed to add node {:?}: '{:?}'", uuid, reason);
@@ -161,15 +157,38 @@ pub async fn run(
                                         e
                                     );
                                 }
-                                if let Some(notify) = provisioning.lock().await.remove(&uuid) {
-                                    let _ = notify.send(());
-                                }
+                                provisioning.lock().await.remove(&uuid);
                             }
                         }
                     },
                     None => break,
                 }
             },
+            Some(device) = provision_rx.recv() => {
+                log::info!("Provisioning {:?}", device);
+                match node.management.add_node(device).await {
+                    Ok(_) => {
+                        log::info!("Provisioning for {:?} is done", device);
+                    }
+                    Err(e) => {
+                        let status = BtMeshEvent {
+                            status: BtMeshDeviceState::Provisioning {
+                                error: Some(e.to_string())
+                            }
+                        };
+
+                        let topic = format!("btmesh/{}", device);
+                        let data = serde_json::to_string(&status)?;
+                        let message = mqtt::Message::new(topic, data.as_bytes(), 1);
+                        if let Err(e) = mqtt_client.publish(message).await {
+                            log::warn!(
+                                "Error publishing provisioning status: {:?}",
+                                e
+                            );
+                        }
+                    }
+                }
+            }
             evt = element_control.next() => {
                 match evt {
                     Some(msg) => {
@@ -201,43 +220,11 @@ pub async fn run(
                                     device
                                 } => {
                                     if let Ok(uuid) = Uuid::parse_str(&device) {
-                                        let consumer = {
                                             let mut set = provisioning.lock().await;
-                                            if !set.contains_key(&uuid) {
-                                                let (tx, rx) = oneshot::channel();
-                                                set.insert(uuid.clone(), tx);
-                                                Some(rx)
-                                            } else {
-                                                None
+                                            if !set.contains(&uuid) {
+                                                set.insert(uuid.clone());
+                                                provision_tx.send(uuid.clone()).await?;
                                             }
-                                        };
-                                        if let Some(rx) = consumer {
-                                            log::info!("Provisioning {:?}", device);
-                                            match node.management.add_node(uuid).await {
-                                                Ok(_) => {
-                                                    log::info!("Waiting oneshot channel being notified");
-                                                    // TODO: let _ = rx.await;
-                                                    log::info!("Provisioning for {:?} is done", device);
-                                                }
-                                                Err(e) => {
-                                                    let status = BtMeshEvent {
-                                                        status: BtMeshDeviceState::Provisioning {
-                                                            error: Some(e.to_string())
-                                                        }
-                                                    };
-
-                                                    let topic = format!("btmesh/{}", device);
-                                                    let data = serde_json::to_string(&status)?;
-                                                    let message = mqtt::Message::new(topic, data.as_bytes(), 1);
-                                                    if let Err(e) = mqtt_client.publish(message).await {
-                                                        log::warn!(
-                                                            "Error publishing provisioning status: {:?}",
-                                                            e
-                                                        );
-                                                    }
-                                                }
-                                            }
-                                        }
                                     }
                                 }
                                 BtMeshOperation::Reset {
