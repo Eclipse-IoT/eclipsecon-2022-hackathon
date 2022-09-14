@@ -57,7 +57,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let mesh = session.mesh().await?;
 
-    let (mut element_control, element_handle) = element_control();
+    let (mut element_control, element_handle) = element_control(1);
     let (app_tx, mut app_rx) = mpsc::channel(1);
 
     let root_path = Path::from("/simulator");
