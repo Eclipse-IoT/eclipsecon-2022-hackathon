@@ -39,6 +39,15 @@ NOTE: Make sure the UUID is a 16 byte hex string without the '-' characters!
 DEVICE_UUID=<uuid> cargo run --release
 ```
 
+## Optional: Running the simulator
+
+If you don't have a microbit, you can run the simulator:
+
+```
+RUST_LOG=info ./target/release/eclipsecon-simulator --device <uuid>
+```
+
+
 ## Provision the device using the command line
 
 To provision the microbit, we create a new device and set the UUID:
@@ -51,11 +60,9 @@ The operator will reconcile the state of the device and send the provisioning co
 
 You can look at the status section of the device to see when it has been successfully provisioned.
 
-## Provision microbit using the console
+## Provision the device using the console
 
 Go to the [console](https://console-eclipsecon-2022.apps.sandbox.drogue.world/) and use the claim id corresponding to the UUID you chose earlier.
-
-## Optional: Running the simulator
 
 
 ## Troubleshooting
