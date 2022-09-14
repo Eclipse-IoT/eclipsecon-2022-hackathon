@@ -8,10 +8,14 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import io.drogue.iot.hackathon.Processor;
 import io.drogue.iot.hackathon.data.DisplaySettings;
 import io.drogue.iot.hackathon.registry.Registry;
 import io.drogue.iot.hackathon.service.DeviceClaimService;
+import io.quarkus.runtime.annotations.RegisterForReflection;
 import io.quarkus.security.Authenticated;
 import io.quarkus.security.identity.SecurityIdentity;
 
@@ -19,6 +23,9 @@ import io.quarkus.security.identity.SecurityIdentity;
 @Authenticated
 public class CommandsResource {
 
+    private static final Logger logger = LoggerFactory.getLogger(CommandsResource.class);
+
+    @RegisterForReflection
     public static class DisplayState {
         public int brightness;
 
@@ -45,11 +52,16 @@ public class CommandsResource {
 
         var claim = this.service.getDeviceClaimFor(this.identity.getPrincipal().getName());
 
+        logger.info("Request to send display command: {}", claim);
+
         if (claim.isEmpty()) {
             throw new BadRequestException("No claimed device");
         }
 
         var device = this.registry.getDevice(claim.get().getId()).orElse(null);
+
+        logger.info("Linked device: {}", device);
+
         if (device != null && device.getStatus() != null) {
             if (device.getStatus().getBtmesh() != null) {
                 if (device.getStatus().getBtmesh().getAddress() != null) {
