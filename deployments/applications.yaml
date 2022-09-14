@@ -125,9 +125,6 @@ spec:
         - values.yaml
       values: |-
         keycloak:
-          clients:
-            frontend:
-              secret: <client secret>
           adminUsers:
             admin: <admin password>
   destination:
