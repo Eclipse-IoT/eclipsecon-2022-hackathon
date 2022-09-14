@@ -35,6 +35,7 @@ async fn convert_command(mut event: Event) -> Event {
     log::info!("Received Command: {:?}", event);
     if let Some(Data::Json(data)) = event.data() {
         if let Some(output) = json2command(data) {
+            log::info!("Converted message: {output:?}");
             let output = serde_json::to_value(output).unwrap();
             event.set_data("application/json", output);
         }
