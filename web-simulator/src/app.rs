@@ -2,6 +2,7 @@ use crate::{
     http::HttpPublisher,
     mqtt::{MqttOptions, MqttPublisher},
     publisher::{Publisher, PublisherExt},
+    utils::InitParams,
 };
 use btmesh_common::opcode::Opcode;
 use btmesh_models::{
@@ -16,8 +17,9 @@ use btmesh_models::{
     Model,
 };
 use gloo_timers::callback::Interval;
-use gloo_utils::document;
+use gloo_utils::{document, history, window};
 use rand::prelude::random;
+use reqwest::Url;
 use sensor_model::{RawMessage, SensorMessage, SensorPayload};
 use std::{str::FromStr, sync::Arc};
 use wasm_bindgen::{JsCast, JsValue};
@@ -156,6 +158,20 @@ impl Component for App {
     type Properties = ();
 
     fn create(_: &Context<Self>) -> Self {
+        let InitParams {
+            application,
+            device,
+            url,
+            password,
+        } = InitParams::from_location();
+
+        // clean up document url\
+        let _ = history().push_state_with_url(
+            &JsValue::null(),
+            &document().title(),
+            Some(&window().location().pathname().ok().unwrap_or_default()),
+        );
+
         Self {
             state: SimulatorState::Stopped,
             matrix: MatrixState {
@@ -164,15 +180,61 @@ impl Component for App {
             },
             temperature: 22,
 
-            url: "wss://mqtt-endpoint-ws-browser-drogue-iot.apps.wonderful.iot-playground.org/mqtt"
-                .to_string(),
-            application: "eclipsecon-hackathon".to_string(),
-            device: "simulator1".to_string(),
-            password: "hey-rodney".to_string(),
+            url: url.unwrap_or_else(|| {
+                "wss://mqtt-endpoint-ws-browser-drogue-iot.apps.wonderful.iot-playground.org/mqtt"
+                    .to_string()
+            }),
+            application: application.unwrap_or_else(|| "eclipsecon-hackathon".to_string()),
+            device: device.unwrap_or_else(|| "simulator1".to_string()),
+            password: password.unwrap_or_else(|| "hey-rodney".to_string()),
             connection_state: html!("Stopped"),
 
             refs: Refs::default(),
         }
+    }
+
+    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
+        match msg {
+            Msg::Set(f) => {
+                f(self);
+            }
+            Msg::Start => {
+                self.start(ctx);
+            }
+            Msg::Stop => {
+                self.set_disabled(false);
+                self.state = SimulatorState::Stopped;
+            }
+            Msg::PublishSensor => {
+                if let SimulatorState::Running(simulator) = &self.state {
+                    let sensor: SensorMessage =
+                        SensorMessage::Status(SensorStatus::new(SensorPayload {
+                            temperature: self.temperature,
+                            acceleration: Default::default(),
+                            noise: 0,
+                        }));
+
+                    let _ = simulator.publisher.publish(&sensor);
+                }
+            }
+            Msg::PublishBattery => {
+                if let SimulatorState::Running(simulator) = &self.state {
+                    let battery = GenericBatteryMessage::Status(GenericBatteryStatus::new(
+                        0,
+                        0,
+                        0,
+                        GenericBatteryFlags {
+                            presence: GenericBatteryFlagsPresence::NotPresent,
+                            indicator: GenericBatteryFlagsIndicator::Unknown,
+                            charging: GenericBatteryFlagsCharging::NotChargeable,
+                        },
+                    ));
+
+                    let _ = simulator.publisher.publish(&battery);
+                }
+            }
+        }
+        true
     }
 
     fn view(&self, ctx: &Context<Self>) -> Html {
@@ -282,50 +344,6 @@ impl Component for App {
             </div></section>
             </>
         )
-    }
-
-    fn update(&mut self, ctx: &Context<Self>, msg: Self::Message) -> bool {
-        match msg {
-            Msg::Set(f) => {
-                f(self);
-            }
-            Msg::Start => {
-                self.start(ctx);
-            }
-            Msg::Stop => {
-                self.set_disabled(false);
-                self.state = SimulatorState::Stopped;
-            }
-            Msg::PublishSensor => {
-                if let SimulatorState::Running(simulator) = &self.state {
-                    let sensor: SensorMessage =
-                        SensorMessage::Status(SensorStatus::new(SensorPayload {
-                            temperature: self.temperature,
-                            acceleration: Default::default(),
-                            noise: 0,
-                        }));
-
-                    let _ = simulator.publisher.publish(&sensor);
-                }
-            }
-            Msg::PublishBattery => {
-                if let SimulatorState::Running(simulator) = &self.state {
-                    let battery = GenericBatteryMessage::Status(GenericBatteryStatus::new(
-                        0,
-                        0,
-                        0,
-                        GenericBatteryFlags {
-                            presence: GenericBatteryFlagsPresence::NotPresent,
-                            indicator: GenericBatteryFlagsIndicator::Unknown,
-                            charging: GenericBatteryFlagsCharging::NotChargeable,
-                        },
-                    ));
-
-                    let _ = simulator.publisher.publish(&battery);
-                }
-            }
-        }
-        true
     }
 }
 

@@ -3,6 +3,7 @@ mod borrowed;
 mod http;
 mod mqtt;
 mod publisher;
+mod utils;
 
 use app::App;
 
