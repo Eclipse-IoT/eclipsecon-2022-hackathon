@@ -70,8 +70,8 @@ spec:
             - name: KCADM_PATH
               value: {{ (.Values.keycloak.postInstall).kcAdmPath | default "/opt/keycloak/bin/kcadm.sh" }}
 
-            - name: CUSTOM_TRUSTSTORE
-              value: "/var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt"
+#            - name: CUSTOM_TRUSTSTORE
+#              value: "/var/run/secrets/kubernetes.io/serviceaccount/service-ca.crt"
 
             - name: REALM
               value: eclipsecon2
