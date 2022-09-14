@@ -72,7 +72,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         };
         conn_opts.ssl_options(ssl_opts);
     }
-
     let conn_opts = conn_opts.finalize();
 
     mqtt_client.set_disconnected_callback(|c, _, _| {

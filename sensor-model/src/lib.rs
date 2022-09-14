@@ -113,6 +113,7 @@ impl SensorSetupConfig for MicrobitSensorConfig {
 #[cfg(feature = "std")]
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
 pub struct RawMessage {
+    pub address: u16,
     pub location: u16,
     pub opcode: std::vec::Vec<u8>,
     pub parameters: std::vec::Vec<u8>,

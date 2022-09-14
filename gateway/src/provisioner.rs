@@ -27,6 +27,15 @@ use std::{collections::HashSet, sync::Arc, time::Duration};
 use tokio::{
     sync::{broadcast, mpsc, Mutex},
     time::sleep,
+use std::{
+    collections::{HashMap, HashSet},
+    ops::Add,
+    sync::Arc,
+    time::Duration,
+};
+use tokio::{
+    sync::{broadcast, mpsc, oneshot, Mutex},
+    time::{sleep, Instant},
 };
 
 pub struct Config {
@@ -49,14 +58,14 @@ pub async fn run(
     mut commands: broadcast::Receiver<(String, Vec<u8>)>,
     mqtt_client: mqtt::AsyncClient,
 ) -> Result<(), anyhow::Error> {
-    let (element_control, element_handle) = element_control();
-    let (app_tx, _app_rx) = mpsc::channel(1);
+    let (element_control, element_handle) = element_control(10);
+    let (app_tx, _app_rx) = mpsc::channel(4);
 
     let root_path = Path::from("/mesh/cfgclient");
     let app_path = Path::from(format!("{}/{}", root_path.clone(), "application"));
     let element_path = Path::from(format!("{}/{}", root_path.clone(), "ele00"));
 
-    let (prov_tx, mut prov_rx) = mpsc::channel(1);
+    let (prov_tx, mut prov_rx) = mpsc::channel(4);
 
     let sim = Application {
         path: app_path,
@@ -115,7 +124,7 @@ pub async fn run(
                                 let label = LabelUuid::new(Uuid::parse_str("f0bfd803cde184133096f003ea4a3dc2")?.into_bytes()).map_err(|_| std::fmt::Error)?;
                                 let pub_address = PublishAddress::Virtual(label);
                                 log::info!("Add pub-set for sensor server");
-                                node.pub_set(element_path.clone(), unicast, pub_address, 0, PublishPeriod::new(1, Resolution::Seconds1), PublishRetransmit::from(0), SENSOR_SETUP_SERVER).await?;
+                                node.pub_set(element_path.clone(), unicast, pub_address, 0, PublishPeriod::new(3, Resolution::Seconds1), PublishRetransmit::from(0), SENSOR_SETUP_SERVER).await?;
                                 sleep(Duration::from_secs(4)).await;
                                 log::info!("Add pub-set for battery server");
                                 node.pub_set(element_path.clone(), unicast, pub_address, 0, PublishPeriod::new(60, Resolution::Seconds1), PublishRetransmit::from(5), GENERIC_BATTERY_SERVER).await?;
@@ -233,14 +242,18 @@ pub async fn run(
                                 } => {
                                     let topic = "btmesh";
                                     log::info!("Resetting device, publishing response to {}", topic);
-                                    let error = match node.reset(element_path.clone(), address).await {
-                                        Ok(_) => {
-                                            None
-                                        }
-                                        Err(e) => {
-                                            Some(e.to_string())
-                                        }
-                                    };
+                                    let mut error = None;
+
+                                    for _ in 0..5 {
+                                        error = match node.reset(element_path.clone(), address).await {
+                                            Ok(_) => {
+                                                None
+                                            }
+                                            Err(e) => {
+                                                Some(e.to_string())
+                                            }
+                                        };
+                                    }
                                     let status = BtMeshEvent {
                                         status: BtMeshDeviceState::Reset {
                                             error,

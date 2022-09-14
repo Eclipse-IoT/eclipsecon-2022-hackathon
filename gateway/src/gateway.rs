@@ -42,8 +42,8 @@ pub async fn run(
     mut commands: broadcast::Receiver<(String, Vec<u8>)>,
     mqtt_client: mqtt::AsyncClient,
 ) -> Result<(), anyhow::Error> {
-    let (mut element_control, element_handle) = element_control();
-    let (app_tx, mut app_rx) = mpsc::channel(1);
+    let (mut element_control, element_handle) = element_control(1);
+    let (app_tx, _app_rx) = mpsc::channel(1);
 
     let root_path = Path::from("/gateway");
     let app_path = Path::from(format!("{}/{}", root_path.clone(), "application"));
@@ -98,7 +98,6 @@ pub async fn run(
                     Some(msg) => {
                         match msg {
                             ElementMessage::Received(received) => {
-                                log::trace!("Received message with opcode {:?} and {} parameter bytes!", received.opcode, received.parameters.len());
                                 match SensorClient::parse(&received.opcode, &received.parameters).map_err(|_| std::fmt::Error)? {
                                     Some(message) => {
                                         log::trace!("Received {:?}", message);
@@ -118,6 +117,7 @@ pub async fn run(
                                 let mut parameters = Vec::new();
                                 parameters.extend_from_slice(&received.parameters);
                                 let message = RawMessage {
+                                    address: u16::from_le_bytes(received.src.as_bytes()),
                                     location: received.location.unwrap(),
                                     opcode: opcode.to_vec(),
                                     parameters,
@@ -126,6 +126,7 @@ pub async fn run(
 
                                 let src = received.src.as_bytes();
                                 let topic = format!("sensor/{:02x}{:02x}", src[0], src[1]);
+                                log::info!("Forwarding message with opcode {:?} and {} parameter bytes to {}!", received.opcode, received.parameters.len(), topic);
 
                                 let message = mqtt::Message::new(topic, data.as_bytes(), 1);
                                 if let Err(e) = mqtt_client.publish(message).await {
@@ -143,22 +144,6 @@ pub async fn run(
                     None => break,
                 }
             },
-            app_evt = app_rx.recv() => match app_evt {
-                Some(msg) => {
-                    match msg {
-                        ApplicationMessage::JoinComplete(token) => {
-                            log::debug!("Joined with token {:016x}", token);
-                            // TODO: When provisioning works?
-                            //_node = mesh.attach(root_path.clone(), &format!("{:016x}", token)).await?;
-                        },
-                        ApplicationMessage::JoinFailed(reason) => {
-                            log::info!("Failed to join: {}", reason);
-                            break;
-                        },
-                    }
-                },
-                None => break,
-            },
             command = commands.recv() => {
                 match command {
                     Ok((topic, payload)) => {
@@ -171,7 +156,8 @@ pub async fn run(
                                     // Check if it's a device'y destination
                                     if let Ok(command) = serde_json::from_slice(&payload[..]) {
                                         log::info!("Parsed command payload: {:?}", command);
-                                        if let Some((address, raw)) = json2command(&command) {
+                                        if let Some(raw) = json2command(&command) {
+                                            let address: u16 = raw.address;
                                             log::info!("Destination is {}", address);
                                             let path = if raw.location == front_loc {
                                                 front.clone()
@@ -217,7 +203,7 @@ pub async fn run(
 // Converts JSON message to BLE mesh message
 // TODO: This should eventually be done by the model-converter, but support
 // calling command hooks in drogue-cloud is not yet available.
-fn json2command(data: &Value) -> Option<(u16, RawMessage)> {
+fn json2command(data: &Value) -> Option<RawMessage> {
     if let Value::Object(data) = data {
         if let Some(Value::Number(address)) = data.get("address") {
             if let Some(Value::Object(state)) = data.get("display") {
@@ -237,11 +223,12 @@ fn json2command(data: &Value) -> Option<(u16, RawMessage)> {
                 let mut parameters: heapless::Vec<u8, 386> = heapless::Vec::new();
                 msg.emit_parameters(&mut parameters).unwrap();
                 let message = RawMessage {
+                    address: address.as_u64().unwrap() as u16,
                     location: location as u16,
                     opcode: opcode.to_vec(),
                     parameters: parameters.to_vec(),
                 };
-                return Some((address.as_u64().unwrap() as u16, message));
+                return Some(message);
             }
         }
     }
