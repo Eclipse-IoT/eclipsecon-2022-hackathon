@@ -15,7 +15,6 @@ data:
       "directAccessGrantsEnabled": false,
       "serviceAccountsEnabled": false,
       "fullScopeAllowed": true,
-      "forgotPassword": false,
       "attributes": {
         "access.token.lifespan": "300"
       },
@@ -104,6 +103,7 @@ spec:
               REALM_OPTS+=(-s "displayName=EclipseCon 2022 IoT Hackathon")
               REALM_OPTS+=(-s registrationAllowed=true)
               REALM_OPTS+=(-s resetPasswordAllowed=true)
+              REALM_OPTS+=(-s forgotPassword=false)
               REALM_OPTS+=(-s loginWithEmailAllowed=false)
               REALM_OPTS+=(-s identityProviders='{{ mustToJson .Values.keycloak.identityProviders }}')
               if kcadm get "realms/${REALM}" &> /dev/null ; then
