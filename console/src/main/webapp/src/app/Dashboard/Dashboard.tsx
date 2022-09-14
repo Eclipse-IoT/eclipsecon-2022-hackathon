@@ -3,13 +3,21 @@ import { useContext, useState } from "react";
 import {
   AlertVariant,
   Button,
+  Card, CardActions,
+  CardBody, CardExpandableContent,
+  CardFooter, CardHeader, CardHeaderMain,
+  CardTitle,
+  DescriptionList,
+  DescriptionListDescription,
+  DescriptionListGroup,
+  DescriptionListTerm,
   EmptyState,
   EmptyStateBody,
   EmptyStateIcon,
   EmptyStateSecondaryActions,
   Form,
   FormGroup,
-  FormHelperText,
+  FormHelperText, Gallery, GalleryItem, Grid,
   Modal,
   ModalVariant,
   PageSection,
@@ -99,6 +107,8 @@ const Dashboard: React.FunctionComponent = () => {
     window.open(url.toString(), "ece-web-simulator", "noopener,noreferrer");
   };
 
+  const [isSimulatorExpanded, setSimulatorExpanded] = useState(false);
+
   if (service.status === "loaded") {
     let content;
     if (service.payload?.provisioningId !== undefined) {
@@ -108,11 +118,19 @@ const Dashboard: React.FunctionComponent = () => {
             <ToolbarContent>
               <ToolbarItem variant="label">Claimed</ToolbarItem>
               <ToolbarItem>{service.payload?.id}</ToolbarItem>
+
+              {service.payload?.id?.startsWith("simulator-") && (
+                <>
+                  {endpoints.simulatorUrl !== undefined && (
+                    <ToolbarItem>
+                      <Button variant="link" icon={<ExternalLinkSquareAltIcon />} iconPosition="right"
+                              onClick={() => openSimulator(endpoints.simulatorUrl as string, service.payload)}>Simulator</Button>
+                    </ToolbarItem>
+                  )}
+                </>
+              )}
+
               <ToolbarItem>
-                {(service.payload?.id?.startsWith("simulator-") && endpoints.simulatorUrl !== undefined) && (
-                  <Button variant="link" icon={<ExternalLinkSquareAltIcon />} iconPosition="right"
-                          onClick={() => openSimulator(endpoints.simulatorUrl as string, service.payload)}>Simulator</Button>
-                )}
                 <Button variant="secondary" isDanger
                         onClick={() => onReleaseDevice()}>Release</Button>
               </ToolbarItem>
@@ -121,6 +139,36 @@ const Dashboard: React.FunctionComponent = () => {
 
           <DeviceState></DeviceState>
           <DeviceControl></DeviceControl>
+
+          {service.payload?.id?.startsWith("simulator-") && (
+            <Gallery hasGutter minWidths={{ default: "400px" }}>
+              <GalleryItem>
+                <Card isExpanded={isSimulatorExpanded}>
+                  <CardHeader onExpand={() => setSimulatorExpanded(!isSimulatorExpanded)}>
+                    <CardActions>
+                      <Button variant="link" icon={<ExternalLinkSquareAltIcon />} iconPosition="right"
+                              onClick={() => openSimulator(endpoints.simulatorUrl as string, service.payload)}>Simulator</Button>
+                    </CardActions>
+                    <CardTitle>Simulator</CardTitle>
+                  </CardHeader>
+                  <CardExpandableContent>
+                    <CardBody>
+                      <DescriptionList>
+                        <DescriptionListGroup>
+                          <DescriptionListTerm>Device</DescriptionListTerm>
+                          <DescriptionListDescription>{service.payload?.id}</DescriptionListDescription>
+                        </DescriptionListGroup>
+                        <DescriptionListGroup>
+                          <DescriptionListTerm>Password</DescriptionListTerm>
+                          <DescriptionListDescription>{service.payload?.password}</DescriptionListDescription>
+                        </DescriptionListGroup>
+                      </DescriptionList>
+                    </CardBody>
+                  </CardExpandableContent>
+                </Card>
+              </GalleryItem>
+            </Gallery>
+          )}
 
         </PageSection>
       </React.Fragment>);
