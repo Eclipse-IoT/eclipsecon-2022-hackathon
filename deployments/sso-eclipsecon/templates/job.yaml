@@ -44,8 +44,6 @@ spec:
         - name: init-data
           configMap:
             name: eclipsecon-realm-init-data
-        - name: secret-data
-          emptyDir: {}
 
       containers:
         - name: post-install
@@ -79,8 +77,6 @@ spec:
           volumeMounts:
             - mountPath: /etc/init-data
               name: init-data
-            - mountPath: /var/secret-data
-              name: secret-data
 
           command:
             - bash
@@ -123,11 +119,11 @@ spec:
               CLIENT_OPTS+=(-s 'redirectUris={{ .Values.keycloak.clients.frontend.redirectUris | toJson }}')
               if [[ -n "$ID" ]]; then
                 # TODO: replace with update once https://github.com/keycloak/keycloak/issues/12484 is fixed
-                # kcadm update "clients/${ID}" -r "${REALM}" -f /etc/init-data/client.json "${CLIENT_OPTS[@]}"
+                # kcadm update "clients/${ID}" -r "${REALM}" -f /etc/init-data/client-frontend.json "${CLIENT_OPTS[@]}"
                 kcadm delete "clients/${ID}" -r "${REALM}"
-                kcadm create clients -r "${REALM}" -f /etc/init-data/client.json "${CLIENT_OPTS[@]}"
+                kcadm create clients -r "${REALM}" -f /etc/init-data/client-frontend.json "${CLIENT_OPTS[@]}"
               else
-                kcadm create clients -r "${REALM}" -f /etc/init-data/client.json "${CLIENT_OPTS[@]}"
+                kcadm create clients -r "${REALM}" -f /etc/init-data/client-frontend.json "${CLIENT_OPTS[@]}"
               fi
 
               {{- range $k, $v := .Values.keycloak.adminUsers }}
