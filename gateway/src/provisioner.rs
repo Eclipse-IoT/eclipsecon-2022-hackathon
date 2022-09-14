@@ -23,10 +23,6 @@ use btmesh_operator::{BtMeshCommand, BtMeshDeviceState, BtMeshEvent, BtMeshOpera
 use dbus::Path;
 use futures::{pin_mut, StreamExt};
 use paho_mqtt as mqtt;
-use std::{collections::HashSet, sync::Arc, time::Duration};
-use tokio::{
-    sync::{broadcast, mpsc, Mutex},
-    time::sleep,
 use std::{
     collections::{HashMap, HashSet},
     ops::Add,
