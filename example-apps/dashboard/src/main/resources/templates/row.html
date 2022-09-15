@@ -31,7 +31,9 @@
             role="cell"
     >
         {#if device.value.containsKey("acceleration")}
-            {device.value.get("acceleration").value.x} / {device.value.get("acceleration").value.y} / {device.value.get("acceleration").value.z}
+            {#if device.value.get("acceleration").value}
+                {device.value.get("acceleration").value.x} / {device.value.get("acceleration").value.y} / {device.value.get("acceleration").value.z}
+            {/if}
         {/if}
     </td>
 
