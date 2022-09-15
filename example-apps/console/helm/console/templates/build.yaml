@@ -7,8 +7,8 @@ spec:
     - type: ImageChange
   source:
     git:
-      uri: https://github.com/eclipse-iot/eclipsecon-2022-hackathon/example-apps
-    contextDir: console
+      uri: https://github.com/eclipse-iot/eclipsecon-2022-hackathon
+    contextDir: example-apps/console
   strategy:
     dockerStrategy:
       dockerfilePath: Dockerfile
