@@ -1,10 +1,16 @@
-# Example application
+# Example applications
 
-This repository contains simple java apps that subscribe to the various endpoints and display the events to 
-the console. It's designed to be dead simple, so you can look around and grab the building blocks to 
+This repository contains simple java apps that subscribe to the various endpoints and 
+consume the data provided by the sensors.
+It's designed to be simple, so you can look around and grab the building blocks to 
 get going with your own ideas !
 
-## Consuming sensor data
+- [websocket-client](websocket-client) is the simplest app, it subscribes to all events coming through the hackathon devices and log them on the console.
+- [console](console) allows you to claim the device that you were handed out. It uses MQTT to stream
+the data coming from the claimed device.
+- The [dashboard](dashboard) aggregates the data coming from all the devices, using websocket. It then disaply a live dashboard.
+
+# Consuming sensor data
 
 There are a few different way an application can obtain the data from a sensor: 
     - subscribe to the event stream through the integration endpoints (MQTT or WebSocket)
@@ -51,54 +57,6 @@ All the endpoints require authentication in order to consume data.
 The username and token will be handed out at the start of the conference.
 
 Note that the doppelgaenger and the MQTT/WS endpoints use differents SSO instances so the credentials will be different.
-
-## Data structure
-
-The sensor data is wrapped in a [cloudevent](cloudevents.io) (when consuming from the MQTT and WS endpoints)
-Here is what the payload of a partial update looks like, excluding the cloudevent metadata : 
-
-```json
-{
-  "partial": true,
-  "state": {
-    "sensor": {
-      "location": 256,
-      "payload": {
-        "acceleration": {
-          "x": 32,
-          "y": -92,
-          "z": -1028
-        },
-        "noise": 8,
-        "temperature": 29
-      }
-    }
-  }
-}
-```
-
-
-Here is a complete schema of the values a device may send:
-```yaml
-partial: bool # wether or not the update is partial or complete 
-  state:
-    sensor:
-      location: u8 # Location of the element on the device
-      payload:
-        acceleration: # Accelerometer values
-          x: i16
-          y: i16
-          z: i16
-        noise: u8
-        temperature: i8 # the temperature, a Celsius value.
-    battery: 
-      flags: 
-        presence: String # possible values are "NotPresent" or "PresentRemovable"
-      level: u8 
-      location: u8
-
-//todo complete
-```
 
 ## Sending commands to the device
 

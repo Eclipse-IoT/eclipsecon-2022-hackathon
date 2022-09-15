@@ -9,12 +9,9 @@ If you received a micro:bit at the event, it should have an ID sticker on the ba
 Once claimed and while powered, the device will emit sensor readings, battery status and button events, and is also able to respond to commands sent from the console. You can view real time data
 from all the devices on the read only [dashboard](https://dashboard-eclipsecon-2022.apps.sandbox.drogue.world/)
 
-Before the hackathon starts, feel free to play around with a sample applications we have made:
-
-* [Console](https://github.com/Eclipse-IoT/eclipsecon-2022-hackathon/tree/main/console)
-* [Dashboard](https://github.com/Eclipse-IoT/eclipsecon-2022-hackathon/tree/main/dashboard)
-
+Before the hackathon starts, feel free to play around with the [sample applications](example-apps) we have made.
 **NOTE:** You will need to create a user in the Keycloak instance. You will be directed to this instance during the login process. You can choose to either manually create an account and select a password, or use GitHub as identity provider. It is required to enter an e-mail address, however the address is not checked and will not be used. 
+
 
 ## Hackathon
 
@@ -25,7 +22,7 @@ For the hackathon, an instance of [Drogue IoT](https://www.drogue.io) as well as
 
 For working on microcontroller firmware, have a look at the [firmware](firmware/) directory for more information and example tasks.
 
-For working on the quarkus application, have a look at the [example apps](example-apps/).
+For working on a quarkus application consuming data, have a look at the [example apps](example-apps).
 
 ## BBC micro:bit simulator
 
@@ -41,3 +38,51 @@ If you don't have a BBC micro:bit, you can use on of the following ways to simul
 
 * A bluetooth mesh node simulator that runs on any Linux host with bluez, and transports events via the gateway. This is mostly useful when you're working on the gateway as it requires a gateway to be deployed, but it also allows you to follow the full provisioning lifecycle.
 
+
+## Sensor data model
+
+The sensor data is wrapped in a [cloudevent](cloudevents.io) (when consuming from the MQTT and WS endpoints)
+Here is what the payload of a partial update looks like, excluding the cloudevent metadata :
+
+```json
+{
+  "partial": true,
+  "state": {
+    "sensor": {
+      "location": 256,
+      "payload": {
+        "acceleration": {
+          "x": 32,
+          "y": -92,
+          "z": -1028
+        },
+        "noise": 8,
+        "temperature": 29
+      }
+    }
+  }
+}
+```
+
+
+Here is a complete schema of the values a device may send:
+```yaml
+partial: bool # wether or not the update is partial or complete 
+  state:
+    sensor:
+      location: u8 # Location of the element on the device
+      payload:
+        acceleration: # Accelerometer values
+          x: i16
+          y: i16
+          z: i16
+        noise: u8
+        temperature: i8 # the temperature, a Celsius value.
+    battery: 
+      flags: 
+        presence: String # possible values are "NotPresent" or "PresentRemovable"
+      level: u8 
+      location: u8
+
+//todo complete
+```
