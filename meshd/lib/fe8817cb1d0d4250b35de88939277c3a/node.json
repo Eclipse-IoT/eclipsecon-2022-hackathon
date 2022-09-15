@@ -2,7 +2,6 @@
   "cid":"05f1",
   "pid":"0001",
   "vid":"0001",
-  "crpl":"0000",
   "relay":{
     "mode":"disabled",
     "count":0,
@@ -100,5 +99,6 @@
       "key":"8e0a245c38a136e7d6e8429d562da959"
     }
   ],
-  "sequenceNumber": 1
+  "sequenceNumber":1,
+  "crpl":"0064"
 }

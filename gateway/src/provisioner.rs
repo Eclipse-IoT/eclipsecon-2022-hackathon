@@ -4,6 +4,7 @@ use bluer::{
         application::Application,
         element::*,
         network::Network,
+        node::Node,
         provisioner::{Provisioner, ProvisionerControlHandle, ProvisionerMessage},
     },
     Uuid,
@@ -11,7 +12,6 @@ use bluer::{
 use btmesh_common::address::LabelUuid;
 use btmesh_models::{
     foundation::configuration::{
-        app_key::AppKeyMessage,
         model_publication::{PublishAddress, PublishPeriod, PublishRetransmit, Resolution},
         ConfigurationClient, ConfigurationMessage, ConfigurationServer,
     },
@@ -24,14 +24,16 @@ use dbus::Path;
 use futures::{pin_mut, StreamExt};
 use paho_mqtt as mqtt;
 use std::{
-    collections::{HashMap, HashSet},
-    ops::Add,
-    sync::Arc,
+    collections::HashSet,
+    sync::{
+        atomic::{AtomicBool, Ordering},
+        Arc,
+    },
     time::Duration,
 };
 use tokio::{
-    sync::{broadcast, mpsc, oneshot, Mutex},
-    time::{sleep, Instant},
+    sync::{broadcast, mpsc, Mutex},
+    time::sleep,
 };
 
 pub struct Config {
@@ -90,6 +92,8 @@ pub async fn run(
     pin_mut!(element_control);
     let provisioning: Mutex<HashSet<Uuid>> = Mutex::new(HashSet::new());
     let (provision_tx, mut provision_rx) = mpsc::channel(32);
+    let (configure_tx, mut configure_rx) = mpsc::channel(32);
+    let configuring = AtomicBool::new(false);
 
     log::info!("Starting provisioner event loop");
     loop {
@@ -101,49 +105,67 @@ pub async fn run(
                             ProvisionerMessage::AddNodeComplete(uuid, unicast, count) => {
                                 log::info!("Successfully added node {:?} to the address {:#04x} with {:?} elements", uuid, unicast, count);
 
-                                sleep(Duration::from_secs(6)).await;
-
                                 log::info!("Add app key");
                                 node.add_app_key(element_path.clone(), unicast, 0, 0, false).await?;
-                                sleep(Duration::from_secs(4)).await;
-                                log::info!("Bind sensor server");
-                                node.bind(element_path.clone(), unicast, 0, SENSOR_SETUP_SERVER).await?;
-                                sleep(Duration::from_secs(4)).await;
-                                log::info!("Bind onoff server");
-                                node.bind(element_path.clone(), unicast, 0, GENERIC_ONOFF_SERVER).await?;
-                                sleep(Duration::from_secs(4)).await;
-                                log::info!("Bind battery server");
-                                node.bind(element_path.clone(), unicast, 0, GENERIC_BATTERY_SERVER).await?;
-                                sleep(Duration::from_secs(4)).await;
 
+                                log::info!("Bind sensor server");
+                                let msg = Node::bind_create(unicast, 0, SENSOR_SETUP_SERVER)?;
+                                let config = NodeConfigurationMessage::Configure(
+                                    NodeConfiguration {
+                                        message: msg,
+                                        path: element_path.clone(),
+                                        address: unicast,
+                                    }
+                                );
+                                configure_tx.send(config).await?;
+                                log::info!("Bind onoff server");
+                                let msg = Node::bind_create(unicast, 0, GENERIC_ONOFF_SERVER)?;
+                                let config = NodeConfigurationMessage::Configure(
+                                    NodeConfiguration {
+                                        message: msg,
+                                        path: element_path.clone(),
+                                        address: unicast,
+                                    }
+                                );
+                                configure_tx.send(config).await?;
+
+                                log::info!("Bind battery server");
+                                let msg = Node::bind_create(unicast, 0, GENERIC_BATTERY_SERVER)?;
+                                let config = NodeConfigurationMessage::Configure(
+                                    NodeConfiguration {
+                                        message: msg,
+                                        path: element_path.clone(),
+                                        address: unicast,
+                                    }
+                                );
+                                configure_tx.send(config).await?;
 
                                 let label = LabelUuid::new(Uuid::parse_str("f0bfd803cde184133096f003ea4a3dc2")?.into_bytes()).map_err(|_| std::fmt::Error)?;
                                 let pub_address = PublishAddress::Virtual(label);
                                 log::info!("Add pub-set for sensor server");
-                                node.pub_set(element_path.clone(), unicast, pub_address, 0, PublishPeriod::new(3, Resolution::Seconds1), PublishRetransmit::from(0), SENSOR_SETUP_SERVER).await?;
-                                sleep(Duration::from_secs(4)).await;
-                                log::info!("Add pub-set for battery server");
-                                node.pub_set(element_path.clone(), unicast, pub_address, 0, PublishPeriod::new(60, Resolution::Seconds1), PublishRetransmit::from(5), GENERIC_BATTERY_SERVER).await?;
-                                sleep(Duration::from_secs(5)).await;
-
-
-                                let topic = format!("btmesh/{}", uuid.as_simple().to_string());
-                                log::info!("Sending message to topic {}", topic);
-                                let status = BtMeshEvent {
-                                    status: BtMeshDeviceState::Provisioned {
+                                let msg = Node::pub_set_create(unicast, pub_address, 0, PublishPeriod::new(3, Resolution::Seconds1), PublishRetransmit::from(0), SENSOR_SETUP_SERVER)?;
+                                let config = NodeConfigurationMessage::Configure(
+                                    NodeConfiguration {
+                                        message: msg,
+                                        path: element_path.clone(),
                                         address: unicast,
-                                    },
-                                };
+                                    }
+                                );
+                                configure_tx.send(config).await?;
+                                log::info!("Add pub-set for battery server");
+                                let msg = Node::pub_set_create(unicast, pub_address, 0, PublishPeriod::new(3, Resolution::Seconds1), PublishRetransmit::from(0), GENERIC_BATTERY_SERVER)?;
+                                let config = NodeConfigurationMessage::Configure(
+                                    NodeConfiguration {
+                                        message: msg,
+                                        path: element_path.clone(),
+                                        address: unicast,
+                                    }
+                                );
+                                configure_tx.send(config).await?;
 
-                                let data = serde_json::to_string(&status)?;
-                                let message = mqtt::Message::new(topic, data.as_bytes(), 1);
-                                if let Err(e) = mqtt_client.publish(message).await {
-                                    log::warn!(
-                                        "Error publishing provisioning status: {:?}",
-                                        e
-                                    );
-                                }
+                                configure_tx.send(NodeConfigurationMessage::Finish(uuid, unicast)).await?;
                                 provisioning.lock().await.remove(&uuid);
+
                             },
                             ProvisionerMessage::AddNodeFailed(uuid, reason) => {
                                 log::info!("Failed to add node {:?}: '{:?}'", uuid, reason);
@@ -193,7 +215,7 @@ pub async fn run(
                         }
                     }
                 }
-            }
+            },
             evt = element_control.next() => {
                 match evt {
                     Some(msg) => {
@@ -203,6 +225,7 @@ pub async fn run(
                             },
                             ElementMessage::DevKey(received) => {
                                 log::info!("Received devkey message with opcode {:?}", received.opcode);
+                                configuring.store(false, Ordering::SeqCst);
                                 match ConfigurationClient::parse(&received.opcode, &received.parameters).map_err(|_| std::fmt::Error)? {
                                     Some(message) => {
                                         log::info!("Received configuration message: {:?}", message);
@@ -213,6 +236,35 @@ pub async fn run(
                         }
                     },
                     None => break,
+                }
+            },
+            Some(config) = configure_rx.recv(), if !configuring.load(Ordering::SeqCst) => {
+                log::info!("Configure {:?}", config);
+                match config {
+                    NodeConfigurationMessage::Configure(msg) => {
+                        // TODO appkey?
+                        configuring.store(true, Ordering::SeqCst);
+                        node.dev_key_send(msg.message, msg.path, msg.address, true, 0).await?;
+                    },
+                    NodeConfigurationMessage::Finish(uuid, address) => {
+                        println!("Finished {:?}", uuid);
+                        let topic = format!("btmesh/{}", uuid.as_simple().to_string());
+                        log::info!("Sending message to topic {}", topic);
+                        let status = BtMeshEvent {
+                            status: BtMeshDeviceState::Provisioned {
+                                address,
+                            },
+                        };
+
+                        let data = serde_json::to_string(&status)?;
+                        let message = mqtt::Message::new(topic, data.as_bytes(), 1);
+                        if let Err(e) = mqtt_client.publish(message).await {
+                            log::warn!(
+                                "Error publishing provisioning status: {:?}",
+                                e
+                            );
+                        }
+                    },
                 }
             },
             command = commands.recv() => {
@@ -282,4 +334,17 @@ pub async fn run(
     sleep(Duration::from_secs(1)).await;
 
     Ok(())
+}
+
+#[derive(Debug)]
+pub enum NodeConfigurationMessage<'a> {
+    Configure(NodeConfiguration<'a>),
+    Finish(Uuid, u16),
+}
+
+#[derive(Debug)]
+pub struct NodeConfiguration<'a> {
+    message: ConfigurationMessage,
+    path: Path<'a>,
+    address: u16,
 }
