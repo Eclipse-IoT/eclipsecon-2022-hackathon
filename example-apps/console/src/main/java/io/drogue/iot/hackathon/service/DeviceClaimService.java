@@ -53,11 +53,14 @@ public class DeviceClaimService {
 
     @Transactional
     public boolean releaseDevice(final String userId) {
-
         var cb = this.em.getCriteriaBuilder();
-        var cr = cb.createCriteriaDelete(Claim.class);
+        var cr = cb.createCriteriaUpdate(Claim.class);
         var root = cr.from(Claim.class);
-        cr.where(cb.equal(root.get("claimedBy"), userId));
+        cr
+                .where(cb.equal(
+                        root.get("claimedBy"), userId)
+                )
+                .set("claimedBy", null);
 
         var updates = this.em.createQuery(cr).executeUpdate();
 
