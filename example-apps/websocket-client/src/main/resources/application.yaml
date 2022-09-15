@@ -1,0 +1,12 @@
+drogue:
+  application:
+    name: eclipsecon-hackathon
+
+  integration:
+    websocket:
+      host: ws-integration.sandbox.drogue.cloud
+      port: 443
+
+  api:
+    user: <yourUserName>
+    key: <YourAccessToken>
