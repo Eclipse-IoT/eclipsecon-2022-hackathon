@@ -6,12 +6,11 @@ edition = "2021"
 [workspace]
 
 [dependencies]
-btmesh-device = { git = "https://github.com/drogue-iot/btmesh.git", branch = "main" }
-btmesh-macro = { git = "https://github.com/drogue-iot/btmesh.git", branch = "main" }
-
-btmesh-common = { git = "https://github.com/drogue-iot/btmesh.git", branch = "main" }
-btmesh-models = { git = "https://github.com/drogue-iot/btmesh.git", branch = "main" }
-btmesh-nrf-softdevice = { git = "https://github.com/drogue-iot/btmesh.git", branch = "main", default-features = false, features = ["defmt", "nrf52833", "relay"] }
+btmesh-device = { version = "0.1.0" }
+btmesh-macro = { version = "0.1.0" }
+btmesh-common = { version = "0.1.0" }
+btmesh-models = { version = "0.1.0" }
+btmesh-nrf-softdevice = { version = "0.1.0", default-features = false, features = ["defmt", "nrf52833", "relay"] }
 cortex-m-rt = "0.7"
 cortex-m = { version = "0.7.6", features = ["critical-section-single-core"] }
 
@@ -66,16 +65,17 @@ nrf-softdevice-macro = { git = "https://github.com/embassy-rs/nrf-softdevice.git
 nrf-softdevice-s140 = { git = "https://github.com/embassy-rs/nrf-softdevice.git", branch = "master" }
 btmesh-common = { git = "https://github.com/drogue-iot/btmesh.git", branch = "main" }
 btmesh-models = { git = "https://github.com/drogue-iot/btmesh.git", branch = "main" }
-#btmesh-common = { path = "../../drogue-iot/btmesh/btmesh-common" }
-#btmesh-models = { path = "../../drogue-iot/btmesh/btmesh-models" }
+btmesh-device = { git = "https://github.com/drogue-iot/btmesh.git", branch = "main" }
+btmesh-macro = { git = "https://github.com/drogue-iot/btmesh.git", branch = "main" }
+btmesh-driver = { git = "https://github.com/drogue-iot/btmesh.git", branch = "main" }
+btmesh-nrf-softdevice = { git = "https://github.com/drogue-iot/btmesh.git", branch = "main" }
 
-#[patch."https://github.com/lulf/microbit-async.git"]
-#microbit-async = { path = "../../microbit-async/microbit" }
-
-#[patch."https://github.com/drogue-iot/btmesh.git"]
 #btmesh-device = { path = "../../drogue-iot/btmesh/btmesh-device" }
 #btmesh-macro = { path = "../../drogue-iot/btmesh/btmesh-macro" }
 #btmesh-common = { path = "../../drogue-iot/btmesh/btmesh-common" }
 #btmesh-models = { path = "../../drogue-iot/btmesh/btmesh-models" }
 #btmesh-driver = { path = "../../drogue-iot/btmesh/btmesh-driver" }
 #btmesh-nrf-softdevice = { path = "../../drogue-iot/btmesh/btmesh-nrf-softdevice" }
+
+#[patch."https://github.com/lulf/microbit-async.git"]
+#microbit-async = { path = "../../microbit-async/microbit" }

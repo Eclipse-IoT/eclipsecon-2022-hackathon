@@ -24,9 +24,9 @@ Hardware:
 Software:
 
 * [`rustup`](https://rustup.rs/)
-* [`probe-run`](https://github.com/knurling-rs/probe-run)
-* (Optional) [`probe-rs-cli`](https://github.com/probe-rs/probe-rs)
-
+* [`probe-run`](https://crates.io/crates/probe-run)
+* [`cargo-flash`](https://crates.io/crates/cargo-flash)
+* (Optional) [`probe-rs-cli`](https://crates.io/crates/probe-rs-cli)
 
 ## (Optional) Bootstrapping
 
@@ -40,10 +40,18 @@ Flash the softdevice onto the micro:bit (only needed the first time you run it):
 probe-rs-cli download s140_nrf52_7.3.0_softdevice.hex --format Hex --chip nRF52833_xxAA
 ```
 
-## Running the application
+## Debugging the application
 
-To run the application, make sure your device is connected, and run the following command:
+To run the application with debugging attached, make sure your device is connected, and run the following command:
 
 ```
-cargo run --release
+DEVICE_UUID=<UUID> cargo run --release
+```
+
+## Flashing application for battery powered use
+
+To run off battery, the application should be flashed without the debug probe attach. You can do this by running the following command:
+
+```
+DEVICE_UUID=<UUID> cargo flash --release --no-default-features --features panic-reset --chip nRF52833_xxAA
 ```

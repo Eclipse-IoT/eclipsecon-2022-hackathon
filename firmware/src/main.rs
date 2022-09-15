@@ -52,7 +52,10 @@ async fn main(_s: Spawner) {
         "drogue",
         unsafe { &__storage as *const u8 as u32 },
         100,
-        unprovisioned_uuid(),
+        BluetoothMeshDriverConfig {
+            uuid: unprovisioned_uuid(),
+            persist_interval: Some(Duration::from_secs(10)),
+        },
     );
 
     // An accelerometer for recording orientation
