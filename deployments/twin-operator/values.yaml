@@ -1,0 +1,9 @@
+drogueCloud:
+  api:
+    # user: <api user>
+    # token: <api token>
+
+drogueDoppelgaenger:
+  api:
+    # clientId: <oidc client>
+    # clientSecret: <oidc secret>

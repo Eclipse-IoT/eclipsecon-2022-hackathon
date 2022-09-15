@@ -1,0 +1,19 @@
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: twin-operator
+spec:
+  output:
+    to:
+      kind: ImageStreamTag
+      name: twin-operator:latest
+  source:
+    git:
+      ref: main
+      uri: https://github.com/drogue-iot/twin-operator
+    type: Git
+  strategy:
+    dockerStrategy:
+    type: Docker
+  triggers:
+  - type: ConfigChange

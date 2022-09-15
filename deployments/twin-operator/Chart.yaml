@@ -1,0 +1,16 @@
+apiVersion: v2
+name: eclipsecon-2022-twin-operator
+description: Twin operator
+home: https://drogue.io
+icon: https://blog.drogue.io/favicon.svg
+
+maintainers:
+  - name: ctron
+    email: ctron@dentrassi.de
+    url: https://dentrassi.de
+
+type: application
+
+version: 0.1.0
+
+kubeVersion: ">= 1.19.0-0"
