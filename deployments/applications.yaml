@@ -43,7 +43,7 @@ spec:
   project: eclipsecon-2022
   source:
     repoURL: 'https://github.com/eclipse-iot/eclipsecon-2022-hackathon/'
-    path: console/helm/console
+    path: example-apps/console/helm/console
     helm:
       valueFiles:
         - values.yaml
@@ -98,7 +98,7 @@ spec:
   project: eclipsecon-2022
   source:
     repoURL: 'https://github.com/Eclipse-IoT/eclipsecon-2022-hackathon/'
-    path: dashboard/helm/dashboard
+    path: example-apps/dashboard/helm/dashboard
     targetRevision: HEAD
   destination:
     name: in-cluster
