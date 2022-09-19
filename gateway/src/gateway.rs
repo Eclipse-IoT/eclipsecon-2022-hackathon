@@ -1,23 +1,16 @@
-use bluer::mesh::{
-    application::{Application, ApplicationMessage},
-    element::*,
-    network::Network,
-};
+use bluer::mesh::{application::Application, element::*, network::Network};
 use btmesh_models::{
     self,
     generic::{
         battery::GenericBatteryClient,
-        onoff::{
-            GenericOnOffClient, GenericOnOffMessage, GenericOnOffServer, Set as GenericOnOffSet,
-        },
+        onoff::{GenericOnOffClient, GenericOnOffServer},
     },
-    Message, Model,
+    Model,
 };
 use dbus::Path;
 use futures::StreamExt;
 use paho_mqtt as mqtt;
 use sensor_model::*;
-use serde_json::Value;
 use std::{sync::Arc, time::Duration};
 use tokio::{
     sync::{broadcast, mpsc},
@@ -169,7 +162,7 @@ pub async fn run(
                                             };
                                             // TODO: Hmm, where to get this?
                                             let app_key = 0;
-                                            match node.send(raw, path, address, app_key).await {
+                                            match node.send(&raw, path, address, app_key).await {
                                                 Ok(_) => {
                                                     log::info!("Forwarded message to device");
                                                 }
