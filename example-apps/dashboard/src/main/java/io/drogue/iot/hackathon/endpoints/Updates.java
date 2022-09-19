@@ -45,46 +45,50 @@ public class Updates {
     private Instant lastUpdate = Instant.now();
 
     @Incoming(UPDATES)
-    void update(StateHolder.State state) {
+    void update(final StateHolder.State state) {
         logger.debug("State update: {}", state);
-        var renderedState = Templates.state(state).render();
-        logger.trace("Rendered: {}", renderedState);
-        logger.debug("Broadcasting to {} sessions", this.sessions.size());
+        final var renderedState = renderState(state);
         this.lastUpdate = Instant.now();
-        for (var session : this.sessions.values()) {
+
+        logger.debug("Broadcasting to {} sessions", this.sessions.size());
+        for (final var session : this.sessions.values()) {
             session.getAsyncRemote().sendText(renderedState);
         }
     }
 
+    String renderState(final StateHolder.State state) {
+        return Templates.state(state).render();
+    }
+
     @OnOpen
-    void onOpen(Session session) {
-        logger.info("onOpen[{}]", session.getId());
+    void onOpen(final Session session) {
+        logger.debug("onOpen[{}]", session.getId());
         addSession(session);
     }
 
     @OnClose
-    void onClose(Session session) {
-        logger.info("onClose[{}]", session.getId());
+    void onClose(final Session session) {
+        logger.debug("onClose[{}]", session.getId());
         removeSession(session);
     }
 
     @OnError
-    void onError(Session session, Throwable error) {
+    void onError(final Session session, final Throwable error) {
         logger.info("onError[{}]", session.getId(), error);
         removeSession(session);
     }
 
-    void addSession(Session session) {
-        var renderedState = Templates.state(this.state.getState()).render();
+    void addSession(final Session session) {
+        final var renderedState = Templates.state(this.state.getState()).render();
         session.getAsyncRemote().sendText(renderedState);
         this.sessions.put(session.getId(), session);
     }
 
-    void removeSession(Session session) {
+    void removeSession(final Session session) {
         this.sessions.remove(session.getId());
         try {
             session.close();
-        } catch (IOException e) {
+        } catch (final IOException e) {
             logger.info("Failed to close session ({})", session.getId(), e);
         }
     }
@@ -93,11 +97,11 @@ public class Updates {
     void ping() {
         if (Duration.between(this.lastUpdate, Instant.now()).getSeconds() > 60) {
             this.lastUpdate = Instant.now();
-            var payload = ByteBuffer.allocate(0);
-            for (var session : this.sessions.values()) {
+            final var payload = ByteBuffer.allocate(0);
+            for (final var session : this.sessions.values()) {
                 try {
                     session.getAsyncRemote().sendPing(payload);
-                } catch (Exception e) {
+                } catch (final Exception e) {
                     logger.info("Failed to ping session ({})", session.getId(), e);
                     removeSession(session);
                 }
