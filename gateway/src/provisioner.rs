@@ -1,4 +1,5 @@
 //! Attach and send/receive BT Mesh messages
+use super::node_configurator;
 use bluer::{
     mesh::{
         application::Application,
@@ -17,20 +18,11 @@ use btmesh_models::{
     },
     generic::{battery::GENERIC_BATTERY_SERVER, onoff::GENERIC_ONOFF_SERVER},
     sensor::SENSOR_SETUP_SERVER,
-    Message, Model,
 };
 use btmesh_operator::{BtMeshCommand, BtMeshDeviceState, BtMeshEvent, BtMeshOperation};
 use dbus::Path;
-use futures::{pin_mut, StreamExt};
 use paho_mqtt as mqtt;
-use std::{
-    collections::HashSet,
-    sync::{
-        atomic::{AtomicBool, Ordering},
-        Arc,
-    },
-    time::Duration,
-};
+use std::{collections::HashSet, sync::Arc, time::Duration};
 use tokio::{
     sync::{broadcast, mpsc, Mutex},
     time::sleep,
@@ -89,11 +81,17 @@ pub async fn run(
     let registered = mesh.application(root_path.clone(), sim).await?;
 
     let node = mesh.attach(root_path.clone(), &config.token).await?;
-    pin_mut!(element_control);
     let provisioning: Mutex<HashSet<Uuid>> = Mutex::new(HashSet::new());
     let (provision_tx, mut provision_rx) = mpsc::channel(32);
-    let (configure_tx, mut configure_rx) = mpsc::channel(32);
-    let configuring = AtomicBool::new(false);
+    let (configure_tx, configure_rx) = mpsc::channel(32);
+
+    let mut tasks = Vec::new();
+    tasks.push(tokio::spawn(node_configurator::run(
+        configure_rx,
+        mqtt_client.clone(),
+        element_control,
+        node.clone(),
+    )));
 
     log::info!("Starting provisioner event loop");
     loop {
@@ -216,57 +214,6 @@ pub async fn run(
                     }
                 }
             },
-            evt = element_control.next() => {
-                match evt {
-                    Some(msg) => {
-                        match msg {
-                            ElementMessage::Received(received) => {
-                                log::info!("Received element message: {:?}", received);
-                            },
-                            ElementMessage::DevKey(received) => {
-                                log::info!("Received devkey message with opcode {:?}", received.opcode);
-                                configuring.store(false, Ordering::SeqCst);
-                                match ConfigurationClient::parse(&received.opcode, &received.parameters).map_err(|_| std::fmt::Error)? {
-                                    Some(message) => {
-                                        log::info!("Received configuration message: {:?}", message);
-                                    },
-                                    None => {},
-                                }
-                            }
-                        }
-                    },
-                    None => break,
-                }
-            },
-            Some(config) = configure_rx.recv(), if !configuring.load(Ordering::SeqCst) => {
-                log::info!("Configure {:?}", config);
-                match config {
-                    NodeConfigurationMessage::Configure(msg) => {
-                        // TODO appkey?
-                        configuring.store(true, Ordering::SeqCst);
-                        node.dev_key_send(msg.message, msg.path, msg.address, true, 0).await?;
-                    },
-                    NodeConfigurationMessage::Finish(uuid, address) => {
-                        println!("Finished {:?}", uuid);
-                        let topic = format!("btmesh/{}", uuid.as_simple().to_string());
-                        log::info!("Sending message to topic {}", topic);
-                        let status = BtMeshEvent {
-                            status: BtMeshDeviceState::Provisioned {
-                                address,
-                            },
-                        };
-
-                        let data = serde_json::to_string(&status)?;
-                        let message = mqtt::Message::new(topic, data.as_bytes(), 1);
-                        if let Err(e) = mqtt_client.publish(message).await {
-                            log::warn!(
-                                "Error publishing provisioning status: {:?}",
-                                e
-                            );
-                        }
-                    },
-                }
-            },
             command = commands.recv() => {
                 match command {
                     Ok((_, command)) => {
@@ -329,6 +276,7 @@ pub async fn run(
         }
     }
 
+    futures::future::join_all(tasks).await;
     log::info!("Shutting down provisioner");
     drop(registered);
     sleep(Duration::from_secs(1)).await;
@@ -344,7 +292,7 @@ pub enum NodeConfigurationMessage<'a> {
 
 #[derive(Debug)]
 pub struct NodeConfiguration<'a> {
-    message: ConfigurationMessage,
-    path: Path<'a>,
-    address: u16,
+    pub message: ConfigurationMessage,
+    pub path: Path<'a>,
+    pub address: u16,
 }
