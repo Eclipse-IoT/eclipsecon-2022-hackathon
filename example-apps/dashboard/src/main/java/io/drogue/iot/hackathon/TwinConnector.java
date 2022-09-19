@@ -10,6 +10,7 @@ import java.util.Set;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
+import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.ws.rs.core.UriBuilder;
 
@@ -32,6 +33,7 @@ import io.vertx.mutiny.core.Vertx;
 import io.vertx.mutiny.core.http.WebSocket;
 
 @Startup
+@ApplicationScoped
 public class TwinConnector {
     private static final Logger logger = LoggerFactory.getLogger(TwinConnector.class);
 
