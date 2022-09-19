@@ -111,6 +111,17 @@ pub async fn run(
                                     },
                                     None => {}
                                 }
+
+                                match GenericOnOffClient ::parse(&received.opcode, &received.parameters).map_err(|_| std::fmt::Error)? {
+                                    Some(message) => {
+                                        match message {
+                                            GenericOnOffMessage::Status(s) => log::trace!("Received genericOnOff::Status: {}, {}, {}", s.present_on_off, s.target_on_off, s.remaining_time),
+                                            _ => {},
+                                        }
+                                    },
+                                    None => {}
+                                }
+
                                 let mut opcode: heapless::Vec<u8, 16> = heapless::Vec::new();
                                 received.opcode.emit(&mut opcode).map_err(|_| std::fmt::Error)?;
 

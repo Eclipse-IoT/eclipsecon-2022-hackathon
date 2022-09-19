@@ -15,7 +15,7 @@ use btmesh_models::{
         model_publication::{PublishAddress, PublishPeriod, PublishRetransmit, Resolution},
         ConfigurationClient, ConfigurationMessage, ConfigurationServer,
     },
-    generic::{battery::GENERIC_BATTERY_SERVER, onoff::GENERIC_ONOFF_SERVER},
+    generic::{battery::GENERIC_BATTERY_SERVER, onoff::GENERIC_ONOFF_SERVER, onoff::GENERIC_ONOFF_CLIENT},
     sensor::SENSOR_SETUP_SERVER,
     Message, Model,
 };
@@ -118,7 +118,7 @@ pub async fn run(
                                     }
                                 );
                                 configure_tx.send(config).await?;
-                                log::info!("Bind onoff server");
+                                log::info!("Bind onoff server (LEDs)");
                                 let msg = Node::bind_create(unicast, 0, GENERIC_ONOFF_SERVER)?;
                                 let config = NodeConfigurationMessage::Configure(
                                     NodeConfiguration {
@@ -131,6 +131,17 @@ pub async fn run(
 
                                 log::info!("Bind battery server");
                                 let msg = Node::bind_create(unicast, 0, GENERIC_BATTERY_SERVER)?;
+                                let config = NodeConfigurationMessage::Configure(
+                                    NodeConfiguration {
+                                        message: msg,
+                                        path: element_path.clone(),
+                                        address: unicast,
+                                    }
+                                );
+                                configure_tx.send(config).await?;
+
+                                log::info!("Bind onoff client (buttons)");
+                                let msg = Node::bind_create(unicast, 0, GENERIC_ONOFF_CLIENT)?;
                                 let config = NodeConfigurationMessage::Configure(
                                     NodeConfiguration {
                                         message: msg,
@@ -154,6 +165,16 @@ pub async fn run(
                                 configure_tx.send(config).await?;
                                 log::info!("Add pub-set for battery server");
                                 let msg = Node::pub_set_create(unicast, pub_address, 0, PublishPeriod::new(3, Resolution::Seconds1), PublishRetransmit::from(0), GENERIC_BATTERY_SERVER)?;
+                                let config = NodeConfigurationMessage::Configure(
+                                    NodeConfiguration {
+                                        message: msg,
+                                        path: element_path.clone(),
+                                        address: unicast,
+                                    }
+                                );
+                                configure_tx.send(config).await?;
+                                log::info!("Add pub-set for OnOff Client");
+                                let msg = Node::pub_set_create(unicast, pub_address, 0, PublishPeriod::new(3, Resolution::Seconds1), PublishRetransmit::from(0), GENERIC_ONOFF_CLIENT)?;
                                 let config = NodeConfigurationMessage::Configure(
                                     NodeConfiguration {
                                         message: msg,
