@@ -12,7 +12,7 @@
             class="pf-m-nowrap"
             role="cell"
     >
-        {#if device.value.containsKey("temperature")}
+        {#if device.value.get("temperature") != null && device.value.get("temperature").value != null}
             {device.value.get("temperature").value} °C
         {/if}
     </td>
@@ -21,7 +21,7 @@
             class="pf-m-nowrap"
             role="cell"
     >
-        {#if device.value.containsKey("noise")}
+        {#if device.value.get("noise") != null}
             {device.value.get("noise").value}
         {/if}
     </td>
@@ -30,10 +30,8 @@
             class="pf-m-nowrap"
             role="cell"
     >
-        {#if device.value.containsKey("acceleration")}
-            {#if device.value.get("acceleration").value}
-                {device.value.get("acceleration").value.x} / {device.value.get("acceleration").value.y} / {device.value.get("acceleration").value.z}
-            {/if}
+        {#if device.value.get("acceleration") != null && device.value.get("acceleration").value != null}
+            {device.value.get("acceleration").value.x} / {device.value.get("acceleration").value.y} / {device.value.get("acceleration").value.z}
         {/if}
     </td>
 
@@ -41,14 +39,13 @@
             class="pf-m-nowrap"
             role="cell"
     >
-        {#if device.value.containsKey("batteryLevel")}
+        {#if device.value.get("batteryLevel") != null}
             {#if device.value.get("batteryLevel").value != null}
-                {device.value.get("batteryLevel").value}
+                    {device.value.get("batteryLevel").value}
                 {#else}
-                <i>N/A</i>
+                    <i>N/A</i>
             {/if}
         {/if}
     </td>
 
 </tr>
-
