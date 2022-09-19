@@ -25,7 +25,14 @@ import io.drogue.iot.hackathon.model.ThingRequestType;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
 
+/**
+ * Twin connected based on Jakarta WebSockets.
+ *
+ * @deprecated Unfortunately Jakarta web socket clients seems to have no great story around re-connecting.\
+ * Therefore, we use vert.x for implementing the functionality. See {@link TwinConnector}.
+ */
 @ClientEndpoint
+@Deprecated
 public class TwinWebSocket {
     private static final Logger logger = LoggerFactory.getLogger(TwinWebSocket.class);
 
