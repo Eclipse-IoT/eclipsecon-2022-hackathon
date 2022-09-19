@@ -32,7 +32,7 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', () => {
-        new State(document.getElementById("content"));
+        globalThis.state = new State(document.getElementById("content"));
     });
 
 </script>

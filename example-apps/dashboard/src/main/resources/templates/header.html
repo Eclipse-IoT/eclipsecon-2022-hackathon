@@ -1,0 +1,19 @@
+<button class="pf-c-table__button" onclick='globalThis.state.sortBy({column}, "{direction}")'>
+    <div class="pf-c-table__button-content">
+
+        <span class="pf-c-table__text">{label}</span>
+
+        <span class="pf-c-table__sort-indicator">
+
+        {#when direction}
+            {#is "ascending"}
+            <i class="fas fa-long-arrow-alt-up"></i>
+            {#is "descending"}
+            <i class="fas fa-long-arrow-alt-down"></i>
+            {#else}
+            <i class="fas fa-arrows-alt-v"></i>
+        {/when}
+
+        </span>
+    </div>
+</button>

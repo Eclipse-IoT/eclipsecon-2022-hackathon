@@ -21,6 +21,18 @@ class State {
         this.#connect();
     }
 
+    sortBy(column, current) {
+        // the new direction
+        let direction;
+        if (current === "ascending") {
+            direction = "descending";
+        } else {
+            direction = "ascending";
+        }
+        console.log("Sort by:", column);
+        this.#ws?.send(JSON.stringify({request: "sortBy", column, direction}));
+    }
+
     /**
      * Start connecting to the websocket
      */

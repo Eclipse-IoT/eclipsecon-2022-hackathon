@@ -1,4 +1,4 @@
-{#if state.empty}
+{#if table.rows.empty}
 
     <div class="pf-c-empty-state">
         <div class="pf-c-empty-state__content">
@@ -23,25 +23,24 @@
         >
         <thead>
         <tr role="row">
-            <th
-                    class="pf-m-truncate pf-m-border-right pf-c-table__sticky-column"
-                    role="columnheader"
-                    scope="col"
-            >
-                Device ID
-            </th>
 
-            <th role="columnheader" scope="col">Temperature</th>
-            <th role="columnheader" scope="col">Noise</th>
-            <th role="columnheader" scope="col">Acceleration</th>
-            <th role="columnheader" scope="col">Battery</th>
+            {#for header in table.header }
+                {#let direction = table.directionForColumn(header_index) selected = table.columnSelected(header_index, "pf-m-selected")}
+                    {#when header_index}
+                        {#is 0}
+                            <th aria-sort="{direction}" class="pf-m-truncate pf-m-border-right pf-c-table__sticky-column pf-c-table__sort {selected}" role="columnheader" scope="col" >{#include header column = header_index label = header direction = direction/}</th>
+                        {#else}
+                            <th aria-sort="{direction}" class="pf-c-table__sort {selected}" role="columnheader" scope="col">{#include header column = header_index label = header direction = direction /}</th>
+                    {/when}
+                {/let}
+            {/for}
 
         </tr>
         </thead>
 
         <tbody role="rowgroup">
 
-        {#for device in state.devices}
+        {#for row in table.rows}
                 {#include row /}
         {/for}
 
