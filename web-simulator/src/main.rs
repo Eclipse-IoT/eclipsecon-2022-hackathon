@@ -1,5 +1,4 @@
 mod app;
-mod borrowed;
 mod http;
 mod mqtt;
 mod publisher;

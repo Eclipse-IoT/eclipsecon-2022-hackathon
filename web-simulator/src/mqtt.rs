@@ -1,4 +1,4 @@
-use crate::{borrowed::json2command, publisher::Publisher};
+use crate::publisher::Publisher;
 use anyhow::{anyhow, Context};
 use gloo_utils::format::JsValueSerdeExt;
 use sensor_model::RawMessage;
@@ -452,16 +452,8 @@ impl MqttPublisher {
                 match serde_json::from_slice(&msg.payload) {
                     Ok(command) => Some(command),
                     Err(err) => {
-                        log::warn!("Failed to parse command: {err}");
-                        if let Ok(json) = serde_json::from_slice(&msg.payload) {
-                            log::info!("JSON: {json}");
-                            json2command(&json).map(|msg| {
-                                log::info!("JSON message: {msg:?}");
-                                msg
-                            })
-                        } else {
-                            None
-                        }
+                        log::warn!("Failed to parse command: {err}, skipping...");
+                        None
                     }
                 }
             } else {
