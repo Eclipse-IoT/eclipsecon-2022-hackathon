@@ -36,7 +36,7 @@ pub async fn run<'a>(
                                 break;
                             };
                             let response = tokio::time::timeout(
-                                Duration::from_secs(3),
+                                Duration::from_secs(10),
                                 element_control.next(),
                             )
                             .await;
@@ -106,6 +106,7 @@ pub async fn run<'a>(
             }
             None => {
                 log::info!("No configuration message received");
+                tokio::time::sleep(Duration::from_secs(2)).await;
             }
         }
     }
