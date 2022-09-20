@@ -11,6 +11,7 @@ We might do a short introduction during the community day on Monday. Or you can 
 
 We will need a laptop with the ability to run some developer tools. That may include Java, Rust, NodeJS, depending on
 what you want to explore and work with. Having an editor or IDE with support for those technologies is also recommended.
+It may also include other developer tooling such as Maven, Docker, NPM, … or having the ability to install those.
 
 For flashing new firmware to the micro:bit, you will also need to be able to connect USB devices to your laptop.
 
