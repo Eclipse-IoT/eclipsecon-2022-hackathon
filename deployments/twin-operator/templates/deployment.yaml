@@ -74,7 +74,7 @@ spec:
               value: {{ .Values.drogueDoppelgaenger.api.clientId | quote }}
             - name: TWIN__CLIENT__CLIENT_SECRET
               value: {{ .Values.drogueDoppelgaenger.api.clientSecret | quote }}
-            {{- end }}}
+            {{- end }}
 
             - name: TWIN__RECONCILER__APPLICATION
               value: default
