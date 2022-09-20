@@ -21,7 +21,7 @@ use gloo_utils::{document, history, window};
 use rand::prelude::random;
 use reqwest::Url;
 use sensor_model::{RawMessage, SensorMessage, SensorPayload};
-use std::{str::FromStr, sync::Arc};
+use std::{str::FromStr, string::ToString, sync::Arc};
 use wasm_bindgen::{JsCast, JsValue};
 use web_sys::{HtmlInputElement as InputElement, Node};
 use yew::prelude::*;
@@ -185,8 +185,8 @@ impl Component for App {
                     .to_string()
             }),
             application: application.unwrap_or_else(|| "eclipsecon-hackathon".to_string()),
-            device: device.unwrap_or_else(|| "simulator1".to_string()),
-            password: password.unwrap_or_else(|| "hey-rodney".to_string()),
+            device: device.unwrap_or_default(),
+            password: password.unwrap_or_default(),
             connection_state: html!("Stopped"),
 
             refs: Refs::default(),
@@ -250,6 +250,8 @@ impl Component for App {
             }
         });
 
+        let mut violations = 0;
+
         html!(
         <>
             <section class="hero is-primary">
@@ -269,25 +271,63 @@ impl Component for App {
             <div class="column">
 
             <Field label="URL">
-                <input id="url" type="text" class="input" value={self.url.clone()} ref={self.refs.url.clone()}
-                    oninput={Self::value_setter(&ctx, &self.refs.url, |app, value| app.url=value).reform(|_|())}
-                />
+                {{
+                    let mut classes = Classes::from("input");
+                    if self.url.is_empty() {
+                        classes.push("is-danger");
+                        violations += 1;
+                    }
+                    html!(
+                        <input id="url" type="text" class={classes} value={self.url.clone()} ref={self.refs.url.clone()}
+                            oninput={Self::value_setter(&ctx, &self.refs.url, |app, value| app.url=value).reform(|_|())}
+                        />
+                    )
+                }}
             </Field>
 
             <Field label="Application">
-                <input id="application" type="text" class="input" value={self.application.clone()} ref={self.refs.application.clone()}
-                    oninput={Self::value_setter(&ctx, &self.refs.application, |app, value| app.application=value).reform(|_|())}
-                />
+                {{
+                    let mut classes = Classes::from("input");
+                    if self.application.is_empty() {
+                        classes.push("is-danger");
+                        violations += 1;
+                    }
+                    html!(
+                        <input id="application" type="text" class={classes} value={self.application.clone()} ref={self.refs.application.clone()}
+                            oninput={Self::value_setter(&ctx, &self.refs.application, |app, value| app.application=value).reform(|_|())}
+                        />
+                    )
+                }}
             </Field>
 
             <Field label="Device">
-                <input id="device" type="text" class="input" value={(self.device).clone()} ref={self.refs.device.clone()}
-                    oninput={Self::value_setter(&ctx, &self.refs.device, |app, value| app.device=value).reform(|_|())} />
+                {{
+                    let mut classes = Classes::from("input");
+                    if self.device.is_empty() {
+                        classes.push("is-danger");
+                        violations += 1;
+                    }
+                    html!(
+                        <input id="device" type="text" class={classes} value={(self.device).clone()} ref={self.refs.device.clone()}
+                            oninput={Self::value_setter(&ctx, &self.refs.device, |app, value| app.device=value).reform(|_|())}
+                        />
+                    )
+                }}
             </Field>
 
             <Field label="Password">
-                <input id="password" type="password" class="input" value={self.password.clone()} pattern="[0-9]+" ref={self.refs.password.clone()}
-                    oninput={Self::value_setter(&ctx, &self.refs.password, |app, value| app.password=value).reform(|_|())} />
+                {{
+                    let mut classes = Classes::from("input");
+                    if self.password.is_empty() {
+                        classes.push("is-danger");
+                        violations += 1;
+                    }
+                    html!(
+                        <input id="password" type="password" class={classes} value={self.password.clone()} pattern="[0-9]+" ref={self.refs.password.clone()}
+                            oninput={Self::value_setter(&ctx, &self.refs.password, |app, value| app.password=value).reform(|_|())}
+                        />
+                    )
+                }}
             </Field>
 
             <Field label="Interval (seconds)">
@@ -298,7 +338,7 @@ impl Component for App {
                 <p class="control">
                     <button
                         class="button is-primary"
-                        disabled={matches!(self.state, SimulatorState::Running(_))}
+                        disabled={matches!(self.state, SimulatorState::Running(_)) || violations > 0}
                         onclick={ctx.link().callback(|_|Msg::Start)}>
                         {"Start"}
                     </button>
@@ -332,7 +372,7 @@ impl Component for App {
                     oninput={on_change_temp.reform(|_|())}
                     ref={self.refs.temperature.clone()}
                 />
-                <output class="slider" for="temp-slider">{self.temperature}</output>
+                <output class="slider" for="temp-slider">{self.temperature as f32 / 2.0}</output>
             </Field>
 
             <Field label="Display">

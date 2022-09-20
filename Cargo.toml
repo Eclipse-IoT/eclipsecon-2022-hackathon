@@ -5,7 +5,11 @@ members = [
   "sensor-model",
   "simulator",
   "model-converter",
-  "web-simulator",
+]
+
+exclude = [
+  # we need to exclude the web-simulator, as it works with wasm and trunk, which is different
+  "web-simulator"
 ]
 
 [patch.crates-io]

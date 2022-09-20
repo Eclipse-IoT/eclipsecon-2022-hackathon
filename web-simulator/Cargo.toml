@@ -28,3 +28,7 @@ sensor-model = { path = "../sensor-model", features = ["std"] }
 
 btmesh-common = { version = "0.1.0" }
 btmesh-models = { version = "0.1.0" }
+
+[patch.crates-io]
+btmesh-common = { git = "https://github.com/drogue-iot/btmesh.git", branch = "main" }
+btmesh-models = { git = "https://github.com/drogue-iot/btmesh.git", branch = "main" }
