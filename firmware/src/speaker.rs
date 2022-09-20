@@ -3,8 +3,8 @@ use embassy_nrf::{
     peripherals::{P0_00, PWM0},
     pwm,
 };
-use microbit_async::speaker::*;
-pub use microbit_async::speaker::{Note, Pitch};
+use microbit_bsp::speaker::*;
+pub use microbit_bsp::speaker::{Note, Pitch};
 
 pub struct Speaker {
     speaker: PwmSpeaker<'static, PWM0>,

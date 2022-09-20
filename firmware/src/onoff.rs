@@ -4,7 +4,7 @@ use btmesh_models::generic::onoff::{GenericOnOffMessage, GenericOnOffServer};
 use core::future::Future;
 use embassy_futures::select::{select3, Either3};
 use embassy_time::{Duration, Instant, Timer};
-use microbit_async::{
+use microbit_bsp::{
     display::{fonts, Brightness, Frame},
     LedMatrix,
 };

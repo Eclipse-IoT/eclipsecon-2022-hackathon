@@ -20,7 +20,7 @@ use core::future::Future;
 use embassy_executor::Spawner;
 use embassy_nrf::interrupt;
 use embassy_time::{Duration, Timer};
-use microbit_async::{mic::Microphone, *};
+use microbit_bsp::{mic::Microphone, *};
 use onoff::*;
 use sensor::*;
 use speaker::*;

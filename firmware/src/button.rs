@@ -3,7 +3,7 @@ use btmesh_models::generic::onoff::{
     GenericOnOffClient, GenericOnOffMessage, Set as GenericOnOffSet,
 };
 use core::future::Future;
-use microbit_async::*;
+use microbit_bsp::*;
 
 /// A type implementing a GenericOnOffClient model, emitting events when button is pressed.
 pub struct ButtonOnOff {
