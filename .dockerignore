@@ -3,3 +3,6 @@ firmware/**
 idgen/**
 !target/release/eclipsecon-model-converter
 meshd/**
+deployments/**
+**/Dockerfile
+.idea/**
