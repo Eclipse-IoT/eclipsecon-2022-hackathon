@@ -68,16 +68,15 @@ dependencies = [
 
 [[package]]
 name = "actix-router"
-version = "0.5.0"
+version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "eb60846b52c118f2f04a56cc90880a274271c489b2498623d58176f8ca21fa80"
+checksum = "d66ff4d247d2b160861fa2866457e85706833527840e4133f8f49aa423a38799"
 dependencies = [
  "bytestring",
- "firestorm",
  "http",
- "log",
  "regex",
  "serde",
+ "tracing",
 ]
 
 [[package]]
@@ -524,7 +523,7 @@ dependencies = [
 [[package]]
 name = "btmesh-common"
 version = "0.1.0"
-source = "git+https://github.com/drogue-iot/btmesh.git?branch=main#4fcb222012057ebb4b1e1d402e559c113986d065"
+source = "git+https://github.com/drogue-iot/btmesh.git?branch=main#67c92294f7aa52e76ebc5cc2468f439aaefd542e"
 dependencies = [
  "aes",
  "ccm",
@@ -539,7 +538,7 @@ dependencies = [
 [[package]]
 name = "btmesh-models"
 version = "0.1.0"
-source = "git+https://github.com/drogue-iot/btmesh.git?branch=main#4fcb222012057ebb4b1e1d402e559c113986d065"
+source = "git+https://github.com/drogue-iot/btmesh.git?branch=main#67c92294f7aa52e76ebc5cc2468f439aaefd542e"
 dependencies = [
  "btmesh-common",
  "heapless",
@@ -549,7 +548,7 @@ dependencies = [
 [[package]]
 name = "btmesh-operator"
 version = "0.1.0"
-source = "git+https://github.com/drogue-iot/btmesh-operator.git?branch=main#9382efccdf540b2564d549734d07dfcdf8ec1948"
+source = "git+https://github.com/drogue-iot/btmesh-operator.git?branch=main#7d1ecfad185bebba23d2acf72e56e7ca85af9bb7"
 dependencies = [
  "anyhow",
  "base64 0.13.0",
@@ -562,7 +561,7 @@ dependencies = [
  "humantime",
  "hyper",
  "log",
- "paho-mqtt 0.10.0",
+ "paho-mqtt",
  "reqwest",
  "serde",
  "serde_json",
@@ -1151,7 +1150,7 @@ dependencies = [
  "heapless",
  "hex",
  "log",
- "paho-mqtt 0.11.1",
+ "paho-mqtt",
  "pin-project",
  "rand",
  "sensor-model",
@@ -1250,12 +1249,6 @@ checksum = "a7a407cfaa3385c4ae6b23e84623d48c2798d06e3e6a1878f7f59f17b3f86499"
 dependencies = [
  "instant",
 ]
-
-[[package]]
-name = "firestorm"
-version = "0.5.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2c5f6c2c942da57e2aaaa84b8a521489486f14e75e7fa91dab70aba913975f98"
 
 [[package]]
 name = "flate2"
@@ -1698,9 +1691,9 @@ checksum = "879d54834c8c76457ef4293a689b2a8c59b076067ad77b15efafbb05f92a592b"
 
 [[package]]
 name = "itertools"
-version = "0.10.4"
+version = "0.10.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d8bf247779e67a9082a4790b45e71ac7cfd1321331a5c856a74a9faebdab78d0"
+checksum = "b0fd2260e829bddf4cb6ea802289de2f86d6a7a690192fbe91b3f46e0f2c8473"
 dependencies = [
  "either",
 ]
@@ -1756,9 +1749,9 @@ dependencies = [
 
 [[package]]
 name = "libc"
-version = "0.2.132"
+version = "0.2.133"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8371e4e5341c3a96db127eb2465ac681ced4c433e01dd0e938adbef26ba93ba5"
+checksum = "c0f80d65747a3e43d1596c7c5492d95d5edddaabd45a7fcdb02b95f644164966"
 
 [[package]]
 name = "libdbus-sys"
@@ -2165,22 +2158,6 @@ checksum = "9ff7415e9ae3fff1225851df9e0d9e4e5479f947619774677a63572e55e80eff"
 
 [[package]]
 name = "paho-mqtt"
-version = "0.10.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "aee23a0d2c2eddc5441d4b26ef70cfe6002ff94b0adcbfa8e6be1ccc2f4cbd26"
-dependencies = [
- "async-channel",
- "crossbeam-channel",
- "futures",
- "futures-timer",
- "libc",
- "log",
- "paho-mqtt-sys 0.6.0",
- "thiserror",
-]
-
-[[package]]
-name = "paho-mqtt"
 version = "0.11.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9fac58bae33ba9679bb4908ffa7c3950114345860d3f9b98340c4943f18ff324"
@@ -2191,18 +2168,8 @@ dependencies = [
  "futures-timer",
  "libc",
  "log",
- "paho-mqtt-sys 0.7.0",
+ "paho-mqtt-sys",
  "thiserror",
-]
-
-[[package]]
-name = "paho-mqtt-sys"
-version = "0.6.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "38dcc5de4d40eb7ddf7f806eb14dae88f3e534dc3ae1ca83481af18551ce339c"
-dependencies = [
- "cmake",
- "openssl-sys",
 ]
 
 [[package]]

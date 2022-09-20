@@ -142,7 +142,7 @@ pub async fn run(
                                 configure_tx.send(config).await?;
 
                                 let label = LabelUuid::new(Uuid::parse_str("f0bfd803cde184133096f003ea4a3dc2")?.into_bytes()).map_err(|_| std::fmt::Error)?;
-                                let pub_address = PublishAddress::Virtual(label);
+                                let pub_address = PublishAddress::Label(label);
                                 log::info!("Add pub-set for sensor server");
                                 let msg = Node::pub_set_create(unicast, pub_address, 0, PublishPeriod::new(3, Resolution::Seconds1), PublishRetransmit::from(0), SENSOR_SETUP_SERVER)?;
                                 let config = NodeConfigurationMessage::Configure(
