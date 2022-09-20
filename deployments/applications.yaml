@@ -11,7 +11,7 @@ spec:
   source:
     path: deployments/sso
     repoURL: 'https://github.com/eclipse-iot/eclipsecon-2022-hackathon/'
-    targetRevision: feature/add_doppelgaenger_1
+    targetRevision: HEAD
   project: eclipsecon-2022
   syncPolicy:
     syncOptions:
@@ -29,7 +29,7 @@ spec:
   source:
     path: deployments/doppelgaenger
     repoURL: 'https://github.com/eclipse-iot/eclipsecon-2022-hackathon/'
-    targetRevision: feature/add_doppelgaenger_1
+    targetRevision: HEAD
   project: eclipsecon-2022
   syncPolicy:
     syncOptions:
@@ -43,7 +43,8 @@ spec:
   project: eclipsecon-2022
   source:
     repoURL: 'https://github.com/eclipse-iot/eclipsecon-2022-hackathon/'
-    path: example-apps/console/helm/console
+    path: deployments/console
+    targetRevision: HEAD
     helm:
       valueFiles:
         - values.yaml
@@ -73,7 +74,7 @@ spec:
   project: eclipsecon-2022
   source:
     repoURL: 'https://github.com/eclipse-iot/eclipsecon-2022-hackathon/'
-    path: web-simulator/deploy
+    path: deployments/web-simulator
     targetRevision: HEAD
     directory:
       jsonnet:
@@ -98,7 +99,7 @@ spec:
   project: eclipsecon-2022
   source:
     repoURL: 'https://github.com/Eclipse-IoT/eclipsecon-2022-hackathon/'
-    path: example-apps/dashboard/helm/dashboard
+    path: deployments/dashboard
     targetRevision: HEAD
   destination:
     name: in-cluster
