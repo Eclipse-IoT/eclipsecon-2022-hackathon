@@ -11,7 +11,6 @@ spec:
   source:
     path: deployments/sso
     repoURL: 'https://github.com/eclipse-iot/eclipsecon-2022-hackathon/'
-    targetRevision: HEAD
   project: eclipsecon-2022
   syncPolicy:
     syncOptions:
@@ -29,7 +28,6 @@ spec:
   source:
     path: deployments/doppelgaenger
     repoURL: 'https://github.com/eclipse-iot/eclipsecon-2022-hackathon/'
-    targetRevision: HEAD
   project: eclipsecon-2022
   syncPolicy:
     syncOptions:
@@ -44,7 +42,6 @@ spec:
   source:
     repoURL: 'https://github.com/eclipse-iot/eclipsecon-2022-hackathon/'
     path: deployments/console
-    targetRevision: HEAD
     helm:
       valueFiles:
         - values.yaml
@@ -75,7 +72,6 @@ spec:
   source:
     repoURL: 'https://github.com/eclipse-iot/eclipsecon-2022-hackathon/'
     path: deployments/web-simulator
-    targetRevision: HEAD
     directory:
       jsonnet:
         tlas:
@@ -100,7 +96,6 @@ spec:
   source:
     repoURL: 'https://github.com/Eclipse-IoT/eclipsecon-2022-hackathon/'
     path: deployments/dashboard
-    targetRevision: HEAD
   destination:
     name: in-cluster
     namespace: eclipsecon-2022
@@ -132,3 +127,22 @@ spec:
     name: in-cluster
     namespace: eclipsecon-2022
     server: ''
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: eclipsecon-model-converter
+spec:
+  project: eclipsecon-2022
+  source:
+    repoURL: 'https://github.com/Eclipse-IoT/eclipsecon-2022-hackathon/'
+    path: deployments/model-converter
+  destination:
+    name: in-cluster
+    namespace: eclipsecon-2022
+    server: ''
+  ignoreDifferences:
+    - group: apps
+      kind: Deployment
+      jqPathExpressions:
+        - '.spec.template.spec.containers[] | .image'
