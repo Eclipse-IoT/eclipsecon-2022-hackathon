@@ -1,6 +1,23 @@
-# eclipsecon-2022-hackathon
+# EclipseCon 2022 – IoT Hackathon
 
-This repository contains software, firmware and documentation for the EclipseCon 2022 hackathon.
+This repository contains software, firmware and documentation for the EclipseCon 2022 IoT hackathon.
+
+If you have questions, please reach out to use before, during or even after the hackathon. Either online, or in-person
+during the conference.
+
+We might do a short introduction during the community day on Monday. Or you can ask at the Red Hat booth.
+
+## Before the hackathon
+
+We will need a laptop with the ability to run some developer tools. That may include Java, Rust, NodeJS, depending on
+what you want to explore and work with. Having an editor or IDE with support for those technologies is also recommended.
+
+For flashing new firmware to the micro:bit, you will also need to be able to connect USB devices to your laptop.
+
+You will need to create a user in the Keycloak instance we use for single sign-on. You will be directed to this
+instance during the login process of the console. You can choose to either manually create an account and select a
+password, or use GitHub as identity provider. It is required to enter an e-mail address, however the address is not
+checked and will not be used (also not for requesting a new password).
 
 ## Claiming your device
 
@@ -10,8 +27,6 @@ Once claimed and while powered, the device will emit sensor readings, battery st
 from all the devices on the read only [dashboard](https://dashboard-eclipsecon-2022.apps.sandbox.drogue.world/)
 
 Before the hackathon starts, feel free to play around with the [sample applications](example-apps) we have made.
-**NOTE:** You will need to create a user in the Keycloak instance. You will be directed to this instance during the login process. You can choose to either manually create an account and select a password, or use GitHub as identity provider. It is required to enter an e-mail address, however the address is not checked and will not be used. 
-
 
 ## Hackathon
 
@@ -64,25 +79,25 @@ Here is what the payload of a partial update looks like, excluding the cloudeven
 }
 ```
 
-
 Here is a complete schema of the values a device may send:
-```yaml
-partial: bool # wether or not the update is partial or complete 
-  state:
-    sensor:
-      location: u8 # Location of the element on the device
-      payload:
-        acceleration: # Accelerometer values
-          x: i16
-          y: i16
-          z: i16
-        noise: u8
-        temperature: i8 # the temperature, a Celsius value.
-    battery: 
-      flags: 
-        presence: String # possible values are "NotPresent" or "PresentRemovable"
-      level: u8 
-      location: u8
 
-//todo complete
+```yaml
+partial: bool # whether the update is partial or complete 
+state:
+  sensor:
+    location: u8 # Location of the element on the device
+    payload:
+      acceleration: # Accelerometer values
+        x: i16
+        y: i16
+        z: i16
+      noise: u8
+      temperature: i8 # the temperature, a Celsius value.
+  battery: 
+    flags: 
+      presence: String # possible values are "NotPresent" or "PresentRemovable"
+    level: u8 
+    location: u8
+
+# todo complete
 ```
