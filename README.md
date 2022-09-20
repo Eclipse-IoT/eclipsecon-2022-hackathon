@@ -7,6 +7,14 @@ during the conference.
 
 We might do a short introduction during the community day on Monday. Or you can ask at the Red Hat booth.
 
+Some important links:
+
+* [Slides](https://docs.google.com/presentation/d/1xq4taSold1GCIjKdR9hy7n3Cyyb4GKXRvnE2stboVw4)
+* [Scratchpad](https://hackmd.io/9D5pbxHlR-KH236PSqaYew)
+* Applications:
+  * [Console](https://console-eclipsecon-2022.apps.sandbox.drogue.world/)
+  * [Dashboard]( https://dashboard-eclipsecon-2022.apps.sandbox.drogue.world/)
+
 ## Before the hackathon
 
 We will need a laptop with the ability to run some developer tools. That may include Java, Rust, NodeJS, depending on
