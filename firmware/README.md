@@ -7,9 +7,9 @@ Firmware running on the EclipseCon 2022 Hackathon devices. The firmware implemen
 * Builtin temperature - SensorServer. The sensor server can be configured to emit sensor data periodically.
 * Battery - Generic Battery Server. The battery server can be configured to emit battery status events periodically.
 
-In addition, there are a few TODO's for hackathon participants who wants to get their hands dirty with embedded Rust. Each task has complementary work on the cloud side for processing data and sending commands.
+In addition, there are a few TODO's for hackathon participants who want to get their hands dirty with embedded Rust. Each task has complementary work on the cloud side for processing data and sending commands.
 
-* Use the accelerometer to supply x, y, z acceleration data. The `sensor` module can modified used to read accelerometer data and emit motion 3D acceleration readings.
+* Use the accelerometer to supply x, y, z acceleration data. The `sensor` module can be modified used to read accelerometer data and emit motion 3D acceleration readings.
 * Use the microphone to implement a noise detection device. The `sensor` module can be modified to read sound levels and emit sound level values.
 * Use the onboard speaker to implement a jukebox for playing simple tunes. Modify the `onoff` module to play a tune together with the existing blinking when 'on'.
 
