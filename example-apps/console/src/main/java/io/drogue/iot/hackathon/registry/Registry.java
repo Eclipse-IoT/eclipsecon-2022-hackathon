@@ -2,6 +2,7 @@ package io.drogue.iot.hackathon.registry;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -41,6 +42,7 @@ public class Registry {
         Metadata metadata = new Metadata();
         metadata.setName(device);
         metadata.setApplication(this.applicationName);
+        metadata.setLabels(Map.of("role", "node"));
         dev.setMetadata(metadata);
 
         DeviceSpec spec = new DeviceSpec();
@@ -68,6 +70,7 @@ public class Registry {
         var metadata = new Metadata();
         metadata.setName(device);
         metadata.setApplication(this.applicationName);
+        metadata.setLabels(Map.of("role", "node"));
         dev.setMetadata(metadata);
 
         var spec = new DeviceSpec();
