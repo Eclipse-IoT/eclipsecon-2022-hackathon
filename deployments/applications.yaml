@@ -152,3 +152,22 @@ spec:
       kind: Deployment
       jqPathExpressions:
         - '.spec.template.spec.containers[] | .image'
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: btmesh-operator
+spec:
+  project: eclipsecon-2022
+  source:
+    repoURL: 'https://github.com/drogue-iot/btmesh-operator.git'
+    path: deploy
+    targetRevision: HEAD
+  destination:
+    namespace: eclipsecon-2022
+    name: in-cluster
+  ignoreDifferences:
+    - group: apps
+      kind: Deployment
+      jqPathExpressions:
+        - '.spec.template.spec.containers[] | .image'
