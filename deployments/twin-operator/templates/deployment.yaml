@@ -55,12 +55,27 @@ spec:
 
             - name: TWIN__CLIENT__URL
               value: https://api-eclipsecon-2022.apps.sandbox.drogue.world
+            - name: TWIN__CLIENT__ISSUER_URL
+              value: https://sso-eclipsecon-2022.apps.sandbox.drogue.world/realms/doppelgaenger
+
+            {{ with .Values.drogueDoppelgaenger.apiSecret }}
+            - name: TWIN__CLIENT__CLIENT_ID
+              valueFrom:
+                secretKeyRef:
+                  name: {{ . | quote }}
+                  key: CLIENT_ID
+            - name: TWIN__CLIENT__CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: {{ . | quote }}
+                  key: CLIENT_SECRET
+            {{ else }}
             - name: TWIN__CLIENT__CLIENT_ID
               value: {{ .Values.drogueDoppelgaenger.api.clientId | quote }}
             - name: TWIN__CLIENT__CLIENT_SECRET
               value: {{ .Values.drogueDoppelgaenger.api.clientSecret | quote }}
-            - name: TWIN__CLIENT__ISSUER_URL
-              value: https://sso-eclipsecon-2022.apps.sandbox.drogue.world/realms/doppelgaenger
+            {{ end }}}
+
             - name: TWIN__RECONCILER__APPLICATION
               value: default
             - name: TWIN__RECONCILER__LABEL_SELECTOR__role

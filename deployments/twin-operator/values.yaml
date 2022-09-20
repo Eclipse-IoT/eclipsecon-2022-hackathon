@@ -7,3 +7,5 @@ drogueDoppelgaenger:
   api:
     # clientId: <oidc client>
     # clientSecret: <oidc secret>
+  # instead of id and secret, using a Kubernetes secret with this name
+  apiSecret: keycloak-client-secret-services
