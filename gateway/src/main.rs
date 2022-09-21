@@ -41,12 +41,15 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let mqtt_uri = args.drogue_mqtt_uri;
 
+    log::info!("Connecting to: {}", mqtt_uri);
+
     let mqtt_opts = mqtt::CreateOptionsBuilder::new()
         .server_uri(mqtt_uri.clone())
         .mqtt_version(mqtt::MQTT_VERSION_5)
         .client_id("btmesh-gateway")
         .persistence(mqtt::PersistenceType::None)
         .finalize();
+
     let mut mqtt_client = mqtt::AsyncClient::new(mqtt_opts)?;
 
     let mut conn_opts = mqtt::ConnectOptionsBuilder::new();
@@ -96,6 +99,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let mqtt_commands = mqtt_client.get_stream(100);
     mqtt_client.subscribe("command/inbox/#", 1).await?;
+    log::info!("Subscribed to commands");
 
     let session = bluer::Session::new().await?;
     let mesh = session.mesh().await?;
@@ -142,9 +146,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
             }
             command = mqtt_commands.recv() => {
                 if let Ok(Some(command)) = command {
-                    let topic = command.topic();
-                    let payload = command.payload();
-                    commands_tx.send((topic.to_string(), payload.into()))?;
+                    let topic = command.topic().to_string();
+                    let payload : Vec<u8>= command.payload().into();
+                    if log::log_enabled!(log::Level::Info) {
+                        log::info!("Received command: {topic} / {}", String::from_utf8_lossy(&payload) );
+                    }
+                    commands_tx.send((topic, payload))?;
                 }
                 tokio::time::sleep(Duration::from_secs(1)).await;
             }
