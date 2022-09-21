@@ -141,32 +141,36 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     log::info!("Gateway ready. Press Ctrl+C to quit.");
 
-    loop {
-        tokio::select! {
-            _ = signal::ctrl_c() => {
-                log::info!("Got shutdown signal, terminating...");
-                drop(commands_tx);
-                break
-            }
-            command = mqtt_commands.recv() => {
-                if let Ok(Some(command)) = command {
-                    let topic = command.topic().to_string();
-                    let payload : Vec<u8>= command.payload().into();
-                    if log::log_enabled!(log::Level::Info) {
-                        log::info!("Received command: {topic} / {}", String::from_utf8_lossy(&payload) );
-                    }
-                    commands_tx.send((topic, payload))?;
+    tasks.push(tokio::spawn(async move {
+        loop {
+            tokio::select! {
+                _ = signal::ctrl_c() => {
+                    log::info!("Got shutdown signal, terminating...");
+                    drop(commands_tx);
+                    break
                 }
-                tokio::time::sleep(Duration::from_secs(1)).await;
+                command = mqtt_commands.recv() => {
+                    if let Ok(Some(command)) = command {
+                        let topic = command.topic().to_string();
+                        let payload : Vec<u8>= command.payload().into();
+                        if log::log_enabled!(log::Level::Info) {
+                            log::info!("Received command: {topic} / {}", String::from_utf8_lossy(&payload) );
+                        }
+                        commands_tx.send((topic, payload))?;
+                    }
+                    tokio::time::sleep(Duration::from_secs(1)).await;
+                }
             }
         }
-    }
 
-    log::info!("Exited main loop, waiting for tasks to complete");
+        log::info!("Exited main loop, waiting for tasks to complete");
 
-    futures::future::join_all(tasks).await;
+        Ok::<_, anyhow::Error>(())
+    }));
 
-    log::info!("Exiting...");
+    let r = futures::future::select_all(tasks).await.0;
+
+    log::info!("One of the tasks exited, exiting application. Reason: {r:?}");
 
     Ok(())
 }
