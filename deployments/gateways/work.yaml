@@ -25,6 +25,38 @@ spec:
             app.kubernetes.io/name: eclipsecon-gateway
             app.kubernetes.io/instance: gateway
       - apiVersion: apps/v1
+        kind: DaemonSet
+        metadata:
+          name: meshd
+          namespace: eclipsecon-gateway
+        spec:
+          selector:
+            matchLabels:
+              app.kubernetes.io/name: eclipsecon-meshd
+              app.kubernetes.io/instance: gateway
+          template:
+            metadata:
+              labels:
+                app.kubernetes.io/name: eclipsecon-meshd
+                app.kubernetes.io/instance: gateway
+            spec:
+              hostNetwork: true
+              enableServiceLinks: false
+              containers:
+                - name: service
+                  image: quay.io/ctrontesting/eclipsecon-meshd:latest
+                  imagePullPolicy: Always
+                  securityContext:
+                    privileged: true
+                  volumeMounts:
+                    - mountPath: /var/run/dbus/system_bus_socket
+                      name: dbus-socket
+              volumes:
+                - name: dbus-socket
+                  hostPath:
+                    path: /var/run/dbus/system_bus_socket
+
+      - apiVersion: apps/v1
         kind: StatefulSet
         metadata:
           name: gateway
@@ -126,6 +158,39 @@ spec:
           env:
             - name: RUST_LOG
               value: info
+      volumes:
+        - name: dbus-socket
+          hostPath:
+            path: /var/run/dbus/system_bus_socket
+
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: meshd
+  namespace: eclipsecon-gateway
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: eclipsecon-meshd
+      app.kubernetes.io/instance: gateway
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: eclipsecon-meshd
+        app.kubernetes.io/instance: gateway
+    spec:
+      hostNetwork: true
+      enableServiceLinks: false
+      containers:
+        - name: service
+          image: quay.io/ctrontesting/eclipsecon-meshd:latest
+          imagePullPolicy: Always
+          securityContext:
+            privileged: true
+          volumeMounts:
+            - mountPath: /var/run/dbus/system_bus_socket
+              name: dbus-socket
       volumes:
         - name: dbus-socket
           hostPath:
