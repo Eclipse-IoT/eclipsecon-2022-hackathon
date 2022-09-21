@@ -31,6 +31,12 @@ Ensure the [default Drogue Cloud connection settings](https://github.com/Eclipse
 RUST_LOG=info ./target/release/eclipsecon-gateway --drogue-device gateway1 --drogue-application eclipsecon-hackathon --token dd26596e54e78fa2 --provisioner-token 84783e12f11c4dcd --provisioner-start-address 0x0100
 ```
 
+Or, to build and run:
+
+```shell
+RUST_LOG=info cargo run --package eclipsecon-gateway -- --drogue-device gateway1 --drogue-application eclipsecon-hackathon --token dd26596e54e78fa2 --provisioner-token 84783e12f11c4dcd --provisioner-start-address 0x0100
+```
+
 ## Running the microbit
 
 Flash the microbit with the desired UUID which you will use when provisioning via Drogue Cloud. If you wish to use the [console](https://console-eclipsecon-2022.apps.sandbox.drogue.world/), you must choose a UUID present in [idmap.json](https://github.com/Eclipse-IoT/eclipsecon-2022-hackathon/blob/main/console/src/main/resources/META-INF/resources/idmap.json).
