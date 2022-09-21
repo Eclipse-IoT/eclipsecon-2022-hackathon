@@ -1,0 +1,205 @@
+
+:experimental:
+
+== Pre-requisites
+
+* Installed ACM/OCM instance
+  ** Install operator
+  ** Create `MultiClusterHub` resource
+
+== ACM
+
+When creating a `MultiClusterHub` resource, you will need to configure a "pull secret".
+
+Create the secret using:
+
+[source,shell]
+----
+oc apply -n open-cluster-management -f pull-secret.yaml
+----
+
+Note the secret name, and apply it to the `MultiClusterHub` resource:
+
+[source,yaml]
+----
+apiVersion: operator.open-cluster-management.io/v1
+kind: MultiClusterHub
+metadata:
+  name: multiclusterhub
+  namespace: open-cluster-management
+spec:
+  imagePullSecret: <secret>
+----
+
+Create a "ClusterSet" (`ManagedClusterSet`):
+
+[source,yaml]
+----
+apiVersion: cluster.open-cluster-management.io/v1beta1
+kind: ManagedClusterSet
+metadata:
+  name: eclipsecon
+spec:
+  clusterSelector:
+    selectorType: LegacyClusterSetLabel
+----
+
+And a `ManagedClusterSetBinding`:
+
+[source,yaml]
+----
+apiVersion: cluster.open-cluster-management.io/v1beta1
+kind: ManagedClusterSetBinding
+metadata:
+  name: eclipsecon
+  namespace: eclipsecon-2022
+spec:
+  clusterSet: eclipsecon
+----
+
+== Add new node
+
+* Install https://microshift.io[MicroShift]
+* Connect with ACM
+
+=== Install bluez
+
+[source,shell]
+----
+sudo dnf install bluez
+sudo systemctl enable bluetooth --now
+----
+
+=== Install MicroShift
+
+Install a most recent Fedora on the target machine.
+
+Then run the following commands to install pre-requisites:
+
+[source,shell]
+----
+sudo dnf module enable -y cri-o:1.21
+sudo dnf install -y cri-o cri-tools
+sudo systemctl enable crio --now
+----
+
+Next, install MicroShift itself:
+
+[source,shell]
+----
+sudo dnf copr enable -y @redhat-et/microshift
+sudo dnf install -y microshift
+sudo firewall-cmd --zone=trusted --add-source=10.42.0.0/16 --permanent
+sudo firewall-cmd --zone=public --add-port=80/tcp --permanent
+sudo firewall-cmd --zone=public --add-port=443/tcp --permanent
+sudo firewall-cmd --zone=public --add-port=5353/udp --permanent
+sudo firewall-cmd --reload
+sudo systemctl enable microshift --now
+----
+
+=== Command line access on the gateway
+
+Install the `oc` binary:
+
+[source,shell]
+----
+curl -O https://mirror.openshift.com/pub/openshift-v4/$(uname -m)/clients/ocp/stable/openshift-client-linux.tar.gz
+sudo tar -xf openshift-client-linux.tar.gz -C /usr/local/bin oc kubectl
+----
+
+And create the "kubeconfig" file (as an ordinary user):
+
+[source,shell]
+----
+mkdir ~/.kube
+sudo cat /var/lib/microshift/resources/kubeadmin/kubeconfig > ~/.kube/config
+----
+
+=== Check
+
+You can see if pods are up using:
+
+[source,shell]
+----
+oc get pods -A
+----
+
+=== Add to ACM
+
+Console: https://multicloud-console.apps.sandbox.drogue.world
+
+Import a new cluster:
+
+* Choose a name
+* Select the cluster set: `eclipsecon`
+* Import mode: "Run import commands manually"
+
+When the cluster is created, use the btn:[Copy command] button to load the script into the clipboard. Then paste the
+content (~45KiB) into a bash, or create a new file with its content (e.g. `install.sh`), and run it (e.g. using `bash install.sh`).
+
+The output should look like:
+
+[source]
+----
+customresourcedefinition.apiextensions.k8s.io/klusterlets.operator.open-cluster-management.io created
+namespace/open-cluster-management-agent created
+serviceaccount/klusterlet created
+clusterrole.rbac.authorization.k8s.io/klusterlet created
+clusterrole.rbac.authorization.k8s.io/open-cluster-management:klusterlet-admin-aggregate-clusterrole created
+clusterrolebinding.rbac.authorization.k8s.io/klusterlet created
+deployment.apps/klusterlet created
+secret/bootstrap-hub-kubeconfig created
+klusterlet.operator.open-cluster-management.io/klusterlet created
+----
+
+== Remove a node
+
+* Detach the node from ACM
+* Uninstall MicroShift
+
+=== Uninstall MicroShift
+
+Disable the service:
+
+[source,shell]
+----
+sudo systemctl disable microshift --now
+----
+
+Uninstall the RPM:
+
+[source,shell]
+----
+sudo dnf remove microshift
+----
+
+=== Detaching manually
+
+It might happen that the cluster cannot be detached. Re-attaching it will then fail with the following message:
+
+[source]
+----
+Error from server (AlreadyExists): error when creating "STDIN": customresourcedefinitions.apiextensions.k8s.io "klusterlets.operator.open-cluster-management.io" already exists
+The cluster cannot be imported because its Klusterlet CRD already exists.
+Either the cluster was already imported, or it was not detached completely during a previous detach process.
+Detach the existing cluster before trying the import again.⏎
+----
+
+The following steps will clean this situation up:
+
+[source,shell]
+----
+oc delete klusterlets.operator.open-cluster-management.io klusterlet
+oc delete ns open-cluster-management-agent
+oc delete ns open-cluster-management-agent-addon
+oc delete crd klusterlets.operator.open-cluster-management.io
+----
+
+=== Rollout the gateway application
+
+For each gateway, create the following resource in its (gateway) namespace:
+
+[source,yaml]
+----
+include::work.yaml[]
+----

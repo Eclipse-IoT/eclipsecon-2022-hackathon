@@ -1,0 +1,132 @@
+---
+apiVersion: work.open-cluster-management.io/v1
+kind: ManifestWork
+metadata:
+  namespace: <gateway>
+  name: eclipsecon-gateway
+spec:
+  workload:
+    manifests:
+      - apiVersion: v1
+        kind: Namespace
+        metadata:
+          name: eclipsecon-gateway
+      - apiVersion: v1
+        kind: Service
+        metadata:
+          name: gateway
+          namespace: eclipsecon-gateway
+          labels:
+            app.kubernetes.io/name: eclipsecon-gateway
+            app.kubernetes.io/instance: gateway
+        spec:
+          clusterIP: None
+          selector:
+            app.kubernetes.io/name: eclipsecon-gateway
+            app.kubernetes.io/instance: gateway
+      - apiVersion: apps/v1
+        kind: StatefulSet
+        metadata:
+          name: gateway
+          namespace: eclipsecon-gateway
+        spec:
+          replicas: 1
+          serviceName: gateway
+          selector:
+            matchLabels:
+              app.kubernetes.io/name: eclipsecon-gateway
+              app.kubernetes.io/instance: gateway
+          template:
+            metadata:
+              labels:
+                app.kubernetes.io/name: eclipsecon-gateway
+                app.kubernetes.io/instance: gateway
+            spec:
+              containers:
+                - name: gateway
+                  image: quay.io/ctrontesting/eclipsecon-gateway:0.1.0
+                  imagePullPolicy: IfNotPresent
+                  securityContext:
+                    privileged: true
+                  volumeMounts:
+                    - mountPath: /var/run/dbus/system_bus_socket
+                      name: dbus-socket
+                  args:
+                    - "--drogue-device"
+                    - "gateway3"
+                    - "--drogue-application"
+                    - "eclipsecon-hackathon"
+                    - "--token"
+                    - "dd26596e54e78fa2"
+                    - "--provisioner-token"
+                    - "84783e12f11c4dcd"
+                    - "--provisioner-start-address"
+                    - "0x0300"
+                  env:
+                    - name: RUST_LOG
+                      value: info
+              volumes:
+                - name: dbus-socket
+                  hostPath:
+                    path: /var/run/dbus/system_bus_socket
+
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gateway
+  labels:
+    app.kubernetes.io/name: eclipsecon-gateway
+    app.kubernetes.io/instance: gateway
+spec:
+  clusterIP: None
+  selector:
+    app.kubernetes.io/name: eclipsecon-gateway
+    app.kubernetes.io/instance: gateway
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: gateway
+  namespace: eclipsecon-gateway
+spec:
+  replicas: 1
+  serviceName: gateway
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: eclipsecon-gateway
+      app.kubernetes.io/instance: gateway
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: eclipsecon-gateway
+        app.kubernetes.io/instance: gateway
+    spec:
+      containers:
+        - name: gateway
+          image: quay.io/ctrontesting/eclipsecon-gateway:0.1.0
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            privileged: true
+          volumeMounts:
+            - mountPath: /var/run/dbus/system_bus_socket
+              name: dbus-socket
+          args:
+            - "--drogue-device"
+            - "gateway3"
+            - "--drogue-application"
+            - "eclipsecon-hackathon"
+            - "--token"
+            - "dd26596e54e78fa2"
+            - "--provisioner-token"
+            - "84783e12f11c4dcd"
+            - "--provisioner-start-address"
+            - "0x0300"
+          env:
+            - name: RUST_LOG
+              value: info
+      volumes:
+        - name: dbus-socket
+          hostPath:
+            path: /var/run/dbus/system_bus_socket
