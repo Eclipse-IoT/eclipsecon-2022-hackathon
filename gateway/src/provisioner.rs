@@ -22,10 +22,10 @@ use btmesh_models::{
 use btmesh_operator::{BtMeshCommand, BtMeshDeviceState, BtMeshEvent, BtMeshOperation};
 use dbus::Path;
 use paho_mqtt as mqtt;
-use std::{collections::HashSet, sync::Arc, time::Duration};
+use std::{collections::HashMap, sync::Arc, time::Duration};
 use tokio::{
     sync::{broadcast, mpsc, Mutex},
-    time::sleep,
+    time::{Instant, sleep},
 };
 
 pub struct Config {
@@ -82,8 +82,7 @@ pub async fn run(
 
     let node = mesh.attach(root_path.clone(), &config.token).await?;
 
-    // TODO: Persist this state
-    let mut provisioned: HashSet<Uuid> = HashSet::new();
+    let mut provisioned: HashMap<Uuid, Instant> = HashMap::new();
 
     let (provision_tx, mut provision_rx) = mpsc::channel(32);
     let (configure_tx, configure_rx) = mpsc::channel(32);
@@ -190,8 +189,11 @@ pub async fn run(
                 }
             },
             Some(device) = provision_rx.recv() => {
-                if !provisioned.contains(&device) {
-                    provisioned.insert(device.clone());
+                const MAX_CACHED: Duration = Duration::from_secs(30);
+                let now = Instant::now();
+                let do_provision = provisioned.get(&device).map(|s| now.duration_since(*s) > MAX_CACHED).unwrap_or(true);
+                if do_provision {
+                    provisioned.insert(device.clone(), now);
                     log::info!("Provisioning {:?}", device);
                     match node.management.add_node(device.clone()).await {
                         Ok(_) => {
