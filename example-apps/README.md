@@ -49,7 +49,8 @@ The doppelgaenger is our spin on a digital twin service. It consolidates events 
 state that you can query. While the MQTT and WS services must be consumed in a "stream" fashion, the doppelgaenger is the 
 other way around : your application can query it whenever you want. 
 
-The REST API documentation for the doppelgaenger can be found [here](https://api-eclipsecon-2022.apps.sandbox.drogue.world/).
+The REST API documentation for the doppelgaenger can be found [here](https://api-eclipsecon-2022.apps.sandbox.drogue.world/). It's worth to note here that `thing` should be the device name and the channel
+you want to pull data from. E.g `wolf/sensor` to get the sensor data.
 
 ## Authentication
 
