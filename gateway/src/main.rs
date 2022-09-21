@@ -95,6 +95,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     });
 
+    mqtt_client.set_connected_callback(|c| {
+        log::info!("Gateway connected");
+    });
+
     mqtt_client.connect(conn_opts).await?;
 
     let mqtt_commands = mqtt_client.get_stream(100);
