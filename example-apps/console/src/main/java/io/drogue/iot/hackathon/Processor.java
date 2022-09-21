@@ -21,6 +21,7 @@ import io.drogue.iot.hackathon.data.OnOffSet;
 import io.drogue.iot.hackathon.integration.DeviceCommand;
 import io.drogue.iot.hackathon.registry.Registry;
 import io.drogue.iot.hackathon.service.DeviceClaimService;
+import io.drogue.iot.hackathon.service.StillClaimedException;
 import io.quarkus.runtime.Startup;
 import io.smallrye.reactive.messaging.annotations.Broadcast;
 
@@ -82,7 +83,15 @@ public class Processor {
     @Transactional
     public void claimDevice(final String claimId, final String userId, final boolean canCreate) {
         var claim = this.service.claimDevice(claimId, userId, canCreate);
-        this.registry.createDevice(claimId, claim.getProvisioningId());
+        try {
+            this.registry.createDevice(claimId, claim.getProvisioningId());
+        } catch (WebApplicationException e) {
+            if (e.getResponse().getStatus() == 409) {
+                throw new StillClaimedException(claimId);
+            }
+            throw e;
+        }
+
     }
 
     @Transactional

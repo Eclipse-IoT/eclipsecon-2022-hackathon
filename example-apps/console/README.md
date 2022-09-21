@@ -1,10 +1,12 @@
 # EclipseCon 2022 Hackathon Console
 
-This is source code for the EclipseCon 2022 Hackathon console which is where participants can claim the handed-out devices and test device connectivity with the default firmware.
+This is source code for the EclipseCon 2022 Hackathon console which is where participants can claim the handed-out
+devices and test device connectivity with the default firmware.
 
 ## What does it do?
 
-It is a small Quarkus application, which connects to the MQTT integration endpoint of Drogue IoT, the device registry and a database storing device claim status.
+It is a small Quarkus application, which connects to the MQTT integration endpoint of Drogue IoT, the device registry
+and a database storing device claim status.
 
 Once claimed, the application will display messages received from the microbit.
 
@@ -29,6 +31,15 @@ Then start the Quarkus application from your IDE, or using:
 mvn quarkus:dev
 ```
 
+### Frontend
+
+If you also want to work on the frontend, start it in developer mode too:
+
+```shell
+cd src/main/webapp
+npm run start:dev
+```
+
 ### Kubernetes
 
 The repository has a [`deploy/`](/deploy) folder, which contains deployment scripts for Kubernetes.
@@ -42,8 +53,10 @@ All you need do is to fill in the values in the `010-configuration.template.yaml
 ```shell
 mvn package
 podman build . -f src/main/docker/Dockerfile.jvm -t quay.io/ctron/eclipsecon-2022-console:latest
-podman push quay.io/ctron/eclipsecon-2022-console:latest
 ```
+
+**NOTE:** The deployed images are build using OpenShift `BuildConfigs` and are stored in OpenShift's internal image
+registry.
 
 ## What is needed to run this?
 

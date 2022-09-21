@@ -1,7 +1,7 @@
-import { DispatchWithoutAction, useContext, useEffect, useReducer, useState } from "react";
-import { useAuth } from "oidc-react";
-import { EndpointsContext } from "@app/index";
-import { AuthContextProps } from "oidc-react/build/src/AuthContextInterface";
+import {DispatchWithoutAction, useContext, useEffect, useReducer, useState} from "react";
+import {useAuth} from "oidc-react";
+import {EndpointsContext} from "@app/index";
+import {AuthContextProps} from "oidc-react/build/src/AuthContextInterface";
 
 export interface DeviceClaim {
   id: string | null;
@@ -48,7 +48,7 @@ export class Endpoints {
     if (inner) {
       this.inner = inner;
     } else {
-      this.inner = { authServerUrl: "" };
+      this.inner = {authServerUrl: ""};
     }
   }
 
@@ -112,7 +112,7 @@ export class Endpoints {
 
 const useEndpoints = (): Service<Endpoints> => {
 
-  const [endpoints, setEndpoints] = useState<Service<Endpoints>>({ status: "loading" });
+  const [endpoints, setEndpoints] = useState<Service<Endpoints>>({status: "loading"});
 
   useEffect(() => {
     console.log("Fetching backend information");
@@ -128,11 +128,11 @@ const useEndpoints = (): Service<Endpoints> => {
       .then(response => response.json())
       .then(payload => {
         console.log("Loaded endpoints: ", payload);
-        setEndpoints({ status: "loaded", payload: new Endpoints({ ...payload }) });
+        setEndpoints({status: "loaded", payload: new Endpoints({...payload})});
       })
       .catch(error => {
         console.error("Failed to load backend information", error);
-        setEndpoints({ status: "error", error });
+        setEndpoints({status: "error", error});
       });
 
   }, []);
@@ -141,7 +141,7 @@ const useEndpoints = (): Service<Endpoints> => {
 };
 
 const useGameService = (): [Service<DeviceClaim>, DispatchWithoutAction] => {
-  const [result, setResult] = useState<Service<DeviceClaim>>({ status: "loading" });
+  const [result, setResult] = useState<Service<DeviceClaim>>({status: "loading"});
   const auth = useAuth();
   const [trigger, reload] = useReducer((x) => x + 1, 0);
 
@@ -157,15 +157,10 @@ const useGameService = (): [Service<DeviceClaim>, DispatchWithoutAction] => {
         "Authorization": "Bearer " + auth.userData?.access_token
       })
     })
-      .then(response => {
-        if (!response.ok) {
-          throw new Error(`Request failed: ${response.status}: ${response.statusText}`);
-        }
-        return response;
-      })
+      .then(response => checkError(response))
       .then(response => response.json())
-      .then(payload => setResult({ status: "loaded", payload }))
-      .catch(error => setResult({ status: "error", error }));
+      .then(payload => setResult({status: "loaded", payload}))
+      .catch(error => setResult({status: "error", error}));
   }, [auth, trigger, endpoints]);
 
   return [result, reload];
@@ -174,6 +169,37 @@ const useGameService = (): [Service<DeviceClaim>, DispatchWithoutAction] => {
 interface DisplaySettings {
   brightness: number;
   enabled: boolean;
+}
+
+interface RequestError {
+  status: number,
+  statusText: string,
+  message: string,
+  description?: string,
+}
+
+class RequestError extends Error {
+  constructor(response: Response, message: string, description?: string) {
+    super(message);
+    this.status = response.status;
+    this.statusText = response.statusText;
+    this.description = description;
+  }
+}
+
+async function checkError(response: Response, failure?: string): Promise<Response> {
+  const message = failure || "Request failed";
+
+  if (!response.ok) {
+    return await response.text()
+      .then((text) => {
+        console.log("Payload", text);
+        throw new RequestError(response, message, text)
+      });
+  } else {
+    return response;
+  }
+
 }
 
 const setDisplay = async (endpoints: Service<Endpoints>, auth: AuthContextProps, display: DisplaySettings): Promise<Response> => {
@@ -191,12 +217,8 @@ const setDisplay = async (endpoints: Service<Endpoints>, auth: AuthContextProps,
       "Content-Type": "application/json"
     }),
     body: JSON.stringify(display)
-  }).then(response => {
-    if (!response.ok) {
-      throw new Error(`Request failed: ${response.status}: ${response.statusText}`);
-    }
-    return response;
-  });
+  })
+    .then(response => checkError(response));
 
 };
 
@@ -212,12 +234,7 @@ const claimDevice = async (endpoints: Endpoints, claimId: string, accessToken?: 
       "Authorization": "Bearer " + accessToken
     })
   })
-    .then(response => {
-      if (!response.ok) {
-        throw new Error(`Request failed: ${response.status}: ${response.statusText}`);
-      }
-      return response;
-    });
+    .then(response => checkError(response));
 };
 
 const releaseDevice = async (endpoints: Endpoints, accessToken?: string): Promise<Response> => {
@@ -229,12 +246,7 @@ const releaseDevice = async (endpoints: Endpoints, accessToken?: string): Promis
       "Authorization": "Bearer " + accessToken
     })
   })
-    .then(response => {
-      if (!response.ok) {
-        throw new Error(`Request failed: ${response.status}: ${response.statusText}`);
-      }
-      return response;
-    });
+    .then(response => checkError(response));
 };
 
 const createSimulator = async (endpoints: Endpoints, accessToken?: string): Promise<Response> => {
@@ -246,12 +258,7 @@ const createSimulator = async (endpoints: Endpoints, accessToken?: string): Prom
       "Authorization": "Bearer " + accessToken
     })
   })
-    .then(response => {
-      if (!response.ok) {
-        throw new Error(`Request failed: ${response.status}: ${response.statusText}`);
-      }
-      return response;
-    });
+    .then(response => checkError(response));
 };
 
-export { useEndpoints, useGameService, claimDevice, releaseDevice, setDisplay, createSimulator };
+export {useEndpoints, useGameService, claimDevice, releaseDevice, setDisplay, createSimulator};

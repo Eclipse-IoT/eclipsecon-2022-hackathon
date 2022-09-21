@@ -9,6 +9,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.jboss.resteasy.reactive.NoCache;
 
 import io.quarkus.runtime.annotations.RegisterForReflection;
 
@@ -39,6 +40,7 @@ public class EndpointsResource {
     Endpoints endpoints;
 
     @GET
+    @NoCache
     public Endpoints getEndpoints() {
         return this.endpoints;
     }

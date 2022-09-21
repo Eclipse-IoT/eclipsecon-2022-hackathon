@@ -101,7 +101,11 @@ const App: React.FunctionComponent = () => {
               actionClose={actionClose}
               onTimeout={() => removeAlert(key)}
               key={key}
-            ></Alert>);
+            >
+              <React.Fragment>
+                {children}
+              </React.Fragment>
+            </Alert>);
         })}
       </AlertGroup>
 

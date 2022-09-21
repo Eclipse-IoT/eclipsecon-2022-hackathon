@@ -59,7 +59,7 @@ const Dashboard: React.FunctionComponent = () => {
       await claimDevice(endpoints, deviceIdValue, auth.userData?.access_token);
       toasts.addAlert?.(AlertVariant.success, "Claimed device", 5000);
     } catch (err) {
-      toasts.addAlert?.(AlertVariant.danger, `Failed to claim device: ${err}`);
+      toasts.addAlert?.(AlertVariant.danger, `Failed to claim device: ${err} (${err.status} - ${err.statusText})`, err.description);
     }
 
     handleModalToggle();
@@ -71,7 +71,7 @@ const Dashboard: React.FunctionComponent = () => {
       await releaseDevice(endpoints, auth.userData?.access_token);
       toasts.addAlert?.(AlertVariant.success, "Released device", 5000);
     } catch (err) {
-      toasts.addAlert?.(AlertVariant.danger, `Failed to release device: ${err}`);
+      toasts.addAlert?.(AlertVariant.danger, `Failed to release device: ${err} (${err.status} - ${err.statusText})`, err.description);
     }
     reload();
   };
@@ -91,7 +91,7 @@ const Dashboard: React.FunctionComponent = () => {
       await createSimulator(endpoints, auth.userData?.access_token);
       toasts.addAlert?.(AlertVariant.success, "Simulator created", 5000);
     } catch (err) {
-      toasts.addAlert?.(AlertVariant.danger, `Failed to create simulator: ${err}`);
+      toasts.addAlert?.(AlertVariant.danger, `Failed to create simulator: ${err} (${err.status} - ${err.statusText})`, err.description);
     }
     reload();
   };
