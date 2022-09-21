@@ -132,9 +132,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     )));
 
     log::info!("Gateway ready. Press Ctrl+C to quit.");
+
     loop {
         tokio::select! {
             _ = signal::ctrl_c() => {
+                log::info!("Got shutdown signal, terminating...");
                 drop(commands_tx);
                 break
             }
@@ -149,7 +151,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     }
 
+    log::info!("Exited main loop, waiting for tasks to complete");
+
     futures::future::join_all(tasks).await;
+
+    log::info!("Exiting...");
 
     Ok(())
 }
