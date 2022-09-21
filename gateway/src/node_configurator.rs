@@ -106,8 +106,9 @@ pub async fn run<'a>(
             }
             None => {
                 log::info!("No configuration message received");
-                tokio::time::sleep(Duration::from_secs(2)).await;
+                break
             }
         }
     }
+    Ok(())
 }

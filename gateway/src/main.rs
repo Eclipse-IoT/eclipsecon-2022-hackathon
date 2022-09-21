@@ -130,7 +130,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         commands_rx,
         mqtt_client,
     )));
-    tokio::time::sleep(Duration::from_secs(5)).await;
 
     log::info!("Gateway ready. Press Ctrl+C to quit.");
     loop {

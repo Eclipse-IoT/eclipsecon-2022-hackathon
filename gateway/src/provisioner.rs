@@ -271,6 +271,7 @@ pub async fn run(
                         }
                     }
                     Err(_) => {
+                        drop(configure_tx);
                         break
                     }
                 }
