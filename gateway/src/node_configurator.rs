@@ -25,7 +25,7 @@ use crate::provisioner::{NodeConfiguration, NodeConfigurationMessage};
 use btmesh_models::Model;
 use futures::StreamExt;
 
-async fn configure(
+async fn send_recv(
     node: &Node,
     element_control: &mut ElementControl,
     msg: NodeConfiguration<'_>,
@@ -74,6 +74,101 @@ async fn configure(
     }
 }
 
+async fn configure(
+    node: &Node,
+    element_control: &mut ElementControl,
+    element_path: &Path<'_>,
+    uuid: &str,
+    unicast: u16,
+) -> Result<(), anyhow::Error> {
+    log::info!("Add app key");
+    node.add_app_key(element_path.clone(), unicast, 0, 0, false)
+        .await?;
+
+    log::info!("Bind sensor server");
+    let msg = Node::bind_create(unicast, 0, SENSOR_SETUP_SERVER)?;
+    send_recv(
+        node,
+        element_control,
+        NodeConfiguration {
+            message: msg,
+            path: element_path.clone(),
+            address: unicast,
+        },
+    )
+    .await?;
+
+    log::info!("Bind onoff server");
+    let msg = Node::bind_create(unicast, 0, GENERIC_ONOFF_SERVER)?;
+    send_recv(
+        node,
+        element_control,
+        NodeConfiguration {
+            message: msg,
+            path: element_path.clone(),
+            address: unicast,
+        },
+    )
+    .await?;
+
+    log::info!("Bind battery server");
+    let msg = Node::bind_create(unicast, 0, GENERIC_BATTERY_SERVER)?;
+    send_recv(
+        node,
+        element_control,
+        NodeConfiguration {
+            message: msg,
+            path: element_path.clone(),
+            address: unicast,
+        },
+    )
+    .await?;
+
+    let label = LabelUuid::new(Uuid::parse_str("f0bfd803cde184133096f003ea4a3dc2")?.into_bytes())
+        .map_err(|_| std::fmt::Error)?;
+    let pub_address = PublishAddress::Label(label);
+
+    log::info!("Add pub-set for sensor server");
+    let msg = Node::pub_set_create(
+        unicast,
+        pub_address,
+        0,
+        PublishPeriod::new(4, Resolution::Seconds1),
+        PublishRetransmit::from(0),
+        SENSOR_SETUP_SERVER,
+    )?;
+    send_recv(
+        node,
+        element_control,
+        NodeConfiguration {
+            message: msg,
+            path: element_path.clone(),
+            address: unicast,
+        },
+    )
+    .await?;
+    log::info!("Add pub-set for battery server");
+    let msg = Node::pub_set_create(
+        unicast,
+        pub_address,
+        0,
+        PublishPeriod::new(60, Resolution::Seconds1),
+        PublishRetransmit::from(0),
+        GENERIC_BATTERY_SERVER,
+    )?;
+    send_recv(
+        node,
+        element_control,
+        NodeConfiguration {
+            message: msg,
+            path: element_path.clone(),
+            address: unicast,
+        },
+    )
+    .await?;
+    Ok(())
+}
+
 pub async fn run<'a>(
     mut config_rx: Receiver<NodeConfigurationMessage>,
     mqtt_client: mqtt::AsyncClient,
@@ -85,112 +180,33 @@ pub async fn run<'a>(
         match config_rx.recv().await {
             Some(conf) => match conf {
                 NodeConfigurationMessage::Configure(uuid, unicast) => {
-                    log::info!(
-                        "Successfully added node {:?} to the address {:#04x}",
-                        uuid,
-                        unicast
-                    );
+                    log::info!("Configuring node {:?} (address {:#04x})", uuid, unicast);
 
-                    log::info!("Add app key");
-                    node.add_app_key(element_path.clone(), unicast, 0, 0, false)
-                        .await?;
-
-                    log::info!("Bind sensor server");
-                    let msg = Node::bind_create(unicast, 0, SENSOR_SETUP_SERVER)?;
-                    configure(
-                        &node,
-                        &mut element_control,
-                        NodeConfiguration {
-                            message: msg,
-                            path: element_path.clone(),
-                            address: unicast,
-                        },
-                    )
-                    .await?;
-
-                    log::info!("Bind onoff server");
-                    let msg = Node::bind_create(unicast, 0, GENERIC_ONOFF_SERVER)?;
-                    configure(
-                        &node,
-                        &mut element_control,
-                        NodeConfiguration {
-                            message: msg,
-                            path: element_path.clone(),
-                            address: unicast,
-                        },
-                    )
-                    .await?;
-
-                    log::info!("Bind battery server");
-                    let msg = Node::bind_create(unicast, 0, GENERIC_BATTERY_SERVER)?;
-                    configure(
-                        &node,
-                        &mut element_control,
-                        NodeConfiguration {
-                            message: msg,
-                            path: element_path.clone(),
-                            address: unicast,
-                        },
-                    )
-                    .await?;
-
-                    let label = LabelUuid::new(
-                        Uuid::parse_str("f0bfd803cde184133096f003ea4a3dc2")?.into_bytes(),
-                    )
-                    .map_err(|_| std::fmt::Error)?;
-                    let pub_address = PublishAddress::Label(label);
-
-                    log::info!("Add pub-set for sensor server");
-                    let msg = Node::pub_set_create(
-                        unicast,
-                        pub_address,
-                        0,
-                        PublishPeriod::new(4, Resolution::Seconds1),
-                        PublishRetransmit::from(0),
-                        SENSOR_SETUP_SERVER,
-                    )?;
-                    configure(
-                        &node,
-                        &mut element_control,
-                        NodeConfiguration {
-                            message: msg,
-                            path: element_path.clone(),
-                            address: unicast,
-                        },
-                    )
-                    .await?;
-                    log::info!("Add pub-set for battery server");
-                    let msg = Node::pub_set_create(
-                        unicast,
-                        pub_address,
-                        0,
-                        PublishPeriod::new(60, Resolution::Seconds1),
-                        PublishRetransmit::from(0),
-                        GENERIC_BATTERY_SERVER,
-                    )?;
-                    configure(
-                        &node,
-                        &mut element_control,
-                        NodeConfiguration {
-                            message: msg,
-                            path: element_path.clone(),
-                            address: unicast,
-                        },
-                    )
-                    .await?;
-
-                    log::info!(
-                        "Finished configuring {:?} assigned address {:04x}",
-                        uuid,
-                        unicast
-                    );
                     let uuid = uuid.as_simple().to_string();
-                    let status = BtMeshEvent {
-                        status: BtMeshDeviceState::Provisioned {
-                            device: uuid,
-                            address: unicast,
-                        },
-                    };
+                    let status =
+                        match configure(&node, &mut element_control, &element_path, &uuid, unicast)
+                            .await
+                        {
+                            Ok(_) => BtMeshEvent {
+                                status: BtMeshDeviceState::Provisioned {
+                                    device: uuid.clone(),
+                                    address: unicast,
+                                },
+                            },
+                            Err(e) => BtMeshEvent {
+                                status: BtMeshDeviceState::Provisioning {
+                                    device: uuid.clone(),
+                                    error: Some(e.to_string()),
+                                },
+                            },
+                        };
+
+                    log::info!(
+                        "Finished configuring {:?} assigned address {:04x}. Status: {:?}",
+                        uuid,
+                        unicast,
+                        status,
+                    );
 
                     let data = serde_json::to_string(&status)?;
                     let message = mqtt::Message::new("btmesh", data.as_bytes(), 1);
@@ -212,25 +228,25 @@ pub async fn run<'a>(
                         address,
                     };
 
-                    configure(&node, &mut element_control, msg).await?;
+                    if let Ok(_) = send_recv(&node, &mut element_control, msg).await {
+                        let status = BtMeshEvent {
+                            status: BtMeshDeviceState::Reset {
+                                error,
+                                device: device.to_string(),
+                            },
+                        };
 
-                    let status = BtMeshEvent {
-                        status: BtMeshDeviceState::Reset {
-                            error,
-                            device: device.to_string(),
-                        },
-                    };
-
-                    let data = serde_json::to_string(&status)?;
-                    let message = mqtt::Message::new("btmesh", data.as_bytes(), 1);
-                    if let Err(e) = mqtt_client.publish(message).await {
-                        log::warn!("Error publishing reset status: {:?}", e);
+                        let data = serde_json::to_string(&status)?;
+                        let message = mqtt::Message::new("btmesh", data.as_bytes(), 1);
+                        if let Err(e) = mqtt_client.publish(message).await {
+                            log::warn!("Error publishing reset status: {:?}", e);
+                        }
+                        log::info!(
+                            "Device {} (address {}) reset status published",
+                            device,
+                            address
+                        );
                     }
-                    log::info!(
-                        "Device {} (address {}) reset status published",
-                        device,
-                        address
-                    );
                 }
             },
             None => {
