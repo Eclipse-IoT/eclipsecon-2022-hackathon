@@ -90,7 +90,7 @@ pub async fn run<'a>(
                     }
                     NodeConfigurationMessage::Finish(uuid, address) => {
                         log::info!("Finished configuring {:?}", uuid);
-                        let topic = format!("btmesh/{}", uuid.as_simple().to_string());
+                        let topic = format!("btmesh/{}", uuid.as_simple());
                         log::info!("Sending message to topic {}", topic);
                         let status = BtMeshEvent {
                             status: BtMeshDeviceState::Provisioned { address },

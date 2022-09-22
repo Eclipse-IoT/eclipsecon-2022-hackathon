@@ -173,7 +173,7 @@ pub async fn run(
                                    status: BtMeshDeviceState::Provisioning { error: Some(reason) }
                                  };
 
-                                let topic = format!("btmesh/{}", uuid.as_simple().to_string());
+                                let topic = format!("btmesh/{}", uuid.as_simple());
                                 log::info!("Sending message to topic {}", topic);
                                 let data = serde_json::to_string(&status)?;
                                 let message = mqtt::Message::new(topic, data.as_bytes(), 1);
@@ -194,22 +194,23 @@ pub async fn run(
                 let now = Instant::now();
                 let do_provision = provisioned.get(&device).map(|s| now.duration_since(*s) > MAX_CACHED).unwrap_or(true);
                 if do_provision {
-                    provisioned.insert(device.clone(), now);
+                    provisioned.insert(device, now);
                     log::info!("Provisioning {:?}", device);
-                    match node.management.add_node(device.clone()).await {
-                        Ok(_) => {
+                    match node.management.add_node(device).await {
+                        Ok(()) => {
+                            log::info!("Add node completed");
                         }
                         Err(e) => {
+                            log::info!("Provisioning failed: {:?}, publishing status", e);
                             let status = BtMeshEvent {
                                 status: BtMeshDeviceState::Provisioning {
                                     error: Some(e.to_string())
                                 }
                             };
 
-                            let topic = format!("btmesh/{}", device);
+                            let topic = format!("btmesh/{}", device.as_simple());
                             let data = serde_json::to_string(&status)?;
                             let message = mqtt::Message::new(topic, data.as_bytes(), 1);
-                            log::info!("Provisioning failed: {:?}, publishing status", e);
                             if let Err(e) = mqtt_client.publish(message).await {
                                 log::warn!(
                                     "Error publishing provisioning error status: {:?}",
