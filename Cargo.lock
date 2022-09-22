@@ -548,7 +548,7 @@ dependencies = [
 [[package]]
 name = "btmesh-operator"
 version = "0.1.0"
-source = "git+https://github.com/drogue-iot/btmesh-operator.git?branch=main#7d1ecfad185bebba23d2acf72e56e7ca85af9bb7"
+source = "git+https://github.com/drogue-iot/btmesh-operator.git?branch=main#7750e0bde71a56e6e8bd2363b0cc023129b616c0"
 dependencies = [
  "anyhow",
  "base64 0.13.0",
