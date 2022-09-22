@@ -1,5 +1,6 @@
 package io.drogue.iot.hackathon.events;
 
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -20,7 +21,6 @@ import org.slf4j.LoggerFactory;
 
 import io.drogue.iot.hackathon.data.DeviceEvent;
 import io.drogue.iot.hackathon.data.DevicePayload;
-import io.drogue.iot.hackathon.data.DeviceState;
 import io.drogue.iot.hackathon.service.DeviceClaimService;
 import io.quarkus.security.identity.IdentityProviderManager;
 import io.quarkus.security.identity.SecurityIdentity;
@@ -38,9 +38,9 @@ public class EventDispatcher {
 
     private final Map<String, EventSession> sessions = new HashMap<>();
 
-    private final Map<String, DeviceState> latestState = new ConcurrentHashMap<>();
+    private final Map<String, State> latestState = new ConcurrentHashMap<>();
 
-    private final Map<String, BroadcastProcessor<DeviceState>> subscriptions = new ConcurrentHashMap<>();
+    private final Map<String, BroadcastProcessor<State>> subscriptions = new ConcurrentHashMap<>();
 
     public interface DispatcherContext {
         /**
@@ -48,7 +48,7 @@ public class EventDispatcher {
          *
          * @param identity The identity subscribing.
          */
-        Multi<DeviceState> subscribe(SecurityIdentity identity);
+        Multi<State> subscribe(SecurityIdentity identity);
 
         void close(CloseReason closeReason);
     }
@@ -65,7 +65,7 @@ public class EventDispatcher {
         if (event.getDeviceId() == null || event.getPayload() == null || event.getPayload().getState() == null) {
             return;
         }
-        broadcast(event.getDeviceId(), event.getPayload());
+        broadcast(event.getDeviceId(), event.getPayload(), event.getTimestamp());
     }
 
     @PreDestroy
@@ -77,14 +77,13 @@ public class EventDispatcher {
         this.subscriptions.clear();
     }
 
-    void broadcast(@NotNull String deviceId, DevicePayload payload) {
+    void broadcast(@NotNull String deviceId, DevicePayload payload, Instant lastChange) {
         logger.info("Broadcast payload: {}", payload);
 
-        final DeviceState newState;
+        State newState = new State(lastChange, payload.getState());
         if (payload.isPartial()) {
-            newState = this.latestState.merge(deviceId, payload.getState(), DeviceState::merge);
+            newState = this.latestState.merge(deviceId, newState, State::merge);
         } else {
-            newState = payload.getState();
             this.latestState.put(deviceId, newState);
         }
 
@@ -92,13 +91,13 @@ public class EventDispatcher {
                 .onNext(newState);
     }
 
-    BroadcastProcessor<DeviceState> getSubscription(String deviceId) {
+    BroadcastProcessor<State> getSubscription(String deviceId) {
         return this.subscriptions.computeIfAbsent(deviceId, k -> {
             return BroadcastProcessor.create();
         });
     }
 
-    Multi<DeviceState> subscribe(SecurityIdentity identity) {
+    Multi<State> subscribe(SecurityIdentity identity) {
 
         return Multi.createFrom()
                 .uni(Uni.createFrom()
@@ -108,7 +107,7 @@ public class EventDispatcher {
                         .runSubscriptionOn(Infrastructure.getDefaultWorkerPool())
                 )
                 .flatMap(claim -> {
-                    final Multi<DeviceState> stream;
+                    final Multi<State> stream;
 
                     logger.info("Subscribe for: {}", claim);
                     if (claim.isPresent()) {
@@ -131,7 +130,7 @@ public class EventDispatcher {
             this.sessions.put(session.getId(), new EventSession(
                     new DispatcherContext() {
                         @Override
-                        public Multi<DeviceState> subscribe(SecurityIdentity identity) {
+                        public Multi<State> subscribe(SecurityIdentity identity) {
                             return EventDispatcher.this.subscribe(identity);
                         }
 
@@ -178,6 +177,6 @@ public class EventDispatcher {
     }
 
     public void releaseDevice(String deviceId) {
-        broadcast(deviceId, DevicePayload.empty());
+        broadcast(deviceId, DevicePayload.empty(), Instant.now());
     }
 }

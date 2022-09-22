@@ -9,7 +9,6 @@ import javax.websocket.Session;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.drogue.iot.hackathon.data.DeviceState;
 import io.drogue.iot.hackathon.utils.DummyRoutingContext;
 import io.quarkus.oidc.AccessTokenCredential;
 import io.quarkus.security.identity.IdentityProviderManager;
@@ -117,7 +116,7 @@ public class EventSession implements AutoCloseable {
                 .with(this::handleDeviceState);
     }
 
-    private void handleDeviceState(DeviceState state) {
+    private void handleDeviceState(State state) {
         logger.info("Device state [{}]: {}", this.session.getId(), state);
         this.session.getAsyncRemote()
                 .sendText(Json.encode(state));
