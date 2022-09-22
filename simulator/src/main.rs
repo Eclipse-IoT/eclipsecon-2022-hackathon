@@ -35,8 +35,8 @@ struct Args {
     token: Option<String>,
     #[clap(short, long, default_value_t = 10)]
     publish_interval: u64,
-    #[clap(short, long, conflicts_with = "token")]
-    config: Option<String>,
+    #[clap(short, long, conflicts_with = "token", default_value = "./simulator.toml")]
+    config: String,
     #[clap(long, conflicts_with = "token")]
     device: Option<String>,
 }
@@ -99,9 +99,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let registered = mesh.application(root_path.clone(), sim).await?;
 
     let mut node: Option<Node> = None;
-    let mut cfg: NodeConfig = confy::load("node", None)?;
-    let file = confy::get_configuration_file_path("node", None)?;
-    println!("The configuration file path is: {:#?}", file);
+    println!("Loading configuration from {:?}", args.config);
+    let mut cfg: NodeConfig = confy::load_path(std::path::Path::new(&args.config))?;
 
     match args.token {
         Some(token) => {
@@ -186,7 +185,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                             ApplicationMessage::JoinComplete(token) => {
                                 println!("Joined with token {:016x}", token);
                                 cfg.token = Some(format!("{:016x}", token));
-                                confy::store("node",None, &cfg)?;
+                                println!("Storing configuration to {:?}", args.config);
+                                confy::store_path(std::path::Path::new(&args.config), &cfg)?;
                                 println!("Attaching");
                                 node = Some(mesh.attach(root_path.clone(), &format!("{:016x}", token)).await?);
                             },
