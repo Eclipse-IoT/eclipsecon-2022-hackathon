@@ -59,10 +59,28 @@ spec:
 
 == Add new node
 
+* Install dependencies
 * Install https://microshift.io[MicroShift]
 * Connect with ACM
 
-=== Install bluez
+=== Install dependencies
+
+Wifi firmware:
+
+[source,shell]
+----
+sudo dnf install iwl7260-firmware NetworkManager-wifi
+sudo reboot
+----
+
+Then:
+
+[source,shell]
+----
+sudo nmcli device wifi connect <SSID> password <password>
+----
+
+Bluez:
 
 [source,shell]
 ----
