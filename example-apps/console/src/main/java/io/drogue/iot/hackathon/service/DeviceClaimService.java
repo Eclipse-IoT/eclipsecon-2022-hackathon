@@ -83,10 +83,15 @@ public class DeviceClaimService {
      * @param id The claim id.
      * @param provisioningId The provisioning id.
      */
+    @Transactional
     public void createClaim(String id, String provisioningId) {
-        var claim = new Claim();
-        claim.setId(id);
-        claim.setProvisioningId(provisioningId);
-        this.em.merge(claim);
+        var claim = this.em.find(Claim.class, id);
+        if (claim == null) {
+            // currently doesn't exist
+            claim = new Claim();
+            claim.setId(id);
+            claim.setProvisioningId(provisioningId);
+            this.em.persist(claim);
+        }
     }
 }
