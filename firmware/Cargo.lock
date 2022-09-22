@@ -120,7 +120,7 @@ checksum = "bef38d45163c2f1dde094a7dfd33ccf595c92905c8f8f4fdc18d06fb1037718a"
 [[package]]
 name = "btmesh-bearer"
 version = "0.1.0"
-source = "git+https://github.com/drogue-iot/btmesh.git?branch=main#f76615a0731fabaf2b62e8bcb340b937e69ad7fd"
+source = "git+https://github.com/drogue-iot/btmesh.git?branch=main#d6b96cf56336655f9aaeb3814556c914e67b7902"
 dependencies = [
  "btmesh-common",
  "btmesh-pdu",
@@ -131,7 +131,7 @@ dependencies = [
 [[package]]
 name = "btmesh-common"
 version = "0.1.0"
-source = "git+https://github.com/drogue-iot/btmesh.git?branch=main#f76615a0731fabaf2b62e8bcb340b937e69ad7fd"
+source = "git+https://github.com/drogue-iot/btmesh.git?branch=main#d6b96cf56336655f9aaeb3814556c914e67b7902"
 dependencies = [
  "aes",
  "ccm",
@@ -150,7 +150,7 @@ dependencies = [
 [[package]]
 name = "btmesh-device"
 version = "0.1.0"
-source = "git+https://github.com/drogue-iot/btmesh.git?branch=main#f76615a0731fabaf2b62e8bcb340b937e69ad7fd"
+source = "git+https://github.com/drogue-iot/btmesh.git?branch=main#d6b96cf56336655f9aaeb3814556c914e67b7902"
 dependencies = [
  "btmesh-common",
  "btmesh-models",
@@ -165,7 +165,7 @@ dependencies = [
 [[package]]
 name = "btmesh-driver"
 version = "0.1.0"
-source = "git+https://github.com/drogue-iot/btmesh.git?branch=main#f76615a0731fabaf2b62e8bcb340b937e69ad7fd"
+source = "git+https://github.com/drogue-iot/btmesh.git?branch=main#d6b96cf56336655f9aaeb3814556c914e67b7902"
 dependencies = [
  "aes",
  "btmesh-bearer",
@@ -194,7 +194,7 @@ dependencies = [
 [[package]]
 name = "btmesh-macro"
 version = "0.1.0"
-source = "git+https://github.com/drogue-iot/btmesh.git?branch=main#f76615a0731fabaf2b62e8bcb340b937e69ad7fd"
+source = "git+https://github.com/drogue-iot/btmesh.git?branch=main#d6b96cf56336655f9aaeb3814556c914e67b7902"
 dependencies = [
  "btmesh-common",
  "darling 0.14.1",
@@ -208,7 +208,7 @@ dependencies = [
 [[package]]
 name = "btmesh-models"
 version = "0.1.0"
-source = "git+https://github.com/drogue-iot/btmesh.git?branch=main#f76615a0731fabaf2b62e8bcb340b937e69ad7fd"
+source = "git+https://github.com/drogue-iot/btmesh.git?branch=main#d6b96cf56336655f9aaeb3814556c914e67b7902"
 dependencies = [
  "btmesh-common",
  "defmt",
@@ -220,7 +220,7 @@ dependencies = [
 [[package]]
 name = "btmesh-nrf-softdevice"
 version = "0.1.0"
-source = "git+https://github.com/drogue-iot/btmesh.git?branch=main#f76615a0731fabaf2b62e8bcb340b937e69ad7fd"
+source = "git+https://github.com/drogue-iot/btmesh.git?branch=main#d6b96cf56336655f9aaeb3814556c914e67b7902"
 dependencies = [
  "atomic-polyfill 1.0.1",
  "btmesh-bearer",
@@ -243,7 +243,7 @@ dependencies = [
 [[package]]
 name = "btmesh-pdu"
 version = "0.1.0"
-source = "git+https://github.com/drogue-iot/btmesh.git?branch=main#f76615a0731fabaf2b62e8bcb340b937e69ad7fd"
+source = "git+https://github.com/drogue-iot/btmesh.git?branch=main#d6b96cf56336655f9aaeb3814556c914e67b7902"
 dependencies = [
  "btmesh-common",
  "defmt",
