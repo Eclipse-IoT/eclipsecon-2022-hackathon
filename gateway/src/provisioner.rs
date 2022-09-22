@@ -25,7 +25,7 @@ use dbus::Path;
 use paho_mqtt as mqtt;
 use std::{collections::HashMap, sync::Arc, time::Duration};
 use tokio::{
-    sync::{broadcast, mpsc, Mutex},
+    sync::{broadcast, broadcast::error::RecvError, mpsc, Mutex},
     time::{sleep, Instant},
 };
 
@@ -260,8 +260,11 @@ pub async fn run(
                             }
                         }
                     }
-                    Err(e) => {
-                        log::error!("Received command error {:?}", e);
+                    Err(RecvError::Lagged(n))=> {
+                        log::info!("Commanded channel lagged, missed {n} commands");
+                    }
+                    Err(RecvError::Closed) => {
+                        log::warn!("Command channel closed, exiting...");
                         drop(configure_tx);
                         break
                     }

@@ -156,7 +156,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                         if log::log_enabled!(log::Level::Info) {
                             log::info!("Received command: {topic} / {}", String::from_utf8_lossy(&payload) );
                         }
-                        commands_tx.send((topic, payload))?;
+                        commands_tx.send((topic, payload))
+                            .map_err(|err| {
+                                log::warn!("Failed to queue command: {err}");
+                                err
+                            }
+                        )?;
                     }
                     tokio::time::sleep(Duration::from_secs(1)).await;
                 }
