@@ -120,7 +120,7 @@ checksum = "bef38d45163c2f1dde094a7dfd33ccf595c92905c8f8f4fdc18d06fb1037718a"
 [[package]]
 name = "btmesh-bearer"
 version = "0.1.0"
-source = "git+https://github.com/drogue-iot/btmesh.git?branch=main#4fcb222012057ebb4b1e1d402e559c113986d065"
+source = "git+https://github.com/drogue-iot/btmesh.git?branch=main#f76615a0731fabaf2b62e8bcb340b937e69ad7fd"
 dependencies = [
  "btmesh-common",
  "btmesh-pdu",
@@ -131,7 +131,7 @@ dependencies = [
 [[package]]
 name = "btmesh-common"
 version = "0.1.0"
-source = "git+https://github.com/drogue-iot/btmesh.git?branch=main#4fcb222012057ebb4b1e1d402e559c113986d065"
+source = "git+https://github.com/drogue-iot/btmesh.git?branch=main#f76615a0731fabaf2b62e8bcb340b937e69ad7fd"
 dependencies = [
  "aes",
  "ccm",
@@ -150,7 +150,7 @@ dependencies = [
 [[package]]
 name = "btmesh-device"
 version = "0.1.0"
-source = "git+https://github.com/drogue-iot/btmesh.git?branch=main#4fcb222012057ebb4b1e1d402e559c113986d065"
+source = "git+https://github.com/drogue-iot/btmesh.git?branch=main#f76615a0731fabaf2b62e8bcb340b937e69ad7fd"
 dependencies = [
  "btmesh-common",
  "btmesh-models",
@@ -165,7 +165,7 @@ dependencies = [
 [[package]]
 name = "btmesh-driver"
 version = "0.1.0"
-source = "git+https://github.com/drogue-iot/btmesh.git?branch=main#4fcb222012057ebb4b1e1d402e559c113986d065"
+source = "git+https://github.com/drogue-iot/btmesh.git?branch=main#f76615a0731fabaf2b62e8bcb340b937e69ad7fd"
 dependencies = [
  "aes",
  "btmesh-bearer",
@@ -194,7 +194,7 @@ dependencies = [
 [[package]]
 name = "btmesh-macro"
 version = "0.1.0"
-source = "git+https://github.com/drogue-iot/btmesh.git?branch=main#4fcb222012057ebb4b1e1d402e559c113986d065"
+source = "git+https://github.com/drogue-iot/btmesh.git?branch=main#f76615a0731fabaf2b62e8bcb340b937e69ad7fd"
 dependencies = [
  "btmesh-common",
  "darling 0.14.1",
@@ -208,7 +208,7 @@ dependencies = [
 [[package]]
 name = "btmesh-models"
 version = "0.1.0"
-source = "git+https://github.com/drogue-iot/btmesh.git?branch=main#4fcb222012057ebb4b1e1d402e559c113986d065"
+source = "git+https://github.com/drogue-iot/btmesh.git?branch=main#f76615a0731fabaf2b62e8bcb340b937e69ad7fd"
 dependencies = [
  "btmesh-common",
  "defmt",
@@ -220,7 +220,7 @@ dependencies = [
 [[package]]
 name = "btmesh-nrf-softdevice"
 version = "0.1.0"
-source = "git+https://github.com/drogue-iot/btmesh.git?branch=main#4fcb222012057ebb4b1e1d402e559c113986d065"
+source = "git+https://github.com/drogue-iot/btmesh.git?branch=main#f76615a0731fabaf2b62e8bcb340b937e69ad7fd"
 dependencies = [
  "atomic-polyfill 1.0.1",
  "btmesh-bearer",
@@ -243,7 +243,7 @@ dependencies = [
 [[package]]
 name = "btmesh-pdu"
 version = "0.1.0"
-source = "git+https://github.com/drogue-iot/btmesh.git?branch=main#4fcb222012057ebb4b1e1d402e559c113986d065"
+source = "git+https://github.com/drogue-iot/btmesh.git?branch=main#f76615a0731fabaf2b62e8bcb340b937e69ad7fd"
 dependencies = [
  "btmesh-common",
  "defmt",
@@ -623,7 +623,7 @@ dependencies = [
 [[package]]
 name = "embassy-cortex-m"
 version = "0.1.0"
-source = "git+https://github.com/embassy-rs/embassy.git?branch=master#66633902240a70eaf7b2bc6db285884ccdd8182f"
+source = "git+https://github.com/embassy-rs/embassy.git?branch=master#3b58ac1bf86a2373e479e8e3cf92d2df7c29e00b"
 dependencies = [
  "atomic-polyfill 1.0.1",
  "cfg-if",
@@ -638,7 +638,7 @@ dependencies = [
 [[package]]
 name = "embassy-embedded-hal"
 version = "0.1.0"
-source = "git+https://github.com/embassy-rs/embassy.git?branch=master#66633902240a70eaf7b2bc6db285884ccdd8182f"
+source = "git+https://github.com/embassy-rs/embassy.git?branch=master#3b58ac1bf86a2373e479e8e3cf92d2df7c29e00b"
 dependencies = [
  "embassy-sync",
  "embedded-hal 0.2.7",
@@ -652,7 +652,7 @@ dependencies = [
 [[package]]
 name = "embassy-executor"
 version = "0.1.0"
-source = "git+https://github.com/embassy-rs/embassy.git?branch=master#66633902240a70eaf7b2bc6db285884ccdd8182f"
+source = "git+https://github.com/embassy-rs/embassy.git?branch=master#3b58ac1bf86a2373e479e8e3cf92d2df7c29e00b"
 dependencies = [
  "atomic-polyfill 1.0.1",
  "cfg-if",
@@ -672,12 +672,12 @@ checksum = "47e5367165d347c039360f784812f493b001583ab6a3dd8622f4ce9c30374ec3"
 [[package]]
 name = "embassy-futures"
 version = "0.1.0"
-source = "git+https://github.com/embassy-rs/embassy.git?branch=master#66633902240a70eaf7b2bc6db285884ccdd8182f"
+source = "git+https://github.com/embassy-rs/embassy.git?branch=master#3b58ac1bf86a2373e479e8e3cf92d2df7c29e00b"
 
 [[package]]
 name = "embassy-hal-common"
 version = "0.1.0"
-source = "git+https://github.com/embassy-rs/embassy.git?branch=master#66633902240a70eaf7b2bc6db285884ccdd8182f"
+source = "git+https://github.com/embassy-rs/embassy.git?branch=master#3b58ac1bf86a2373e479e8e3cf92d2df7c29e00b"
 dependencies = [
  "num-traits",
 ]
@@ -685,7 +685,7 @@ dependencies = [
 [[package]]
 name = "embassy-macros"
 version = "0.1.0"
-source = "git+https://github.com/embassy-rs/embassy.git?branch=master#66633902240a70eaf7b2bc6db285884ccdd8182f"
+source = "git+https://github.com/embassy-rs/embassy.git?branch=master#3b58ac1bf86a2373e479e8e3cf92d2df7c29e00b"
 dependencies = [
  "darling 0.13.4",
  "proc-macro2",
@@ -696,7 +696,7 @@ dependencies = [
 [[package]]
 name = "embassy-nrf"
 version = "0.1.0"
-source = "git+https://github.com/embassy-rs/embassy.git?branch=master#66633902240a70eaf7b2bc6db285884ccdd8182f"
+source = "git+https://github.com/embassy-rs/embassy.git?branch=master#3b58ac1bf86a2373e479e8e3cf92d2df7c29e00b"
 dependencies = [
  "cfg-if",
  "cortex-m",
@@ -723,7 +723,7 @@ dependencies = [
 [[package]]
 name = "embassy-sync"
 version = "0.1.0"
-source = "git+https://github.com/embassy-rs/embassy.git?branch=master#66633902240a70eaf7b2bc6db285884ccdd8182f"
+source = "git+https://github.com/embassy-rs/embassy.git?branch=master#3b58ac1bf86a2373e479e8e3cf92d2df7c29e00b"
 dependencies = [
  "atomic-polyfill 1.0.1",
  "cfg-if",
@@ -736,7 +736,7 @@ dependencies = [
 [[package]]
 name = "embassy-time"
 version = "0.1.0"
-source = "git+https://github.com/embassy-rs/embassy.git?branch=master#66633902240a70eaf7b2bc6db285884ccdd8182f"
+source = "git+https://github.com/embassy-rs/embassy.git?branch=master#3b58ac1bf86a2373e479e8e3cf92d2df7c29e00b"
 dependencies = [
  "atomic-polyfill 1.0.1",
  "cfg-if",
@@ -750,7 +750,7 @@ dependencies = [
 [[package]]
 name = "embassy-usb"
 version = "0.1.0"
-source = "git+https://github.com/embassy-rs/embassy.git?branch=master#66633902240a70eaf7b2bc6db285884ccdd8182f"
+source = "git+https://github.com/embassy-rs/embassy.git?branch=master#3b58ac1bf86a2373e479e8e3cf92d2df7c29e00b"
 dependencies = [
  "embassy-futures 0.1.0 (git+https://github.com/embassy-rs/embassy.git?branch=master)",
  "heapless",
@@ -985,9 +985,9 @@ checksum = "c0f80d65747a3e43d1596c7c5492d95d5edddaabd45a7fcdb02b95f644164966"
 
 [[package]]
 name = "lock_api"
-version = "0.4.8"
+version = "0.4.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9f80bf5aacaf25cbfc8210d1cfb718f2bf3b11c4c54e5afe36c236853a8ec390"
+checksum = "435011366fe56583b16cf956f9df0095b405b82d76425bc8981c0e22e60ec4df"
 dependencies = [
  "autocfg",
  "scopeguard",
@@ -1046,7 +1046,7 @@ checksum = "546c37ac5d9e56f55e73b677106873d9d9f5190605e41a856503623648488cae"
 [[package]]
 name = "nrf-softdevice"
 version = "0.1.0"
-source = "git+https://github.com/embassy-rs/nrf-softdevice.git?branch=master#11c2728235bef45ba34b735e3975344e2641f0b9"
+source = "git+https://github.com/embassy-rs/nrf-softdevice.git?branch=master#fb9605a108ba45eb022ac9ce7f7be7041efe9523"
 dependencies = [
  "cortex-m",
  "cortex-m-rt",
@@ -1065,7 +1065,7 @@ dependencies = [
 [[package]]
 name = "nrf-softdevice-macro"
 version = "0.1.0"
-source = "git+https://github.com/embassy-rs/nrf-softdevice.git?branch=master#11c2728235bef45ba34b735e3975344e2641f0b9"
+source = "git+https://github.com/embassy-rs/nrf-softdevice.git?branch=master#fb9605a108ba45eb022ac9ce7f7be7041efe9523"
 dependencies = [
  "Inflector",
  "darling 0.10.2",
@@ -1078,7 +1078,7 @@ dependencies = [
 [[package]]
 name = "nrf-softdevice-s140"
 version = "0.1.1"
-source = "git+https://github.com/embassy-rs/nrf-softdevice.git?branch=master#11c2728235bef45ba34b735e3975344e2641f0b9"
+source = "git+https://github.com/embassy-rs/nrf-softdevice.git?branch=master#fb9605a108ba45eb022ac9ce7f7be7041efe9523"
 
 [[package]]
 name = "nrf52833-pac"
