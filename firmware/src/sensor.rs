@@ -46,7 +46,7 @@ impl Sensor {
         accel.y = status.y as i16;
         accel.z = status.z as i16;
 
-        // TODO Micrphone - Read the sound level data and add to sensor payload,
+        // TODO Microphone - Read the sound level data and add to sensor payload,
         let noise: u8 = self.mic.sound_level().await;
 
         Ok(SensorPayload {
