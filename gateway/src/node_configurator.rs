@@ -102,11 +102,36 @@ pub async fn run<'a>(
                             log::warn!("Error publishing provisioning status: {:?}", e);
                         }
                     }
+                    NodeConfigurationMessage::Reset(device, address, error) => {
+                        let topic = "btmesh";
+                        log::info!(
+                            "Resetting device {} (address {}), publishing response",
+                            device,
+                            address
+                        );
+                        let status = BtMeshEvent {
+                            status: BtMeshDeviceState::Reset {
+                                error,
+                                device: device.to_string(),
+                            },
+                        };
+
+                        let data = serde_json::to_string(&status)?;
+                        let message = mqtt::Message::new(topic, data.as_bytes(), 1);
+                        if let Err(e) = mqtt_client.publish(message).await {
+                            log::warn!("Error publishing reset status: {:?}", e);
+                        }
+                        log::info!(
+                            "Device {} (address {}) reset status published",
+                            device,
+                            address
+                        );
+                    }
                 }
             }
             None => {
                 log::info!("No configuration message received");
-                break
+                break;
             }
         }
     }

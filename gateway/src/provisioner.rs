@@ -14,6 +14,7 @@ use btmesh_common::address::LabelUuid;
 use btmesh_models::{
     foundation::configuration::{
         model_publication::{PublishAddress, PublishPeriod, PublishRetransmit, Resolution},
+        node_reset::NodeResetMessage,
         ConfigurationClient, ConfigurationMessage, ConfigurationServer,
     },
     generic::{battery::GENERIC_BATTERY_SERVER, onoff::GENERIC_ONOFF_SERVER},
@@ -25,7 +26,7 @@ use paho_mqtt as mqtt;
 use std::{collections::HashMap, sync::Arc, time::Duration};
 use tokio::{
     sync::{broadcast, mpsc, Mutex},
-    time::{Instant, sleep},
+    time::{sleep, Instant},
 };
 
 pub struct Config {
@@ -143,7 +144,7 @@ pub async fn run(
                                 let label = LabelUuid::new(Uuid::parse_str("f0bfd803cde184133096f003ea4a3dc2")?.into_bytes()).map_err(|_| std::fmt::Error)?;
                                 let pub_address = PublishAddress::Label(label);
                                 log::info!("Add pub-set for sensor server");
-                                let msg = Node::pub_set_create(unicast, pub_address, 0, PublishPeriod::new(3, Resolution::Seconds1), PublishRetransmit::from(0), SENSOR_SETUP_SERVER)?;
+                                let msg = Node::pub_set_create(unicast, pub_address, 0, PublishPeriod::new(1, Resolution::Seconds1), PublishRetransmit::from(0), SENSOR_SETUP_SERVER)?;
                                 let config = NodeConfigurationMessage::Configure(
                                     NodeConfiguration {
                                         message: msg,
@@ -153,7 +154,7 @@ pub async fn run(
                                 );
                                 configure_tx.send(config).await?;
                                 log::info!("Add pub-set for battery server");
-                                let msg = Node::pub_set_create(unicast, pub_address, 0, PublishPeriod::new(3, Resolution::Seconds1), PublishRetransmit::from(0), GENERIC_BATTERY_SERVER)?;
+                                let msg = Node::pub_set_create(unicast, pub_address, 0, PublishPeriod::new(30, Resolution::Seconds1), PublishRetransmit::from(0), GENERIC_BATTERY_SERVER)?;
                                 let config = NodeConfigurationMessage::Configure(
                                     NodeConfiguration {
                                         message: msg,
@@ -239,40 +240,25 @@ pub async fn run(
                                     address,
                                     device,
                                 } => {
-                                    let topic = "btmesh";
-                                    log::info!("Resetting device, publishing response to {}", topic);
-                                    let mut error = None;
-
-                                    for _ in 0..5 {
-                                        error = match node.reset(element_path.clone(), address).await {
-                                            Ok(_) => {
-                                                None
-                                            }
-                                            Err(e) => {
-                                                Some(e.to_string())
-                                            }
-                                        };
-                                    }
-                                    let status = BtMeshEvent {
-                                        status: BtMeshDeviceState::Reset {
-                                            error,
-                                            device: device.to_string(),
+                                    let msg = ConfigurationMessage::from(NodeResetMessage::Reset);
+                                    match configure_tx.send(NodeConfigurationMessage::Configure(NodeConfiguration {
+                                            message: msg,
+                                            path: element_path.clone(),
+                                            address: address,
+                                        })).await {
+                                        Ok(_) => {
+                                            configure_tx.send(NodeConfigurationMessage::Reset(device, address, None)).await?;
                                         }
-                                    };
-
-                                    let data = serde_json::to_string(&status)?;
-                                    let message = mqtt::Message::new(topic, data.as_bytes(), 1);
-                                    if let Err(e) = mqtt_client.publish(message).await {
-                                        log::warn!(
-                                            "Error publishing reset status: {:?}",
-                                            e
-                                        );
+                                        Err(e) => {
+                                            configure_tx.send(NodeConfigurationMessage::Reset(device, address, Some(e.to_string()))).await?;
+                                        }
                                     }
                                 }
                             }
                         }
                     }
-                    Err(_) => {
+                    Err(e) => {
+                        println!("Error in commands.recv: {:?}", e);
                         drop(configure_tx);
                         break
                     }
@@ -292,6 +278,7 @@ pub async fn run(
 #[derive(Debug)]
 pub enum NodeConfigurationMessage<'a> {
     Configure(NodeConfiguration<'a>),
+    Reset(String, u16, Option<String>),
     Finish(Uuid, u16),
 }
 
