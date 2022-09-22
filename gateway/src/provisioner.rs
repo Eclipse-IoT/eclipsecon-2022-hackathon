@@ -235,6 +235,8 @@ pub async fn run(
                                 } => {
                                     if let Ok(uuid) = Uuid::parse_str(&device) {
                                         provision_tx.send(uuid).await?;
+                                    } else {
+                                        log::error!("Wrong device uuid {:?}", device);
                                     }
                                 }
                                 BtMeshOperation::Reset {
@@ -259,7 +261,7 @@ pub async fn run(
                         }
                     }
                     Err(e) => {
-                        println!("Error in commands.recv: {:?}", e);
+                        log::error!("Received command error {:?}", e);
                         drop(configure_tx);
                         break
                     }

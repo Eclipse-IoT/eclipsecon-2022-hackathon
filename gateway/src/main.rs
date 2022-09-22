@@ -135,7 +135,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     tasks.push(tokio::spawn(gateway::run(
         mesh,
         gateway::Config::new(args.token),
-        commands_rx,
+        commands_tx.subscribe(),
         mqtt_client,
     )));
 
