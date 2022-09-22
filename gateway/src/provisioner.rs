@@ -169,14 +169,13 @@ pub async fn run(
                             ProvisionerMessage::AddNodeFailed(uuid, reason) => {
                                 log::info!("Failed to add node {:?}: '{:?}'", uuid, reason);
 
+                                let device = uuid.as_simple().to_string();
                                  let status = BtMeshEvent {
-                                   status: BtMeshDeviceState::Provisioning { error: Some(reason) }
+                                   status: BtMeshDeviceState::Provisioning { device, error: Some(reason) }
                                  };
 
-                                let topic = format!("btmesh/{}", uuid.as_simple());
-                                log::info!("Sending message to topic {}", topic);
                                 let data = serde_json::to_string(&status)?;
-                                let message = mqtt::Message::new(topic, data.as_bytes(), 1);
+                                let message = mqtt::Message::new("btmesh", data.as_bytes(), 1);
                                 if let Err(e) = mqtt_client.publish(message).await {
                                     log::warn!(
                                         "Error publishing provisioning status: {:?}",
@@ -189,39 +188,40 @@ pub async fn run(
                     None => break,
                 }
             },
-            Some(device) = provision_rx.recv() => {
+            Some(uuid) = provision_rx.recv() => {
                 const MAX_CACHED: Duration = Duration::from_secs(30);
                 let now = Instant::now();
-                let do_provision = provisioned.get(&device).map(|s| now.duration_since(*s) > MAX_CACHED).unwrap_or(true);
+                let do_provision = provisioned.get(&uuid).map(|s| now.duration_since(*s) > MAX_CACHED).unwrap_or(true);
                 if do_provision {
-                    provisioned.insert(device, now);
-                    log::info!("Provisioning {:?}", device);
-                    match node.management.add_node(device).await {
-                        Ok(()) => {
-                            log::info!("Add node completed");
+                    provisioned.insert(uuid, now);
+                    log::info!("Provisioning {:?}", uuid);
+                    match node.management.add_node(uuid).await {
+                        Ok(_) => {
+                            log::info!("Add node started");
                         }
                         Err(e) => {
                             log::info!("Provisioning failed: {:?}, publishing status", e);
                             let status = BtMeshEvent {
                                 status: BtMeshDeviceState::Provisioning {
+                                    device: uuid.as_simple().to_string(),
                                     error: Some(e.to_string())
                                 }
                             };
 
-                            let topic = format!("btmesh/{}", device.as_simple());
                             let data = serde_json::to_string(&status)?;
-                            let message = mqtt::Message::new(topic, data.as_bytes(), 1);
+                            let message = mqtt::Message::new("btmesh", data.as_bytes(), 1);
+                            log::info!("Provisioning failed: {:?}, publishing status", e);
                             if let Err(e) = mqtt_client.publish(message).await {
                                 log::warn!(
                                     "Error publishing provisioning error status: {:?}",
                                     e
                                 );
                             }
-                            provisioned.remove(&device);
+                            provisioned.remove(&uuid);
                         }
                     }
                 } else {
-                    log::warn!("Device {} already provisioned, ignoring", device);
+                    log::warn!("Device {} already provisioned, ignoring", uuid);
                 }
             },
             command = commands.recv() => {
@@ -231,7 +231,7 @@ pub async fn run(
                             log::info!("Parsed command payload: {:?}", data);
                             match data.command {
                                 BtMeshOperation::Provision {
-                                    device
+                                    device,
                                 } => {
                                     if let Ok(uuid) = Uuid::parse_str(&device) {
                                         provision_tx.send(uuid).await?;

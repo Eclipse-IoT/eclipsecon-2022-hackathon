@@ -89,21 +89,26 @@ pub async fn run<'a>(
                         }
                     }
                     NodeConfigurationMessage::Finish(uuid, address) => {
-                        log::info!("Finished configuring {:?}", uuid);
-                        let topic = format!("btmesh/{}", uuid.as_simple());
-                        log::info!("Sending message to topic {}", topic);
+                        log::info!(
+                            "Finished configuring {:?} assigned address {:04x}",
+                            uuid,
+                            address
+                        );
+                        let uuid = uuid.as_simple().to_string();
                         let status = BtMeshEvent {
-                            status: BtMeshDeviceState::Provisioned { address },
+                            status: BtMeshDeviceState::Provisioned {
+                                device: uuid,
+                                address,
+                            },
                         };
 
                         let data = serde_json::to_string(&status)?;
-                        let message = mqtt::Message::new(topic, data.as_bytes(), 1);
+                        let message = mqtt::Message::new("btmesh", data.as_bytes(), 1);
                         if let Err(e) = mqtt_client.publish(message).await {
                             log::warn!("Error publishing provisioning status: {:?}", e);
                         }
                     }
                     NodeConfigurationMessage::Reset(device, address, error) => {
-                        let topic = "btmesh";
                         log::info!(
                             "Resetting device {} (address {}), publishing response",
                             device,
@@ -117,7 +122,7 @@ pub async fn run<'a>(
                         };
 
                         let data = serde_json::to_string(&status)?;
-                        let message = mqtt::Message::new(topic, data.as_bytes(), 1);
+                        let message = mqtt::Message::new("btmesh", data.as_bytes(), 1);
                         if let Err(e) = mqtt_client.publish(message).await {
                             log::warn!("Error publishing reset status: {:?}", e);
                         }

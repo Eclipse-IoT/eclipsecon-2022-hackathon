@@ -10,6 +10,7 @@ btmesh-models = { version = "0.1.0" }
 heapless = "0.7"
 anyhow = "1"
 btmesh-operator = { git = "https://github.com/drogue-iot/btmesh-operator.git", branch = "main" }
+#btmesh-operator = { path = "../../drogue-iot/btmesh-operator" }
 rand = "0.8"
 console-subscriber = "0.1"
 

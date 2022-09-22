@@ -124,7 +124,7 @@ pub async fn run(
                                 let message = mqtt::Message::new(topic, data.as_bytes(), 1);
                                 if let Err(e) = mqtt_client.publish(message).await {
                                     log::warn!(
-                                        "Error publishing command back to device: {:?}",
+                                        "Error publishing events from device device: {:?}",
                                         e
                                     );
                                 }
