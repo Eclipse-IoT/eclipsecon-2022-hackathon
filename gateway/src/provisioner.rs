@@ -10,15 +10,8 @@ use bluer::{
     },
     Uuid,
 };
-use btmesh_common::address::LabelUuid;
-use btmesh_models::{
-    foundation::configuration::{
-        model_publication::{PublishAddress, PublishPeriod, PublishRetransmit, Resolution},
-        node_reset::NodeResetMessage,
-        ConfigurationClient, ConfigurationMessage, ConfigurationServer,
-    },
-    generic::{battery::GENERIC_BATTERY_SERVER, onoff::GENERIC_ONOFF_SERVER},
-    sensor::SENSOR_SETUP_SERVER,
+use btmesh_models::foundation::configuration::{
+    ConfigurationClient, ConfigurationMessage, ConfigurationServer,
 };
 use btmesh_operator::{BtMeshCommand, BtMeshDeviceState, BtMeshEvent, BtMeshOperation};
 use dbus::Path;
@@ -92,6 +85,7 @@ pub async fn run(
     tasks.push(tokio::spawn(node_configurator::run(
         configure_rx,
         mqtt_client.clone(),
+        element_path.clone(),
         element_control,
         node.clone(),
     )));
@@ -104,67 +98,7 @@ pub async fn run(
                     Some(msg) => {
                         match msg {
                             ProvisionerMessage::AddNodeComplete(uuid, unicast, count) => {
-                                log::info!("Successfully added node {:?} to the address {:#04x} with {:?} elements", uuid, unicast, count);
-
-                                log::info!("Add app key");
-                                node.add_app_key(element_path.clone(), unicast, 0, 0, false).await?;
-
-                                log::info!("Bind sensor server");
-                                let msg = Node::bind_create(unicast, 0, SENSOR_SETUP_SERVER)?;
-                                let config = NodeConfigurationMessage::Configure(
-                                    NodeConfiguration {
-                                        message: msg,
-                                        path: element_path.clone(),
-                                        address: unicast,
-                                    }
-                                );
-                                configure_tx.send(config).await?;
-                                log::info!("Bind onoff server");
-                                let msg = Node::bind_create(unicast, 0, GENERIC_ONOFF_SERVER)?;
-                                let config = NodeConfigurationMessage::Configure(
-                                    NodeConfiguration {
-                                        message: msg,
-                                        path: element_path.clone(),
-                                        address: unicast,
-                                    }
-                                );
-                                configure_tx.send(config).await?;
-
-                                log::info!("Bind battery server");
-                                let msg = Node::bind_create(unicast, 0, GENERIC_BATTERY_SERVER)?;
-                                let config = NodeConfigurationMessage::Configure(
-                                    NodeConfiguration {
-                                        message: msg,
-                                        path: element_path.clone(),
-                                        address: unicast,
-                                    }
-                                );
-                                configure_tx.send(config).await?;
-
-                                let label = LabelUuid::new(Uuid::parse_str("f0bfd803cde184133096f003ea4a3dc2")?.into_bytes()).map_err(|_| std::fmt::Error)?;
-                                let pub_address = PublishAddress::Label(label);
-                                log::info!("Add pub-set for sensor server");
-                                let msg = Node::pub_set_create(unicast, pub_address, 0, PublishPeriod::new(1, Resolution::Seconds1), PublishRetransmit::from(0), SENSOR_SETUP_SERVER)?;
-                                let config = NodeConfigurationMessage::Configure(
-                                    NodeConfiguration {
-                                        message: msg,
-                                        path: element_path.clone(),
-                                        address: unicast,
-                                    }
-                                );
-                                configure_tx.send(config).await?;
-                                log::info!("Add pub-set for battery server");
-                                let msg = Node::pub_set_create(unicast, pub_address, 0, PublishPeriod::new(30, Resolution::Seconds1), PublishRetransmit::from(0), GENERIC_BATTERY_SERVER)?;
-                                let config = NodeConfigurationMessage::Configure(
-                                    NodeConfiguration {
-                                        message: msg,
-                                        path: element_path.clone(),
-                                        address: unicast,
-                                    }
-                                );
-                                configure_tx.send(config).await?;
-
-                                configure_tx.send(NodeConfigurationMessage::Finish(uuid, unicast)).await?;
+                                configure_tx.send(NodeConfigurationMessage::Configure(uuid, unicast)).await?;
                             },
                             ProvisionerMessage::AddNodeFailed(uuid, reason) => {
                                 log::info!("Failed to add node {:?}: '{:?}'", uuid, reason);
@@ -243,19 +177,7 @@ pub async fn run(
                                     address,
                                     device,
                                 } => {
-                                    let msg = ConfigurationMessage::from(NodeResetMessage::Reset);
-                                    match configure_tx.send(NodeConfigurationMessage::Configure(NodeConfiguration {
-                                            message: msg,
-                                            path: element_path.clone(),
-                                            address: address,
-                                        })).await {
-                                        Ok(_) => {
-                                            configure_tx.send(NodeConfigurationMessage::Reset(device, address, None)).await?;
-                                        }
-                                        Err(e) => {
-                                            configure_tx.send(NodeConfigurationMessage::Reset(device, address, Some(e.to_string()))).await?;
-                                        }
-                                    }
+                                    configure_tx.send(NodeConfigurationMessage::Reset(device, address, None)).await?;
                                 }
                             }
                         }
@@ -282,10 +204,9 @@ pub async fn run(
 }
 
 #[derive(Debug)]
-pub enum NodeConfigurationMessage<'a> {
-    Configure(NodeConfiguration<'a>),
+pub enum NodeConfigurationMessage {
+    Configure(Uuid, u16),
     Reset(String, u16, Option<String>),
-    Finish(Uuid, u16),
 }
 
 #[derive(Debug)]
