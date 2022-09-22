@@ -5,6 +5,7 @@ import io.quarkus.runtime.annotations.RegisterForReflection;
 @RegisterForReflection
 public class DevicePayload {
     private final boolean partial;
+
     private final DeviceState state;
 
     public DevicePayload(boolean partial, DeviceState state) {
@@ -13,18 +14,22 @@ public class DevicePayload {
     }
 
     public boolean isPartial() {
-        return partial;
+        return this.partial;
     }
 
     public DeviceState getState() {
-        return state;
+        return this.state;
     }
 
     @Override
     public String toString() {
         return "DevicePayload{" +
-                "partial=" + partial +
-                ", state=" + state +
+                "partial=" + this.partial +
+                ", state=" + this.state +
                 '}';
+    }
+
+    public static DevicePayload empty() {
+        return new DevicePayload(false, new DeviceState());
     }
 }

@@ -18,6 +18,7 @@ import io.drogue.iot.hackathon.data.CommandPayload;
 import io.drogue.iot.hackathon.data.DeviceEvent;
 import io.drogue.iot.hackathon.data.DisplaySettings;
 import io.drogue.iot.hackathon.data.OnOffSet;
+import io.drogue.iot.hackathon.events.EventDispatcher;
 import io.drogue.iot.hackathon.integration.DeviceCommand;
 import io.drogue.iot.hackathon.registry.Registry;
 import io.drogue.iot.hackathon.service.DeviceClaimService;
@@ -80,6 +81,9 @@ public class Processor {
     @Inject
     DeviceClaimService service;
 
+    @Inject
+    EventDispatcher dispatcher;
+
     @Transactional
     public void claimDevice(final String claimId, final String userId, final boolean canCreate) {
         var claim = this.service.claimDevice(claimId, userId, canCreate);
@@ -105,14 +109,18 @@ public class Processor {
     @Transactional
     public void releaseDevice(final String userId) {
         var claim = this.service.getDeviceClaimFor(userId);
-        try {
-            claim.ifPresent(deviceClaim -> this.registry.deleteDevice(deviceClaim.getId()));
-        } catch (WebApplicationException e) {
-            if (e.getResponse().getStatus() != 404) {
-                // ignore 404
-                throw e;
+        claim.ifPresent(deviceClaim -> {
+            try {
+                this.registry.deleteDevice(deviceClaim.getId());
+            } catch (WebApplicationException e) {
+                if (e.getResponse().getStatus() != 404) {
+                    // ignore 404
+                    throw e;
+                }
             }
-        }
+            this.dispatcher.releaseDevice(deviceClaim.getId());
+        });
+
         this.service.releaseDevice(userId);
     }
 }

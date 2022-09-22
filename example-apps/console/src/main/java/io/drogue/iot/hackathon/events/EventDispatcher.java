@@ -19,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.drogue.iot.hackathon.data.DeviceEvent;
+import io.drogue.iot.hackathon.data.DevicePayload;
 import io.drogue.iot.hackathon.data.DeviceState;
 import io.drogue.iot.hackathon.service.DeviceClaimService;
 import io.quarkus.security.identity.IdentityProviderManager;
@@ -64,7 +65,7 @@ public class EventDispatcher {
         if (event.getDeviceId() == null || event.getPayload() == null || event.getPayload().getState() == null) {
             return;
         }
-        broadcast(event.getDeviceId(), event);
+        broadcast(event.getDeviceId(), event.getPayload());
     }
 
     @PreDestroy
@@ -76,14 +77,14 @@ public class EventDispatcher {
         this.subscriptions.clear();
     }
 
-    void broadcast(@NotNull String deviceId, DeviceEvent event) {
-        logger.info("Broadcast event: {}", event);
+    void broadcast(@NotNull String deviceId, DevicePayload payload) {
+        logger.info("Broadcast payload: {}", payload);
 
         final DeviceState newState;
-        if (event.getPayload().isPartial()) {
-            newState = this.latestState.merge(deviceId, event.getPayload().getState(), DeviceState::merge);
+        if (payload.isPartial()) {
+            newState = this.latestState.merge(deviceId, payload.getState(), DeviceState::merge);
         } else {
-            newState = event.getPayload().getState();
+            newState = payload.getState();
             this.latestState.put(deviceId, newState);
         }
 
@@ -139,7 +140,7 @@ public class EventDispatcher {
                             try {
                                 session.close(closeReason);
                             } catch (Exception e) {
-                                logger.warn("Failed to close session", e);
+                                EventDispatcher.logger.warn("Failed to close session", e);
                             }
                         }
                     },
@@ -174,5 +175,9 @@ public class EventDispatcher {
         } finally {
             this.sessionsLock.readLock().unlock();
         }
+    }
+
+    public void releaseDevice(String deviceId) {
+        broadcast(deviceId, DevicePayload.empty());
     }
 }
