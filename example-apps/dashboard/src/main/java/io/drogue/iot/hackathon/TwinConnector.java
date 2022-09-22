@@ -77,14 +77,14 @@ public class TwinConnector {
         this.connecting = this.client.getTokens()
                 .flatMap(tokens -> {
 
-                    var secure = this.apiUrl.getScheme().equals("https");
-                    var uri = UriBuilder.fromUri(this.apiUrl)
+                    final var secure = this.apiUrl.getScheme().equals("https");
+                    final var uri = UriBuilder.fromUri(this.apiUrl)
                             .scheme(secure ? "wss" : "ws")
                             .path("/api/v1alpha1/things/{application}/notifications")
                             .queryParam("token", tokens.getAccessToken())
                             .build(this.application);
 
-                    var host = uri.getHost();
+                    final var host = uri.getHost();
                     var port = uri.getPort();
 
                     if (port <= 0) {
@@ -102,7 +102,7 @@ public class TwinConnector {
                 .with(this::connected, this::failed);
     }
 
-    private void connected(WebSocket webSocket) {
+    private void connected(final WebSocket webSocket) {
         logger.info("Connected");
         webSocket
                 .textMessageHandler(this::onMessage)
@@ -120,7 +120,7 @@ public class TwinConnector {
         reconnect();
     }
 
-    private void failed(Throwable throwable) {
+    private void failed(final Throwable throwable) {
         logger.info("Connect failed", throwable);
         this.ws = null;
         this.connecting = null;
@@ -151,48 +151,48 @@ public class TwinConnector {
 
     }
 
-    private void onMessage(String message) {
+    private void onMessage(final String message) {
         logger.info("onMessage: {}", message);
-        var json = new JsonObject(message);
-        var type = json.getString("type");
+        final var json = new JsonObject(message);
+        final var type = json.getString("type");
 
         try {
             if ("change".equals(type)) {
-                var thing = json.getJsonObject("thing").mapTo(Thing.class);
+                final var thing = json.getJsonObject("thing").mapTo(Thing.class);
                 logger.info("Update: {}", thing);
                 thingUpdate(thing);
             } else if ("initial".equals(type)) {
-                var thing = json.getJsonObject("thing").mapTo(Thing.class);
+                final var thing = json.getJsonObject("thing").mapTo(Thing.class);
                 logger.info("Initial update: {}", thing);
                 thingUpdate(thing);
             }
-        } catch (Exception e) {
+        } catch (final Exception e) {
             logger.info("Failed to handle message", e);
         }
     }
 
-    void subscribe(String thingId) {
-        var r = new ThingRequest();
+    void subscribe(final String thingId) {
+        final var r = new ThingRequest();
         r.type = ThingRequestType.Subscribe;
         r.thing = thingId;
         send(Json.encode(r));
     }
 
-    void unsubscribe(String thingId) {
-        var r = new ThingRequest();
+    void unsubscribe(final String thingId) {
+        final var r = new ThingRequest();
         r.type = ThingRequestType.Unsubscribe;
         r.thing = thingId;
         send(Json.encode(r));
     }
 
-    void send(String text) {
-        var ws = this.ws;
+    void send(final String text) {
+        final var ws = this.ws;
         if (ws != null) {
             ws.writeTextMessageAndForget(text);
         }
     }
 
-    private void thingUpdate(Thing thing) throws Exception {
+    private void thingUpdate(final Thing thing) throws Exception {
         if (this.rootId.equals(thing.metadata.name)) {
             setRoot(Optional.ofNullable(thing.reportedState.get("$children"))
                     .map(r -> r.value)
@@ -206,13 +206,13 @@ public class TwinConnector {
         }
     }
 
-    private void setState(Thing thing) {
-        var name = thing.metadata.name;
+    private void setState(final Thing thing) {
+        final var name = thing.metadata.name;
         if (!this.values.containsKey(name)) {
             return;
         }
 
-        var values = new HashMap<String, BasicFeature>();
+        final var values = new HashMap<String, BasicFeature>();
         values.putAll(thing.reportedState);
         values.putAll(thing.syntheticState);
         this.values.put(name, values);
@@ -221,13 +221,13 @@ public class TwinConnector {
     }
 
     @SuppressWarnings("rawtypes")
-    private void setRoot(Set children) throws Exception {
+    private void setRoot(final Set children) {
         logger.info("Root: {}", children);
 
-        var current = new HashSet<>(this.values.keySet());
+        final var current = new HashSet<>(this.values.keySet());
 
-        for (var child : children) {
-            var childId = child.toString() + "/sensor";
+        for (final var child : children) {
+            final var childId = child.toString() + "/sensor";
             if (!this.values.containsKey(childId)) {
                 this.values.put(childId, Map.of());
                 addChild(childId);
@@ -237,8 +237,7 @@ public class TwinConnector {
         }
 
         // remove all remaining
-        for (var remove : current) {
-            remove = remove + "/sensor";
+        for (final var remove : current) {
             removeChild(remove);
             this.values.remove(remove);
         }
@@ -246,12 +245,12 @@ public class TwinConnector {
         this.stateHolder.setState(this.values);
     }
 
-    private void addChild(String thingId) throws Exception {
+    private void addChild(final String thingId) {
         logger.info("Add child: {}", thingId);
         subscribe(thingId);
     }
 
-    private void removeChild(String thingId) throws Exception {
+    private void removeChild(final String thingId) {
         logger.info("Remove child: {}", thingId);
         unsubscribe(thingId);
     }
