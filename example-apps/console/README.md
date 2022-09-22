@@ -3,6 +3,8 @@
 This is source code for the EclipseCon 2022 Hackathon console which is where participants can claim the handed-out
 devices and test device connectivity with the default firmware.
 
+**NOTE:** Instead of `podman`, you can also use `docker`.
+
 ## What does it do?
 
 It is a small Quarkus application, which connects to the MQTT integration endpoint of Drogue IoT, the device registry
