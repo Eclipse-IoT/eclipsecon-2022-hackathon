@@ -19,7 +19,7 @@ FROM registry.access.redhat.com/ubi9-minimal
 
 LABEL org.opencontainers.image.source="https://github.com/Eclipse-IoT/eclipsecon-2022-hackathon"
 
-RUN microdnf install -y dbus-libs
+RUN microdnf install -y dbus-libs dbus-tools
 
 COPY --from=builder /build/target/release/eclipsecon-gateway /
 
