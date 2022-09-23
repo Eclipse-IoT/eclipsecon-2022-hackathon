@@ -23,29 +23,49 @@ cargo build --release
 
 ## Starting the gateway
 
-NOTE: Choose a start address between 0x00ab and 0x7fff at random to avoid conflict with others.
-
 Ensure the [default Drogue Cloud connection settings](https://github.com/Eclipse-IoT/eclipsecon-2022-hackathon/blob/main/gateway/src/main.rs) match your environment!
 
 ```
-RUST_LOG=info ./target/release/eclipsecon-gateway --drogue-device gateway1 --drogue-application eclipsecon-hackathon --token dd26596e54e78fa2 --provisioner-token 84783e12f11c4dcd --provisioner-start-address 0x0100
+RUST_LOG=info ./target/release/eclipsecon-gateway --drogue-device gateway1 --drogue-application eclipsecon-hackathon --token dd26596e54e78fa2
 ```
 
 Or, to build and run:
 
 ```shell
-RUST_LOG=info cargo run --package eclipsecon-gateway -- --drogue-device gateway1 --drogue-application eclipsecon-hackathon --token dd26596e54e78fa2 --provisioner-token 84783e12f11c4dcd --provisioner-start-address 0x0100
+RUST_LOG=info cargo run --package eclipsecon-gateway -- --drogue-device gateway1 --drogue-application eclipsecon-hackathon --token dd26596e54e78fa2
+```
+
+## Installing softdevice on microbit (only needed first time)
+
+Download the [softdevice](https://www.nordicsemi.com/Products/Development-software/S140/Download) and unpack.
+
+Flash the softdevice onto the micro:bit (only needed the first time you run it):
+
+```
+probe-rs-cli erase --chip nRF52833_xxAA
+probe-rs-cli download s140_nrf52_7.3.0_softdevice.hex --format Hex --chip nRF52833_xxAA
+```
+
+You can also use the `firmware/flashsd.sh` script for that.
+
+## Provisioning the microbit (only needed first time)
+
+Choose a valid unicast network address for your device. If you wish to use the [console](https://console-eclipsecon-2022.apps.sandbox.drogue.world/) to claim the device, you must choose an address present in [idmap.json](https://github.com/Eclipse-IoT/eclipsecon-2022-hackathon/blob/main/example-apps/console/src/main/resources/META-INF/resources/idmap.json).
+
+NOTE: Make sure the address is a 2 byte hex string with the '0x' prefix.
+
+```
+cd pre-provision
+cargo run -- provision --node-address 0x0100 --network-key 0B5E6760156116BAB83115D4C1BFB480 --application-key 8E0A245C38A136E7D6E8429D562DA959  --chip nRF52833_xxAA
 ```
 
 ## Running the microbit
 
-Flash the microbit with the desired UUID which you will use when provisioning via Drogue Cloud. If you wish to use the [console](https://console-eclipsecon-2022.apps.sandbox.drogue.world/), you must choose a UUID present in [idmap.json](https://github.com/Eclipse-IoT/eclipsecon-2022-hackathon/blob/main/example-apps/console/src/main/resources/META-INF/resources/idmap.json).
-
-NOTE: Make sure the UUID is a 16 byte hex string without the '-' characters!
+To start the device, flash the firmware:
 
 ```
 cd firmware
-DEVICE_UUID=<uuid> cargo run --release
+cargo run --release
 ```
 
 ## Optional: Running the simulator
@@ -57,22 +77,9 @@ RUST_LOG=info ./target/release/eclipsecon-simulator --device <uuid>
 ```
 
 
-## Provision the device using the command line
+## Claim the device using the console
 
-To provision the microbit, we create a new device and set the UUID:
-
-```
-drg create device mydevice --app eclipsecon-hackathon --spec '{"btmesh":{"device":"<UUID>"},"gatewaySelector":{"matchNames":["gateway1", "gateway2", "gateway3", "gateway4", "gateway5"]}}'
-```
-
-The operator will reconcile the state of the device and send the provisioning command to the device.
-
-You can look at the status section of the device to see when it has been successfully provisioned.
-
-## Provision the device using the console
-
-Go to the [console](https://console-eclipsecon-2022.apps.sandbox.drogue.world/) and use the claim id corresponding to the UUID you chose earlier.
-
+Go to the [console](https://console-eclipsecon-2022.apps.sandbox.drogue.world/) and use the claim id corresponding to the address you chose for the device.
 
 ## Troubleshooting
 

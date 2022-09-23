@@ -26,19 +26,6 @@ Software:
 * [`rustup`](https://rustup.rs/)
 * [`probe-run`](https://crates.io/crates/probe-run)
 * [`cargo-flash`](https://crates.io/crates/cargo-flash)
-* (Optional) [`probe-rs-cli`](https://crates.io/crates/probe-rs-cli)
-
-## (Optional) Bootstrapping
-
-NOTE: This step is only necessary if you bring your own micro:bit to the event.
-
-Download the [softdevice](https://www.nordicsemi.com/Products/Development-software/S140/Download) and unpack.
-
-Flash the softdevice onto the micro:bit (only needed the first time you run it):
-
-```
-probe-rs-cli download s140_nrf52_7.3.0_softdevice.hex --format Hex --chip nRF52833_xxAA
-```
 
 ## Debugging the application
 
@@ -53,5 +40,5 @@ cargo run --release
 To run off battery, the application should be flashed without the debug probe attach. You can do this by running the following command:
 
 ```
-env DEVICE_UUID=<UUID> cargo flash --release --no-default-features --features panic-reset --chip nRF52833_xxAA
+cargo flash --release --no-default-features --features panic-reset --chip nRF52833_xxAA
 ```
