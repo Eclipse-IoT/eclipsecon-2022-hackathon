@@ -59,6 +59,14 @@ cd pre-provision
 cargo run -- provision --node-address 0x0100 --network-key 0B5E6760156116BAB83115D4C1BFB480 --application-key 8E0A245C38A136E7D6E8429D562DA959  --chip nRF52833_xxAA
 ```
 
+## Create the device in Drogue Cloud
+
+Use the same address as preprovisioned when creating the device
+
+```
+drg create device mydevice --spec '{"alias":["0100"], "gatewaySelector":{"matchNames":["gateway1","gateway2","gateway3","gateway4","gateway5"]}}'
+```
+
 ## Running the microbit
 
 To start the device, flash the firmware:
