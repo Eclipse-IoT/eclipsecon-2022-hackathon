@@ -1,0 +1,57 @@
+[package]
+name = "pre-provision"
+version = "0.1.0"
+edition = "2021"
+
+[workspace]
+
+#[features]
+#ftdi = ["probe-rs/ftdi"]
+
+[dependencies]
+probe-rs = { version = "0.13.0" }
+probe-rs-cli-util = { version = "0.13.0" }
+
+pretty_env_logger = "0.4.0"
+log = "0.4.6"
+#scroll = "0.11.0"
+#rustyline = "10.0.0"
+#capstone = "0.11.0"
+#ron = "0.8.0"
+#ihex = "3.0.0"
+#colored = "2.0.0"
+#thiserror = "1.0"
+hex = "0.4"
+anyhow = "1"
+#parse_int = "0.6.0"
+#num-traits = "0.2.14"
+clap = { version = "3", features = ["derive", "env", "default"] }
+clap-num = "1"
+rand = "0.8"
+postcard = { version = "1.0.1", features = ["alloc"] }
+
+#bitfield = "0.14.0"
+#jep106 = "0.2.6"
+#itm-decode = { version = "0.6", default-features = false }
+
+btmesh-driver = { version = "0.1.0" }
+btmesh-macro = { version = "0.1.0" }
+btmesh-device = { version = "0.1.0" }
+btmesh-common = { version = "0.1.0" }
+btmesh-models = { version = "0.1.0" }
+
+[patch.crates-io]
+#btmesh-common = { git = "https://github.com/drogue-iot/btmesh.git", branch = "main" }
+#btmesh-models = { git = "https://github.com/drogue-iot/btmesh.git", branch = "main" }
+#btmesh-device = { git = "https://github.com/drogue-iot/btmesh.git", branch = "main" }
+#btmesh-macro = { git = "https://github.com/drogue-iot/btmesh.git", branch = "main" }
+#btmesh-driver = { git = "https://github.com/drogue-iot/btmesh.git", branch = "main" }
+
+btmesh-device = { path = "../../drogue-iot/btmesh/btmesh-device" }
+btmesh-macro = { path = "../../drogue-iot/btmesh/btmesh-macro" }
+btmesh-common = { path = "../../drogue-iot/btmesh/btmesh-common" }
+btmesh-models = { path = "../../drogue-iot/btmesh/btmesh-models" }
+btmesh-driver = { path = "../../drogue-iot/btmesh/btmesh-driver" }
+
+embassy-time = { git = "https://github.com/embassy-rs/embassy.git", rev = "3b58ac1bf86a2373e479e8e3cf92d2df7c29e00b" }
+embassy-sync = { git = "https://github.com/embassy-rs/embassy.git", rev = "3b58ac1bf86a2373e479e8e3cf92d2df7c29e00b" }

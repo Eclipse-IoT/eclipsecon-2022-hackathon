@@ -523,7 +523,7 @@ dependencies = [
 [[package]]
 name = "btmesh-common"
 version = "0.1.0"
-source = "git+https://github.com/drogue-iot/btmesh.git?branch=main#67c92294f7aa52e76ebc5cc2468f439aaefd542e"
+source = "git+https://github.com/drogue-iot/btmesh.git?branch=main#d6b96cf56336655f9aaeb3814556c914e67b7902"
 dependencies = [
  "aes",
  "ccm",
@@ -538,7 +538,7 @@ dependencies = [
 [[package]]
 name = "btmesh-models"
 version = "0.1.0"
-source = "git+https://github.com/drogue-iot/btmesh.git?branch=main#67c92294f7aa52e76ebc5cc2468f439aaefd542e"
+source = "git+https://github.com/drogue-iot/btmesh.git?branch=main#d6b96cf56336655f9aaeb3814556c914e67b7902"
 dependencies = [
  "btmesh-common",
  "heapless",
@@ -1624,14 +1624,13 @@ dependencies = [
 
 [[package]]
 name = "iana-time-zone"
-version = "0.1.48"
+version = "0.1.49"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "237a0714f28b1ee39ccec0770ccb544eb02c9ef2c82bb096230eefcffa6468b0"
+checksum = "3bbaead50122b06e9a973ac20bc7445074d99ad9a0a0654934876908a9cec82c"
 dependencies = [
  "android_system_properties",
  "core-foundation-sys",
  "js-sys",
- "once_cell",
  "wasm-bindgen",
  "winapi",
 ]
@@ -1782,9 +1781,9 @@ checksum = "e34f76eb3611940e0e7d53a9aaa4e6a3151f69541a282fd0dad5571420c53ff1"
 
 [[package]]
 name = "lock_api"
-version = "0.4.8"
+version = "0.4.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9f80bf5aacaf25cbfc8210d1cfb718f2bf3b11c4c54e5afe36c236853a8ec390"
+checksum = "435011366fe56583b16cf956f9df0095b405b82d76425bc8981c0e22e60ec4df"
 dependencies = [
  "autocfg",
  "scopeguard",
@@ -2046,9 +2045,9 @@ dependencies = [
 
 [[package]]
 name = "once_cell"
-version = "1.14.0"
+version = "1.15.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2f7254b99e31cad77da24b08ebf628882739a608578bb1bcdfc1f9c21260d7c0"
+checksum = "e82dad04139b71a90c080c8463fe0dc7902db5192d939bd0950f074d014339e1"
 
 [[package]]
 name = "opaque-debug"
@@ -2429,9 +2428,9 @@ dependencies = [
 
 [[package]]
 name = "reqwest"
-version = "0.11.11"
+version = "0.11.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b75aa69a3f06bbcc66ede33af2af253c6f7a86b1ca0033f60c580a27074fbf92"
+checksum = "431949c384f4e2ae07605ccaa56d1d9d2ecdb5cadd4f9577ccfab29f2e5149fc"
 dependencies = [
  "base64 0.13.0",
  "bytes",
@@ -2445,10 +2444,10 @@ dependencies = [
  "hyper-tls",
  "ipnet",
  "js-sys",
- "lazy_static",
  "log",
  "mime",
  "native-tls",
+ "once_cell",
  "percent-encoding",
  "pin-project-lite",
  "serde",
@@ -2604,18 +2603,18 @@ dependencies = [
 
 [[package]]
 name = "serde"
-version = "1.0.144"
+version = "1.0.145"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0f747710de3dcd43b88c9168773254e809d8ddbdf9653b84e2554ab219f17860"
+checksum = "728eb6351430bccb993660dfffc5a72f91ccc1295abaa8ce19b27ebe4f75568b"
 dependencies = [
  "serde_derive",
 ]
 
 [[package]]
 name = "serde_derive"
-version = "1.0.144"
+version = "1.0.145"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "94ed3a816fb1d101812f83e789f888322c34e291f894f19590dc310963e87a00"
+checksum = "81fa1584d3d1bcacd84c277a0dfe21f5b0f6accf4a23d04d4c6d61f1af522b4c"
 dependencies = [
  "proc-macro2",
  "quote",

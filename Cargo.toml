@@ -16,6 +16,7 @@ exclude = [
 bluer = { git = "https://github.com/dejanb/bluer.git", branch = "mesh" }
 btmesh-common = { git = "https://github.com/drogue-iot/btmesh.git", branch = "main" }
 btmesh-models = { git = "https://github.com/drogue-iot/btmesh.git", branch = "main" }
+
 #btmesh-common = { path = "../../drogue-iot/btmesh/btmesh-common" }
 #btmesh-models = { path = "../../drogue-iot/btmesh/btmesh-models" }
 #bluer = { path = "../../bluez/bluer/bluer" }
