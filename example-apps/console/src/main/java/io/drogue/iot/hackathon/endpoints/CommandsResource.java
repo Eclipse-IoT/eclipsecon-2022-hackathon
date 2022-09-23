@@ -64,15 +64,11 @@ public class CommandsResource {
         settings.enabled = command.enabled;
         settings.brightness = command.brightness;
 
-        var device = this.registry.getDevice(claim.get().getId()).orElse(null);
-        if (device != null && device.getStatus() != null && device.getStatus().getBtmesh() != null && device.getStatus().getBtmesh().getAddress() != null) {
-            var address = device.getStatus().getBtmesh().getAddress();
-            logger.info("Settings btmesh address: {}", address);
-            settings.address = address;
-        } else {
-            settings.address = 0L;
+        try {
+           settings.address = Long.parseLong(claim.get().getProvisioningId());
+        } catch (Exception e) {
+           settings.address = 0L;
         }
-
         logger.info("Sending display command: {}", settings);
         this.processor.displayCommand(settings);
     }
