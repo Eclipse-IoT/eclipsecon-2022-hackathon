@@ -61,10 +61,11 @@ cargo run -- provision --node-address 0x0100 --network-key 0B5E6760156116BAB8311
 
 ## Create the device in Drogue Cloud
 
-Use the same address as preprovisioned when creating the device
+Use the same address as pre-provisioned when creating the device
 
 ```
-drg create device mydevice --spec '{"alias":["0100"], "gatewaySelector":{"matchNames":["gateway1","gateway2","gateway3","gateway4","gateway5"]}}'
+drg create device mydevice --application eclipsecon-hackathon --spec '{"alias":["0100"], "gatewaySelector":{"matchNames":["gateway1","gateway2","gateway3","gateway4","gateway5"]}}'
+drg label device mydevice --application eclipsecon-hackathon role=node
 ```
 
 ## Running the microbit
