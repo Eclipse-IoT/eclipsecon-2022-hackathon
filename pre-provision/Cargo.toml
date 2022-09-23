@@ -41,17 +41,17 @@ btmesh-common = { version = "0.1.0" }
 btmesh-models = { version = "0.1.0" }
 
 [patch.crates-io]
-#btmesh-common = { git = "https://github.com/drogue-iot/btmesh.git", branch = "main" }
-#btmesh-models = { git = "https://github.com/drogue-iot/btmesh.git", branch = "main" }
-#btmesh-device = { git = "https://github.com/drogue-iot/btmesh.git", branch = "main" }
-#btmesh-macro = { git = "https://github.com/drogue-iot/btmesh.git", branch = "main" }
-#btmesh-driver = { git = "https://github.com/drogue-iot/btmesh.git", branch = "main" }
+btmesh-common = { git = "https://github.com/drogue-iot/btmesh.git", branch = "main" }
+btmesh-models = { git = "https://github.com/drogue-iot/btmesh.git", branch = "main" }
+btmesh-device = { git = "https://github.com/drogue-iot/btmesh.git", branch = "main" }
+btmesh-macro = { git = "https://github.com/drogue-iot/btmesh.git", branch = "main" }
+btmesh-driver = { git = "https://github.com/drogue-iot/btmesh.git", branch = "main" }
 
-btmesh-device = { path = "../../drogue-iot/btmesh/btmesh-device" }
-btmesh-macro = { path = "../../drogue-iot/btmesh/btmesh-macro" }
-btmesh-common = { path = "../../drogue-iot/btmesh/btmesh-common" }
-btmesh-models = { path = "../../drogue-iot/btmesh/btmesh-models" }
-btmesh-driver = { path = "../../drogue-iot/btmesh/btmesh-driver" }
+#btmesh-device = { path = "../../drogue-iot/btmesh/btmesh-device" }
+#btmesh-macro = { path = "../../drogue-iot/btmesh/btmesh-macro" }
+#btmesh-common = { path = "../../drogue-iot/btmesh/btmesh-common" }
+#btmesh-models = { path = "../../drogue-iot/btmesh/btmesh-models" }
+#btmesh-driver = { path = "../../drogue-iot/btmesh/btmesh-driver" }
 
 embassy-time = { git = "https://github.com/embassy-rs/embassy.git", rev = "3b58ac1bf86a2373e479e8e3cf92d2df7c29e00b" }
 embassy-sync = { git = "https://github.com/embassy-rs/embassy.git", rev = "3b58ac1bf86a2373e479e8e3cf92d2df7c29e00b" }
