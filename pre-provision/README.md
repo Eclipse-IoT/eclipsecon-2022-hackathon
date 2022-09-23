@@ -2,6 +2,12 @@
 
 Utility based on probe-rs for pre-provisioning microbits.
 
+## Installation
+
+```
+cargo install --path .
+```
+
 ## Usage
 
 ```
