@@ -86,16 +86,7 @@ public class Processor {
 
     @Transactional
     public void claimDevice(final String claimId, final String userId, final boolean canCreate) {
-        var claim = this.service.claimDevice(claimId, userId, canCreate);
-        try {
-            this.registry.createDevice(claimId, claim.getProvisioningId());
-        } catch (WebApplicationException e) {
-            if (e.getResponse().getStatus() == 409) {
-                throw new StillClaimedException(claimId);
-            }
-            throw e;
-        }
-
+        this.service.claimDevice(claimId, userId, canCreate);
     }
 
     @Transactional
@@ -110,12 +101,14 @@ public class Processor {
     public void releaseDevice(final String userId) {
         var claim = this.service.getDeviceClaimFor(userId);
         claim.ifPresent(deviceClaim -> {
-            try {
-                this.registry.deleteDevice(deviceClaim.getId());
-            } catch (WebApplicationException e) {
-                if (e.getResponse().getStatus() != 404) {
-                    // ignore 404
-                    throw e;
+            if (deviceClaim.getId().startsWith("simulator-")) {
+                try {
+                    this.registry.deleteDevice(deviceClaim.getId());
+                } catch (WebApplicationException e) {
+                    if (e.getResponse().getStatus() != 404) {
+                        // ignore 404
+                        throw e;
+                    }
                 }
             }
             this.dispatcher.releaseDevice(deviceClaim.getId());

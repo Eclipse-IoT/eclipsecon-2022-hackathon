@@ -25,7 +25,9 @@ public class AutoLoadData {
     static class IdMapEntry {
         public String id;
 
-        public String uuid;
+        public String address;
+
+        public String devkey;
     }
 
     @Inject
@@ -40,7 +42,7 @@ public class AutoLoadData {
         var resource = Thread.currentThread().getContextClassLoader().getResourceAsStream("META-INF/resources/idmap.json");
         IdMapEntry[] items = new ObjectMapper().readValue(resource, IdMapEntry[].class);
         for (IdMapEntry item : items) {
-            this.service.createClaim(item.id, item.uuid);
+            this.service.createClaim(item.id, item.address);
         }
         logger.info("Auto-loaded {} mappings", items.length);
     }
