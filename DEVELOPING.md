@@ -39,7 +39,7 @@ RUST_LOG=info cargo run --package eclipsecon-gateway -- --drogue-device gateway1
 
 ## Running the microbit
 
-Flash the microbit with the desired UUID which you will use when provisioning via Drogue Cloud. If you wish to use the [console](https://console-eclipsecon-2022.apps.sandbox.drogue.world/), you must choose a UUID present in [idmap.json](https://github.com/Eclipse-IoT/eclipsecon-2022-hackathon/blob/main/console/src/main/resources/META-INF/resources/idmap.json).
+Flash the microbit with the desired UUID which you will use when provisioning via Drogue Cloud. If you wish to use the [console](https://console-eclipsecon-2022.apps.sandbox.drogue.world/), you must choose a UUID present in [idmap.json](https://github.com/Eclipse-IoT/eclipsecon-2022-hackathon/blob/main/example-apps/console/src/main/resources/META-INF/resources/idmap.json).
 
 NOTE: Make sure the UUID is a 16 byte hex string without the '-' characters!
 
