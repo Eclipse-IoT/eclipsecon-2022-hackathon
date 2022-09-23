@@ -45,7 +45,7 @@ probe-rs-cli download s140_nrf52_7.3.0_softdevice.hex --format Hex --chip nRF528
 To run the application with debugging attached, make sure your device is connected, and run the following command:
 
 ```
-env DEVICE_UUID=<UUID> cargo run --release
+cargo run --release
 ```
 
 ## Flashing application for battery powered use
