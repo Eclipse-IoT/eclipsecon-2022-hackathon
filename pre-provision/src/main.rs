@@ -10,9 +10,11 @@ use rand::RngCore;
 
 use anyhow::Result;
 use btmesh_common::{
-    address::UnicastAddress,
+    address::{LabelUuid, UnicastAddress},
     crypto::{application::ApplicationKey, device::DeviceKey, network::NetworkKey},
-    IvIndex, IvUpdateFlag,
+    location::{FRONT, LEFT, RIGHT},
+    CompanyIdentifier, Composition, ElementDescriptor, IvIndex, IvUpdateFlag, ModelIdentifier,
+    ProductIdentifier, VersionIdentifier,
 };
 use btmesh_driver::{
     stack::provisioned::{
@@ -22,7 +24,12 @@ use btmesh_driver::{
     },
     storage::ProvisionedConfiguration,
 };
-use btmesh_models::foundation::configuration::{AppKeyIndex, NetKeyIndex};
+use btmesh_models::foundation::configuration::{
+    model_publication::{
+        PublicationDetails, PublishAddress, PublishPeriod, PublishRetransmit, Resolution,
+    },
+    AppKeyIndex, NetKeyIndex,
+};
 use probe_rs_cli_util::{
     clap,
     clap::Parser,
@@ -100,20 +107,134 @@ fn main() -> Result<()> {
             network_keys.set(0, network_key).unwrap();
 
             let app_key = ApplicationKey::new(decode_key(&application_key).unwrap()).unwrap();
+            let app_key_idx = AppKeyIndex::new(0);
             let mut app_keys = ApplicationKeys::default();
             app_keys
-                .add(AppKeyIndex::new(0), NetKeyIndex::new(0), app_key)
+                .add(app_key_idx, NetKeyIndex::new(0), app_key)
                 .unwrap();
             let secrets = Secrets::new(device_key, network_keys, app_keys);
 
             let network_state = NetworkState::new(IvIndex::new(0), IvUpdateFlag::parse(0));
 
-            let config: ProvisionedConfiguration = (device_info, secrets, network_state).into();
+            let mut front = ElementDescriptor::new(FRONT);
+            front.add_model(ModelIdentifier::SIG(0x1000));
+            front.add_model(ModelIdentifier::SIG(0x100C));
+            front.add_model(ModelIdentifier::SIG(0x1101));
+
+            let mut left = ElementDescriptor::new(LEFT);
+            left.add_model(ModelIdentifier::SIG(0x1001));
+            let mut right = ElementDescriptor::new(RIGHT);
+            right.add_model(ModelIdentifier::SIG(0x1001));
+            let mut composition: Composition<()> = Composition::new(
+                CompanyIdentifier(0x0003),
+                ProductIdentifier(0x0001),
+                VersionIdentifier(0x0001),
+            );
+            composition.add_element(front).unwrap();
+            composition.add_element(left).unwrap();
+            composition.add_element(right).unwrap();
+
+            let mut config: ProvisionedConfiguration = (device_info, secrets, network_state).into();
+
+            // Bind all models in front element
+            for i in 0..3 {
+                config
+                    .bindings_mut()
+                    .bind(
+                        &composition,
+                        0,
+                        composition[0][i].model_identifier,
+                        app_key_idx,
+                    )
+                    .unwrap();
+            }
+
+            // Bind first element of left and right elements
+            for i in 1..3 {
+                config
+                    .bindings_mut()
+                    .bind(
+                        &composition,
+                        i,
+                        composition[i][0].model_identifier,
+                        app_key_idx,
+                    )
+                    .unwrap();
+            }
+
+            // Button publication
+            config
+                .publications_mut()
+                .set(
+                    &composition,
+                    0,
+                    pub_set(
+                        address,
+                        app_key_idx,
+                        composition[0][0].model_identifier,
+                        None,
+                    ),
+                )
+                .unwrap();
+
+            // Battery service publication
+            config
+                .publications_mut()
+                .set(
+                    &composition,
+                    0,
+                    pub_set(
+                        address,
+                        app_key_idx,
+                        composition[0][1].model_identifier,
+                        Some(60),
+                    ),
+                )
+                .unwrap();
+
+            // Sensor publication
+            config
+                .publications_mut()
+                .set(
+                    &composition,
+                    0,
+                    pub_set(
+                        address,
+                        app_key_idx,
+                        composition[0][2].model_identifier,
+                        Some(4),
+                    ),
+                )
+                .unwrap();
 
             provision(common, flash_address, chip_erase, config)?;
             Ok(())
         }
         Cli::Erase { common } => erase(&common),
+    }
+}
+
+fn pub_set(
+    address: UnicastAddress,
+    app_key_index: AppKeyIndex,
+    model: ModelIdentifier,
+    period_secs: Option<u8>,
+) -> PublicationDetails {
+    let label = LabelUuid::new(decode_key("f0bfd803cde184133096f003ea4a3dc2").unwrap()).unwrap();
+    let pub_address = PublishAddress::Label(label);
+    let publish_period = period_secs
+        .map(|period_secs| PublishPeriod::new(period_secs, Resolution::Seconds1))
+        .unwrap_or(0.into());
+    let rxt = PublishRetransmit::from(0);
+    PublicationDetails {
+        element_address: address,
+        publish_address: pub_address,
+        app_key_index,
+        credential_flag: false,
+        publish_ttl: None,
+        publish_period: publish_period,
+        publish_retransmit: rxt,
+        model_identifier: model,
     }
 }
 
