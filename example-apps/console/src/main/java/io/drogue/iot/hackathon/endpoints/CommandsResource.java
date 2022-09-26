@@ -65,7 +65,7 @@ public class CommandsResource {
         settings.brightness = command.brightness;
 
         try {
-           settings.address = Long.parseLong(claim.get().getProvisioningId());
+           settings.address = Long.parseLong(claim.get().getProvisioningId(), 16);
         } catch (Exception e) {
            settings.address = 0L;
         }
