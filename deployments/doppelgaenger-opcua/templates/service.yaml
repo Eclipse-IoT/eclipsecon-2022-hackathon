@@ -1,0 +1,12 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: doppelgaenger-opcua
+spec:
+  selector:
+    deployment: doppelgaenger-opcua
+  type: LoadBalancer
+  ports:
+    - port: 4840
+      name: opcua
+      targetPort: opcua
