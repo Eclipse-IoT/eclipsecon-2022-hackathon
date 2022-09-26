@@ -11,7 +11,6 @@ mod sensor;
 mod speaker;
 
 use battery::*;
-use btmesh_common::Uuid;
 use btmesh_device::BluetoothMeshModel;
 use btmesh_macro::{device, element};
 use btmesh_nrf_softdevice::*;

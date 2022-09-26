@@ -113,7 +113,10 @@ impl BluetoothMeshModel<GenericOnOffServer> for OnOff {
                     {
                         Either3::First(_) => {}
                         Either3::Second(_) => {}
-                        Either3::Third(e) => enable = e,
+                        Either3::Third(e) => {
+                            self.display.clear();
+                            enable = e
+                        },
                     }
                 } else {
                     // When blinking is disabled, we just await incoming messages.
