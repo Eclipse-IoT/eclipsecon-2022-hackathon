@@ -10,7 +10,7 @@ use btmesh_models::{
     foundation::configuration::{
         model_publication::{PublishAddress, PublishPeriod, PublishRetransmit, Resolution},
         node_reset::NodeResetMessage,
-        ConfigurationClient, ConfigurationMessage, ConfigurationServer,
+        ConfigurationClient, ConfigurationMessage,
     },
     generic::{battery::GENERIC_BATTERY_SERVER, onoff::GENERIC_ONOFF_SERVER},
     sensor::SENSOR_SETUP_SERVER,
@@ -78,7 +78,7 @@ async fn configure(
     node: &Node,
     element_control: &mut ElementControl,
     element_path: &Path<'_>,
-    uuid: &str,
+    _uuid: &str,
     unicast: u16,
 ) -> Result<(), anyhow::Error> {
     log::info!("Add app key");

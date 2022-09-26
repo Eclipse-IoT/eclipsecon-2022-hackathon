@@ -108,7 +108,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let session = bluer::Session::new().await?;
     let mesh = session.mesh().await?;
 
-    let (commands_tx, commands_rx) = broadcast::channel(10);
+    let (commands_tx, _) = broadcast::channel(10);
 
     let mut tasks = Vec::new();
     if let Some(token) = args.provisioner_token {

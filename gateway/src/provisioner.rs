@@ -5,7 +5,6 @@ use bluer::{
         application::Application,
         element::*,
         network::Network,
-        node::Node,
         provisioner::{Provisioner, ProvisionerControlHandle, ProvisionerMessage},
     },
     Uuid,
@@ -18,7 +17,7 @@ use dbus::Path;
 use paho_mqtt as mqtt;
 use std::{collections::HashMap, sync::Arc, time::Duration};
 use tokio::{
-    sync::{broadcast, broadcast::error::RecvError, mpsc, Mutex},
+    sync::{broadcast, broadcast::error::RecvError, mpsc},
     time::{sleep, Instant},
 };
 
@@ -97,7 +96,7 @@ pub async fn run(
                 match evt {
                     Some(msg) => {
                         match msg {
-                            ProvisionerMessage::AddNodeComplete(uuid, unicast, count) => {
+                            ProvisionerMessage::AddNodeComplete(uuid, unicast, _count) => {
                                 configure_tx.send(NodeConfigurationMessage::Configure(uuid, unicast)).await?;
                             },
                             ProvisionerMessage::AddNodeFailed(uuid, reason) => {
