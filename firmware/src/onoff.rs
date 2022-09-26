@@ -3,7 +3,8 @@ use btmesh_device::{BluetoothMeshModel, BluetoothMeshModelContext, InboundModelP
 use btmesh_models::generic::onoff::{GenericOnOffMessage, GenericOnOffServer};
 use core::future::Future;
 use embassy_futures::select::{select3, Either3};
-use embassy_time::{Duration, Instant, Timer};
+use embassy_time::{Duration, Instant, Ticker, Timer};
+use futures::StreamExt;
 use microbit_bsp::{
     display::{fonts, Brightness, Frame},
     LedMatrix,
@@ -44,6 +45,19 @@ impl OnOff {
         }
     }
 
+    /// Display the provided frame for the duration. Handles screen refresh
+    /// in an async display loop.
+    pub async fn display(display: &mut LedMatrix, frame: Frame<5, 5>, length: Duration) {
+        display.apply(frame);
+        let end = Instant::now() + length;
+        let mut ticker = Ticker::every(Duration::from_micros(5));
+        while Instant::now() < end {
+            display.render();
+            ticker.next().await;
+        }
+        display.clear();
+    }
+
     /// Rendering loop for the blinker process.
     async fn blinker(display: &mut LedMatrix) {
         // Enable all LEDs
@@ -64,16 +78,16 @@ impl OnOff {
             let end = Instant::now() + Duration::from_millis(600);
             while Instant::now() < end {
                 let _ = display.increase_brightness();
-                display.display(BITMAP, interval).await;
+                Self::display(display, BITMAP, interval).await;
             }
 
             let end = Instant::now() + Duration::from_millis(400);
             while Instant::now() < end {
                 let _ = display.decrease_brightness();
-                display.display(BITMAP, interval).await;
+                Self::display(display, BITMAP, interval).await;
             }
-            display.clear();
 
+            display.clear();
             Timer::after(Duration::from_secs(1)).await;
         }
     }
@@ -116,7 +130,7 @@ impl BluetoothMeshModel<GenericOnOffServer> for OnOff {
                         Either3::Third(e) => {
                             self.display.clear();
                             enable = e
-                        },
+                        }
                     }
                 } else {
                     // When blinking is disabled, we just await incoming messages.
