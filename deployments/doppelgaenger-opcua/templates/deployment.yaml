@@ -18,7 +18,7 @@ spec:
     spec:
       containers:
         - name: service
-          image: quay.io/drogue-iot/drogue-doppelgaenger-opcua-server:latest
+          image: ghcr.io/drogue-iot/drogue-doppelgaenger-opcua-server:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 8080
