@@ -6,7 +6,9 @@ if [ "$CLAIM" == "" ]; then
     exit 1
 fi
 
-IDMAP=example-apps/console/src/main/resources/META-INF/resources/idmap.json
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+
+IDMAP="$SCRIPT_DIR/example-apps/console/src/main/resources/META-INF/resources/idmap.json"
 
 address=$(jq ".[] | select(.id==\"${CLAIM}\").address" ${IDMAP} | xargs)
 devkey=$(jq ".[] | select(.id==\"${CLAIM}\").devkey" ${IDMAP} | xargs)
