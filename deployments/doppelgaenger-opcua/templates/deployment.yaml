@@ -109,6 +109,6 @@ spec:
           configMap:
             name: doppelgaenger-opcua-server-key-config
         - name: server-key
-          configMap:
-            name: {{ .Values.opcua.serverKeySecret | quote }}
+          secret:
+            secretName: {{ .Values.opcua.serverKeySecret | quote }}
       {{- end }}
