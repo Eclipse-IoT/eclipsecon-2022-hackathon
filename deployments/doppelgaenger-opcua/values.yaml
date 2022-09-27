@@ -20,6 +20,9 @@ opcua:
   # a comma separated list of hostnames to announce, instead of auto-detecting
   # hostnames:
 
+  # the server key secret
+  # serverKeySecret:
+
 deployment:
 
   replicas: 1

@@ -1,0 +1,12 @@
+{{- if .Values.opcua.serverKeySecret }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: doppelgaenger-opcua-server-key-config
+data:
+  server-key.cfg: |
+    alias=key
+    server.key=/etc/milo/server-key/tls.key
+    server.cert=/etc/milo/server-key/tls.crt
+
+{{- end }}

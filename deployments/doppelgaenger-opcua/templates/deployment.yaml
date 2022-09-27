@@ -42,8 +42,19 @@ spec:
           {{- end }}
 
           env:
+
+            {{- if .Values.opcua.serverKeySecret }}
+            - name: DROGUE_DOPPELGAENGER_OPCUA_SERVER_KEY_KEYSTORE
+              value: /etc/milo/server-key.cfg
+            - name: DROGUE_DOPPELGAENGER_OPCUA_SERVER_KEY_TYPE
+              value: PEMCFG
+            - name: DROGUE_DOPPELGAENGER_OPCUA_SERVER_KEY_KEY_ALIAS
+              value: key
+            {{- else }}
             - name: DROGUE_DOPPELGAENGER_OPCUA_SELF_SIGNED_KEY_MODE
               value: ephemeral
+            {{- end }}
+
             - name: DROGUE_DOPPELGAENGER_API
               value: {{ .Values.doppelgaenger.api | quote }}
             - name: DROGUE_DOPPELGAENGER_APPLICATION
@@ -80,3 +91,24 @@ spec:
             {{- with .Values.extraEnvVars }}
             {{- . | toYaml | nindent 12 }}
             {{- end }}
+
+        {{- if .Values.opcua.serverKeySecret }}
+          volumeMounts:
+            - mountPath: /etc/milo/server-key.cfg
+              subPath: server-key.cfg
+              name: server-key-cfg
+              readOnly: true
+            - mountPath: /etc/milo/server-key
+              name: server-key
+              readOnly: true
+        {{- end }}
+
+      {{- if .Values.opcua.serverKeySecret }}
+      volumes:
+        - name: server-key-cfg
+          configMap:
+            name: doppelgaenger-opcua-server-key-config
+        - name: server-key
+          configMap:
+            name: {{ .Values.opcua.serverKeySecret | quote }}
+      {{- end }}
