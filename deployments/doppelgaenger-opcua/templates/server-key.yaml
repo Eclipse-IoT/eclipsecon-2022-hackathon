@@ -6,7 +6,7 @@ metadata:
 data:
   server-key.cfg: |
     alias=key
-    server.key=/etc/milo/server-key/tls.key
-    server.cert=/etc/milo/server-key/tls.crt
+    source.key=/etc/milo/server-key/tls.key
+    source.cert=/etc/milo/server-key/tls.crt
 
 {{- end }}
