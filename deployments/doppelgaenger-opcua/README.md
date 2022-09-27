@@ -4,7 +4,8 @@
 
 ```shell
 APPLICATION_URI=https://drogue.io/doppelgaenger/opcua
-openssl req -newkey rsa:4096 -nodes -keyout server.key -x509 -days 365 -out server.crt -subj "/CN=Drogue IoT/O=Red Hat, Inc" -sha256 -addext "subjectAltName = URI:${APPLICATION_URI}" 
+SERVER_HOSTNAME=localhost # replace with actual hostname
+openssl req -newkey rsa:4096 -nodes -keyout server.key -x509 -days 365 -out server.crt -subj "/CN=Drogue IoT/O=Red Hat, Inc" -sha256 -addext "subjectAltName = URI:${APPLICATION_URI}, DNS:${SERVER_HOSTNAME}" 
 ```
 
 Show content:
