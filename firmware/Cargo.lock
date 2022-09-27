@@ -120,7 +120,7 @@ checksum = "bef38d45163c2f1dde094a7dfd33ccf595c92905c8f8f4fdc18d06fb1037718a"
 [[package]]
 name = "btmesh-bearer"
 version = "0.1.0"
-source = "git+https://github.com/drogue-iot/btmesh.git?branch=main#d6b96cf56336655f9aaeb3814556c914e67b7902"
+source = "git+https://github.com/drogue-iot/btmesh.git?branch=main#a6599d2111a165a14ad0abeda698cab0b67d0753"
 dependencies = [
  "btmesh-common",
  "btmesh-pdu",
@@ -131,7 +131,7 @@ dependencies = [
 [[package]]
 name = "btmesh-common"
 version = "0.1.0"
-source = "git+https://github.com/drogue-iot/btmesh.git?branch=main#d6b96cf56336655f9aaeb3814556c914e67b7902"
+source = "git+https://github.com/drogue-iot/btmesh.git?branch=main#a6599d2111a165a14ad0abeda698cab0b67d0753"
 dependencies = [
  "aes",
  "ccm",
@@ -150,7 +150,7 @@ dependencies = [
 [[package]]
 name = "btmesh-device"
 version = "0.1.0"
-source = "git+https://github.com/drogue-iot/btmesh.git?branch=main#d6b96cf56336655f9aaeb3814556c914e67b7902"
+source = "git+https://github.com/drogue-iot/btmesh.git?branch=main#a6599d2111a165a14ad0abeda698cab0b67d0753"
 dependencies = [
  "btmesh-common",
  "btmesh-models",
@@ -165,7 +165,7 @@ dependencies = [
 [[package]]
 name = "btmesh-driver"
 version = "0.1.0"
-source = "git+https://github.com/drogue-iot/btmesh.git?branch=main#d6b96cf56336655f9aaeb3814556c914e67b7902"
+source = "git+https://github.com/drogue-iot/btmesh.git?branch=main#a6599d2111a165a14ad0abeda698cab0b67d0753"
 dependencies = [
  "aes",
  "btmesh-bearer",
@@ -194,7 +194,7 @@ dependencies = [
 [[package]]
 name = "btmesh-macro"
 version = "0.1.0"
-source = "git+https://github.com/drogue-iot/btmesh.git?branch=main#d6b96cf56336655f9aaeb3814556c914e67b7902"
+source = "git+https://github.com/drogue-iot/btmesh.git?branch=main#a6599d2111a165a14ad0abeda698cab0b67d0753"
 dependencies = [
  "btmesh-common",
  "darling 0.14.1",
@@ -208,7 +208,7 @@ dependencies = [
 [[package]]
 name = "btmesh-models"
 version = "0.1.0"
-source = "git+https://github.com/drogue-iot/btmesh.git?branch=main#d6b96cf56336655f9aaeb3814556c914e67b7902"
+source = "git+https://github.com/drogue-iot/btmesh.git?branch=main#a6599d2111a165a14ad0abeda698cab0b67d0753"
 dependencies = [
  "btmesh-common",
  "defmt",
@@ -220,7 +220,7 @@ dependencies = [
 [[package]]
 name = "btmesh-nrf-softdevice"
 version = "0.1.0"
-source = "git+https://github.com/drogue-iot/btmesh.git?branch=main#d6b96cf56336655f9aaeb3814556c914e67b7902"
+source = "git+https://github.com/drogue-iot/btmesh.git?branch=main#a6599d2111a165a14ad0abeda698cab0b67d0753"
 dependencies = [
  "atomic-polyfill 1.0.1",
  "btmesh-bearer",
@@ -243,7 +243,7 @@ dependencies = [
 [[package]]
 name = "btmesh-pdu"
 version = "0.1.0"
-source = "git+https://github.com/drogue-iot/btmesh.git?branch=main#d6b96cf56336655f9aaeb3814556c914e67b7902"
+source = "git+https://github.com/drogue-iot/btmesh.git?branch=main#a6599d2111a165a14ad0abeda698cab0b67d0753"
 dependencies = [
  "btmesh-common",
  "defmt",
@@ -946,9 +946,9 @@ dependencies = [
 
 [[package]]
 name = "heapless"
-version = "0.7.13"
+version = "0.7.16"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8a08e755adbc0ad283725b29f4a4883deee15336f372d5f61fae59efec40f983"
+checksum = "db04bc24a18b9ea980628ecf00e6c0264f3c1426dac36c00cb49b6fbad8b0743"
 dependencies = [
  "atomic-polyfill 0.1.10",
  "defmt",
@@ -1215,9 +1215,9 @@ dependencies = [
 
 [[package]]
 name = "proc-macro2"
-version = "1.0.43"
+version = "1.0.44"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0a2ca2c61bc9f3d74d2886294ab7b9853abd9c1ad903a3ac7815c58989bb7bab"
+checksum = "7bd7356a8122b6c4a24a82b278680c73357984ca2fc79a0f9fa6dea7dced7c58"
 dependencies = [
  "unicode-ident",
 ]
@@ -1345,18 +1345,18 @@ dependencies = [
 
 [[package]]
 name = "serde"
-version = "1.0.144"
+version = "1.0.145"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0f747710de3dcd43b88c9168773254e809d8ddbdf9653b84e2554ab219f17860"
+checksum = "728eb6351430bccb993660dfffc5a72f91ccc1295abaa8ce19b27ebe4f75568b"
 dependencies = [
  "serde_derive",
 ]
 
 [[package]]
 name = "serde_derive"
-version = "1.0.144"
+version = "1.0.145"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "94ed3a816fb1d101812f83e789f888322c34e291f894f19590dc310963e87a00"
+checksum = "81fa1584d3d1bcacd84c277a0dfe21f5b0f6accf4a23d04d4c6d61f1af522b4c"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1407,9 +1407,9 @@ checksum = "6bdef32e8150c2a081110b42772ffe7d7c9032b606bc226c8260fd97e0976601"
 
 [[package]]
 name = "syn"
-version = "1.0.100"
+version = "1.0.101"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "52205623b1b0f064a4e71182c3b18ae902267282930c6d5462c91b859668426e"
+checksum = "e90cde112c4b9690b8cbe810cba9ddd8bc1d7472e2cae317b69e9438c1cba7d2"
 dependencies = [
  "proc-macro2",
  "quote",

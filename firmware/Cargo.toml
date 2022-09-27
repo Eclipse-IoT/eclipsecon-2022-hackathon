@@ -11,6 +11,7 @@ btmesh-macro = { version = "0.1.0" }
 btmesh-common = { version = "0.1.0" }
 btmesh-models = { version = "0.1.0" }
 btmesh-nrf-softdevice = { version = "0.1.0", default-features = false, features = ["defmt", "nrf52833", "relay"] }
+#btmesh-nrf-softdevice = { version = "0.1.0", default-features = false, features = ["defmt", "nrf52833"] }
 cortex-m-rt = "0.7"
 cortex-m = { version = "0.7.6", features = ["critical-section-single-core"] }
 
