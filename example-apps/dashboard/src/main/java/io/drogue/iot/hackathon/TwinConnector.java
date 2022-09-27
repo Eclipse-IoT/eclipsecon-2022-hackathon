@@ -30,6 +30,7 @@ import io.vertx.core.http.HttpClientOptions;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
 import io.vertx.mutiny.core.Vertx;
+import io.vertx.mutiny.core.http.HttpClient;
 import io.vertx.mutiny.core.http.WebSocket;
 
 @Startup
@@ -61,11 +62,35 @@ public class TwinConnector {
 
     private volatile boolean stopped;
 
+    private HttpClient httpClient;
+
     private WebSocket ws;
 
     @PostConstruct
     public void start() {
         connect();
+
+        final var secure = this.apiUrl.getScheme().equals("https");
+        this.httpClient = this.vertx
+                .createHttpClient(new HttpClientOptions()
+                        .setSsl(secure));
+    }
+
+    @PreDestroy
+    public void stop() {
+        this.stopped = true;
+        if (this.connecting != null) {
+            this.connecting.cancel();
+            this.connecting = null;
+        }
+        if (this.ws != null) {
+            this.ws.closeAndForget();
+            this.ws = null;
+        }
+        if (this.httpClient != null) {
+            this.httpClient.closeAndForget();
+            this.httpClient = null;
+        }
     }
 
     private void connect() {
@@ -91,9 +116,7 @@ public class TwinConnector {
                         port = secure ? 443 : 80;
                     }
 
-                    return this.vertx
-                            .createHttpClient(new HttpClientOptions()
-                                    .setSsl(secure))
+                    return this.httpClient
                             .webSocket(port, host, uri.toString());
 
                 })
@@ -115,16 +138,22 @@ public class TwinConnector {
 
     private void closed() {
         logger.info("Connection closed by remote");
-        this.ws = null;
-        this.stateHolder.setState(Map.of());
-        reconnect();
+        disconnected();
     }
 
     private void failed(final Throwable throwable) {
         logger.info("Connect failed", throwable);
-        this.ws = null;
         this.connecting = null;
+        disconnected();
+    }
+
+    private void disconnected() {
+        this.ws = null;
+        // clear known children
+        this.values.clear();
+        // clear current state
         this.stateHolder.setState(Map.of());
+        // trigger reconnect
         reconnect();
     }
 
@@ -135,20 +164,8 @@ public class TwinConnector {
             this.connecting = Uni.createFrom()
                     .item(new Object())
                     .onItem().delayIt().by(Duration.ofSeconds(5))
-                    .subscribe().with(x -> this.connect());
+                    .subscribe().with(x -> connect());
         }
-    }
-
-    @PreDestroy
-    public void stop() {
-        this.stopped = true;
-        if (this.connecting != null) {
-            this.connecting.cancel();
-        }
-        if (this.ws != null) {
-            this.ws.closeAndForget();
-        }
-
     }
 
     private void onMessage(final String message) {
