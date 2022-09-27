@@ -40,8 +40,20 @@ spec:
               value: https://api-eclipsecon-2022.apps.sandbox.drogue.world
             - name: DROGUE_DOPPELGAENGER_APPLICATION
               value: default
-            - name: DROGUE_DOPPELGAENGER_OPCUA_USERS_FOO
-              value: bar
+
+            - name: DROGUE_DOPPELGAENGER_OPCUA_ENABLE_ANONYMOUS
+              value: {{ .Values.opcua.enableAnonymous | quote }}
+
+            {{- range  $k, $v := .Values.opcua.users }}
+            - name: DROGUE_DOPPELGAENGER_OPCUA_USERS_{{ $k | upper }}
+              value: {{ $v | quote }}
+            {{- end}}
+
+            {{- with .Values.opcua.hostnames }}
+            - name: DROGUE_DOPPELGAENGER_OPCUA_HOSTNAMES
+              value: {{ . | quote }}
+            {{- end }}
+
             - name: QUARKUS_OIDC_CLIENT_AUTH_SERVER_URL
               value: {{ .Values.oidc.authServer | quote }}
             - name: QUARKUS_OIDC_CLIENT_CLIENT_ID

@@ -6,3 +6,11 @@ oidc:
   clientIdKey: CLIENT_ID
   # clientSecretKey is the key containing the client ID in the secret referenced by 'clientSecretName'
   clientSecretKey: CLIENT_SECRET
+
+opcua:
+  enableAnonymous: true
+  users:
+    foo: bar
+
+  # a comma separated list of hostnames to announce, instead of auto-detecting
+  # hostnames:
