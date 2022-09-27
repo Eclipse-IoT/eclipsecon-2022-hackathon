@@ -11,7 +11,8 @@ oidc:
   clientSecretKey: CLIENT_SECRET
 
 opcua:
-  # enableAnonymous: true
+  enableAnonymous: false
+  acceptAllClientCertificates: false
 
   # a map of users: name/password
   # users: {}

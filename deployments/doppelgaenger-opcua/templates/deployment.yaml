@@ -51,6 +51,8 @@ spec:
 
             - name: DROGUE_DOPPELGAENGER_OPCUA_ENABLE_ANONYMOUS
               value: {{ .Values.opcua.enableAnonymous | quote }}
+            - name: DROGUE_DOPPELGAENGER_OPCUA_ACCEPT_ALL_CLIENT_CERTIFICATES
+              value: {{ .Values.opcua.acceptAllClientCertificates | quote }}
 
             {{- range  $k, $v := .Values.opcua.users }}
             - name: DROGUE_DOPPELGAENGER_OPCUA_USERS_{{ $k | upper }}
