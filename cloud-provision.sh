@@ -33,6 +33,6 @@ for row in $( jq -c '.[]' "${IDMAP}"); do
     # shellcheck disable=SC2090
     JSON=$(echo "$device" | jq ".metadata.name = \"$ID\" | .spec.alias += [\"$ADDRESS\"]")
 
-    echo "$JSON" | jq -c | /home/jibou/github/drogue/drg/target/debug/drg apply -f -
+    echo "$JSON" | jq -c | drg apply -f -
 done
 
