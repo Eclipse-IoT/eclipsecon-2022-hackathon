@@ -7,7 +7,7 @@ metadata:
     deployment: doppelgaenger-opcua
 
 spec:
-  replicas: 1
+  replicas: {{ .Values.deployment.replicas }}
   selector:
     matchLabels:
       deployment: doppelgaenger-opcua
@@ -20,11 +20,13 @@ spec:
         - name: service
           image: ghcr.io/drogue-iot/drogue-doppelgaenger-opcua-server:latest
           imagePullPolicy: Always
+
           ports:
             - containerPort: 8080
               name: service
             - containerPort: 4840
               name: opcua
+
           livenessProbe:
             httpGet:
               port: 8080
@@ -33,13 +35,19 @@ spec:
             httpGet:
               port: 8080
               path: /q/health/ready
+
+          {{- with .Values.deployment.resources }}
+          resources:
+            {{- . | toYaml | nindent 12 }}
+          {{- end }}
+
           env:
             - name: DROGUE_DOPPELGAENGER_OPCUA_SELF_SIGNED_KEY_MODE
               value: ephemeral
             - name: DROGUE_DOPPELGAENGER_API
-              value: https://api-eclipsecon-2022.apps.sandbox.drogue.world
+              value: {{ .Values.doppelgaenger.api | quote }}
             - name: DROGUE_DOPPELGAENGER_APPLICATION
-              value: default
+              value: {{ .Values.doppelgaenger.application | default "default" | quote }}
 
             - name: DROGUE_DOPPELGAENGER_OPCUA_ENABLE_ANONYMOUS
               value: {{ .Values.opcua.enableAnonymous | quote }}
@@ -66,3 +74,7 @@ spec:
                 secretKeyRef:
                   name: {{ .Values.oidc.clientSecretName }}
                   key: {{ .Values.oidc.clientSecretKey }}
+
+            {{- with .Values.extraEnvVars }}
+            {{- . | toYaml | nindent 12 }}
+            {{- end }}

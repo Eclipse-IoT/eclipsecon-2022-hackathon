@@ -1,3 +1,6 @@
+doppelgaenger:
+  api: https://api-eclipsecon-2022.apps.sandbox.drogue.world
+
 oidc:
   authServer: https://sso-eclipsecon-2022.apps.sandbox.drogue.world/realms/doppelgaenger
   # clientSecretName is not the secret itself, but the name of a Kubernetes secret, containing the client id and secret
@@ -8,9 +11,19 @@ oidc:
   clientSecretKey: CLIENT_SECRET
 
 opcua:
-  enableAnonymous: true
-  users:
-    foo: bar
+  # enableAnonymous: true
+
+  # a map of users: name/password
+  # users: {}
 
   # a comma separated list of hostnames to announce, instead of auto-detecting
   # hostnames:
+
+deployment:
+
+  replicas: 1
+
+  # allow configuring kubernetes resource requests/limits
+  # resources: {}
+
+  # extraEnvVars: []
