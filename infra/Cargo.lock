@@ -367,7 +367,7 @@ dependencies = [
 [[package]]
 name = "btmesh-common"
 version = "0.1.0"
-source = "git+https://github.com/drogue-iot/btmesh.git?branch=main#5c54a6974620e2c5eccf89947e326d71d0ea85f9"
+source = "git+https://github.com/drogue-iot/btmesh.git?branch=feature/fix_battery_1#f1ee6a755dd1be799577a13706d7135ee87f1996"
 dependencies = [
  "aes",
  "ccm",
@@ -382,7 +382,7 @@ dependencies = [
 [[package]]
 name = "btmesh-models"
 version = "0.1.0"
-source = "git+https://github.com/drogue-iot/btmesh.git?branch=main#5c54a6974620e2c5eccf89947e326d71d0ea85f9"
+source = "git+https://github.com/drogue-iot/btmesh.git?branch=feature/fix_battery_1#f1ee6a755dd1be799577a13706d7135ee87f1996"
 dependencies = [
  "btmesh-common",
  "heapless",
