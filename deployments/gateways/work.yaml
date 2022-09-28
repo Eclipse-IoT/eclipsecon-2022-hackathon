@@ -184,6 +184,6 @@ spec:
           hostPath:
             path: /var/run/dbus/system_bus_socket
         - name: meshd-config
-          emptyDir: { }
+          emptyDir: {}
         - name: meshd-storage
-          emptyDir: { }
+          emptyDir: {}
