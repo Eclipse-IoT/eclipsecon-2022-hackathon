@@ -9,6 +9,6 @@ See the [docs](../DEVELOPING.md) for how to run the gateway.
 Run the following commands from the directory this file is located in:
 
 ```shell
-podman build  .. -f gateway/Dockerfile -t quay.io/eclipsecon-2022/gateway:latest
+podman build  ../.. -f infra/gateway/Dockerfile -t quay.io/eclipsecon-2022/gateway:latest
 podman push quay.io/eclipsecon-2022/gateway:latest
 ```
