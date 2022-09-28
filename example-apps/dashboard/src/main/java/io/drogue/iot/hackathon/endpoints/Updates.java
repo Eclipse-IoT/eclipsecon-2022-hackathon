@@ -82,7 +82,7 @@ public class Updates {
 
         private Direction direction;
 
-        private Instant lastUpdate;
+        private Instant lastUpdate = Instant.EPOCH;
 
         private String lastContent;
 
@@ -103,14 +103,22 @@ public class Updates {
 
             this.lastState = state;
 
+            // delta to last (sent) update
+            final var delta = Duration.between(this.lastUpdate, Instant.now()).toMillis();
+
             final var renderedState = renderState(state, this.sortBy, this.direction);
             if (!renderedState.equals(this.lastContent)) {
                 this.lastContent = renderedState;
+                if (delta >= 1_000) {
+                    // nothing sent for at least a second, send the update
+                    this.lastUpdate = Instant.now();
+                    this.session
+                            .getAsyncRemote()
+                            .sendText(renderedState);
+                }
+            } else if (delta > 30_000) {
+                // nothing sent for more than 30 seconds, send a ping
                 this.lastUpdate = Instant.now();
-                this.session
-                        .getAsyncRemote()
-                        .sendText(renderedState);
-            } else if (Duration.between(this.lastUpdate, Instant.now()).toSeconds() > 30) {
                 try {
                     // weird, but the "ping" method of the async client is actually a synchronous call
                     this.session
