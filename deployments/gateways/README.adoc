@@ -8,11 +8,18 @@
   ** Install operator
   ** Create `MultiClusterHub` resource
 
-== ACM
+== OCM/ACM
 
-NOTE: ACM needs to be installed and set up once. For adding a new gateway see <<Add new gateway>>.
+NOTE: OCM/ACM needs to be installed and set up once. For adding a new gateway see <<Add new gateway>>.
 
-When creating a `MultiClusterHub` resource, you will need to configure a "pull secret".
+Also see:
+
+  * https://open-cluster-management.io/[Open Cluster Management (OCM)]
+  * https://www.redhat.com/en/technologies/management/advanced-cluster-management[Red Hat Advanced Cluster Management for Kubernetes (ACM)]
+
+=== Pull secret
+
+When creating a `MultiClusterHub` resource, you will need to configure a "pull secret", if using ACM.
 
 Create the secret using:
 
@@ -20,6 +27,8 @@ Create the secret using:
 ----
 oc apply -n open-cluster-management -f pull-secret.yaml
 ----
+
+=== Create the cluster hub
 
 Note the secret name, and apply it to the `MultiClusterHub` resource:
 
@@ -33,6 +42,8 @@ metadata:
 spec:
   imagePullSecret: <secret>
 ----
+
+=== (Optional) Create a cluster set
 
 Create a "ClusterSet" (`ManagedClusterSet`):
 
