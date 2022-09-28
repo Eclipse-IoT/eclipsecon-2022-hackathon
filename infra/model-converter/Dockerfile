@@ -10,6 +10,6 @@ FROM registry.access.redhat.com/ubi9-minimal
 
 LABEL org.opencontainers.image.source="https://github.com/Eclipse-IoT/eclipsecon-2022-hackathon"
 
-COPY --from=builder /build/target/release/eclipsecon-model-converter /
+COPY --from=builder /build/infra/target/release/eclipsecon-model-converter /
 
 ENTRYPOINT [ "/eclipsecon-model-converter" ]
