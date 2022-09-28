@@ -1,6 +1,6 @@
 FROM registry.access.redhat.com/ubi9/ubi:latest AS builder
 
-RUN dnf -y install java maven rsync
+RUN dnf -y install java-17-openjdk maven rsync
 RUN mkdir /usr/src/build
 COPY . /usr/src/build
 WORKDIR /usr/src/build
