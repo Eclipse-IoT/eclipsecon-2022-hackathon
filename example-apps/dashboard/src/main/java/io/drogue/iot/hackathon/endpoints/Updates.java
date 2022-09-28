@@ -96,10 +96,10 @@ public class Updates {
          * Gets ticked every second.
          */
         void tick() {
-            sendRenderedState(this.lastState);
+            sendRenderedState(this.lastState, false);
         }
 
-        void sendRenderedState(final StateHolder.State state) {
+        void sendRenderedState(final StateHolder.State state, final boolean force) {
 
             this.lastState = state;
 
@@ -109,7 +109,7 @@ public class Updates {
             final var renderedState = renderState(state, this.sortBy, this.direction);
             if (!renderedState.equals(this.lastContent)) {
                 this.lastContent = renderedState;
-                if (delta >= 1_000) {
+                if (force || delta >= 1_000) {
                     // nothing sent for at least a second, send the update
                     this.lastUpdate = Instant.now();
                     this.session
@@ -178,7 +178,7 @@ public class Updates {
 
         logger.debug("Broadcasting to {} sessions", this.connections.size());
         for (final var connection : this.connections.values()) {
-            connection.sendRenderedState(state);
+            connection.sendRenderedState(state, false);
         }
     }
 
@@ -220,7 +220,7 @@ public class Updates {
                     connection.sortBy = sortBy;
                     connection.direction = direction;
                     logger.info("Re-sort - sortBy: {}, direction: {}", connection.sortBy, connection.direction);
-                    connection.sendRenderedState(this.state.getState());
+                    connection.sendRenderedState(this.state.getState(), true);
                 }
             }
         }
@@ -229,7 +229,7 @@ public class Updates {
     void addSession(final Session session) {
         final var connection = new Connection(session);
         final var lastState = this.state.getState();
-        connection.sendRenderedState(lastState);
+        connection.sendRenderedState(lastState, false);
         this.connections.put(session.getId(), connection);
     }
 
