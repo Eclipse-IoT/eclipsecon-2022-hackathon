@@ -26,6 +26,7 @@ use speaker::*;
 
 extern "C" {
     static __storage: u8;
+    static __storage_extra: u8;
 }
 
 use defmt_rtt as _;
@@ -49,6 +50,7 @@ async fn main(_s: Spawner) {
     let mut driver = Driver::new(
         "drogue",
         unsafe { &__storage as *const u8 as u32 },
+        Some(unsafe { &__storage_extra as *const u8 as u32 }),
         100,
         BluetoothMeshDriverConfig {
             uuid: None,
