@@ -1,7 +1,7 @@
 **/target/
 firmware/**
 idgen/**
-!target/release/eclipsecon-model-converter
+!infra/target/release/eclipsecon-model-converter
 deployments/**
 **/Dockerfile
 .idea/**
