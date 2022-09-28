@@ -1135,6 +1135,7 @@ name = "eclipsecon-gateway"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "async-trait",
  "bluer",
  "btmesh-common",
  "btmesh-models",

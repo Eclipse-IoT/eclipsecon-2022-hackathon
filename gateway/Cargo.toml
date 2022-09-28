@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+async-trait = "0.1"
 bluer = { version = "0.15.0", features = ["full"] }
 btmesh-common = { version = "0.1.0" }
 btmesh-models = { version = "0.1.0" }

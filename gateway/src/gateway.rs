@@ -1,3 +1,4 @@
+use crate::utils::AttachRetry;
 use bluer::mesh::{application::Application, element::*, network::Network};
 use btmesh_models::{
     self,
@@ -81,7 +82,9 @@ pub async fn run(
 
     let registered = mesh.application(root_path.clone(), sim).await?;
 
-    let node = mesh.attach(root_path.clone(), &config.token).await?;
+    let node = mesh
+        .attach_retry(10, Duration::from_secs(2), root_path.clone(), &config.token)
+        .await?;
 
     log::info!("Starting gateway event loop");
     loop {
