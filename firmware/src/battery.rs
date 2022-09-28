@@ -1,3 +1,4 @@
+use crate::adc::SharedAdc;
 use btmesh_device::{
     BluetoothMeshModel, BluetoothMeshModelContext, Control, InboundModelPayload, PublicationCadence,
 };
@@ -7,29 +8,50 @@ use btmesh_models::generic::battery::{
 };
 use core::future::Future;
 use embassy_futures::select::{select, Either};
+use embassy_nrf::saadc::*;
 use embassy_time::Ticker;
 use futures::StreamExt;
 
 /// A type implementing the GenericBatteryServer model, capable of periodically publishing the status of the battery.
 pub struct Battery {
+    adc: &'static SharedAdc,
     ticker: Option<Ticker>,
 }
 
 impl Battery {
-    pub fn new() -> Self {
-        Self { ticker: None }
+    pub fn new(adc: &'static SharedAdc) -> Self {
+        Self { ticker: None, adc }
     }
 
     // Read the current battery status.
-    //
-    // TODO: read actual battery status instead of faking it
     async fn read(&mut self) -> GenericBatteryStatus {
+        let mut config = Config::default();
+        config.resolution = Resolution::_12BIT;
+
+        let mut bat_config = ChannelConfig::single_ended(VddInput);
+        bat_config.gain = Gain::GAIN1_6;
+        bat_config.reference = Reference::INTERNAL;
+
+        let mut adc = self.adc.lock().await;
+        let mut adc = adc.configure(Config::default(), [bat_config; 1]);
+
+        let mut buf = [0i16; 1];
+        adc.sample(&mut buf).await;
+
+        // Detectable range is 0 - 3.6v, normalize to voltage using 10 bit resolution
+        let voltage = buf[0] as f32 * 3.6 / 4096.0;
+
+        // Lowest voltage we can operate at is 1.7V
+        let base = 1.7;
+
+        // Max device voltage seen from regulator is 3.3v
+        let level = (100.0 * (voltage - base) / (3.3 - base)) as u8;
         GenericBatteryStatus::new(
-            0,
+            level,
             0,
             0,
             GenericBatteryFlags {
-                presence: GenericBatteryFlagsPresence::Unknown,
+                presence: GenericBatteryFlagsPresence::PresentRemovable,
                 indicator: GenericBatteryFlagsIndicator::Unknown,
                 charging: GenericBatteryFlagsCharging::Unknown,
             },

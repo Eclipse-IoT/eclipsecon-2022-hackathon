@@ -600,6 +600,7 @@ dependencies = [
  "panic-probe",
  "panic-reset",
  "sensor-model",
+ "static_cell",
 ]
 
 [[package]]

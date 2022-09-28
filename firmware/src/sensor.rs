@@ -1,3 +1,4 @@
+use crate::mic::*;
 use btmesh_device::{
     BluetoothMeshModel, BluetoothMeshModelContext, Control, InboundModelPayload, PublicationCadence,
 };
@@ -6,7 +7,7 @@ use core::future::Future;
 use embassy_futures::select::{select, Either};
 use embassy_time::Ticker;
 use futures::StreamExt;
-use microbit_bsp::{accelerometer::Accelerometer, mic::Microphone};
+use microbit_bsp::accelerometer::Accelerometer;
 use nrf_softdevice::{temperature_celsius, Softdevice};
 
 use sensor_model::*;

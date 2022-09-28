@@ -4,12 +4,15 @@
 #![feature(generic_associated_types)]
 #![feature(type_alias_impl_trait)]
 
+mod adc;
 mod battery;
 mod button;
+mod mic;
 mod onoff;
 mod sensor;
 mod speaker;
 
+use adc::*;
 use battery::*;
 use btmesh_device::BluetoothMeshModel;
 use btmesh_macro::{device, element};
@@ -19,10 +22,12 @@ use core::future::Future;
 use embassy_executor::Spawner;
 use embassy_nrf::interrupt;
 use embassy_time::{Duration, Timer};
-use microbit_bsp::{mic::Microphone, *};
+use mic::*;
+use microbit_bsp::*;
 use onoff::*;
 use sensor::*;
 use speaker::*;
+use static_cell::StaticCell;
 
 extern "C" {
     static __storage: u8;
@@ -58,6 +63,13 @@ async fn main(_s: Spawner) {
         },
     );
 
+    // A safe, shared reference to the Analog To Digital converter
+    static ADC: StaticCell<SharedAdc> = StaticCell::new();
+    let adc = ADC.init(SharedAdc::new(Adc::new(
+        board.saadc,
+        interrupt::take!(SAADC),
+    )));
+
     // An accelerometer for recording orientation
     let accelerometer = accelerometer::Accelerometer::new(
         board.twispi0,
@@ -68,18 +80,13 @@ async fn main(_s: Spawner) {
     .unwrap();
 
     // A microphone for reading sound levels.
-    let mic = Microphone::new(
-        board.saadc,
-        interrupt::take!(SAADC),
-        board.microphone,
-        board.micen,
-    );
+    let mic = Microphone::new(adc, board.microphone, board.micen);
 
     // An instance of the sensor module implementing the SensorServer model.
     let sensor = Sensor::new(driver.softdevice(), accelerometer, mic);
 
     // An instance of the battery module implementing the GenericBattery model.
-    let battery = Battery::new();
+    let battery = Battery::new(adc);
 
     // An instance of the onoff module implementing the OnOff model.
     let onoff = OnOff::new(board.display, Speaker::new(board.pwm0, board.speaker));
