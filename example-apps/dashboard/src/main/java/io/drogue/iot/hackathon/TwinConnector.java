@@ -2,6 +2,7 @@ package io.drogue.iot.hackathon;
 
 import java.net.URI;
 import java.time.Duration;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -17,6 +18,8 @@ import javax.ws.rs.core.UriBuilder;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.ImmutableMap;
 
 import io.drogue.iot.hackathon.model.BasicFeature;
 import io.drogue.iot.hackathon.model.Thing;
@@ -151,8 +154,8 @@ public class TwinConnector {
         this.ws = null;
         // clear known children
         this.values.clear();
-        // clear current state
-        this.stateHolder.setState(Map.of());
+        // send state
+        sendState();
         // trigger reconnect
         reconnect();
     }
@@ -169,18 +172,18 @@ public class TwinConnector {
     }
 
     private void onMessage(final String message) {
-        logger.info("onMessage: {}", message);
+        logger.debug("onMessage: {}", message);
         final var json = new JsonObject(message);
         final var type = json.getString("type");
 
         try {
             if ("change".equals(type)) {
                 final var thing = json.getJsonObject("thing").mapTo(Thing.class);
-                logger.info("Update: {}", thing);
+                logger.debug("Update: {}", thing);
                 thingUpdate(thing);
             } else if ("initial".equals(type)) {
                 final var thing = json.getJsonObject("thing").mapTo(Thing.class);
-                logger.info("Initial update: {}", thing);
+                logger.debug("Initial update: {}", thing);
                 thingUpdate(thing);
             }
         } catch (final Exception e) {
@@ -212,7 +215,7 @@ public class TwinConnector {
     private void thingUpdate(final Thing thing) throws Exception {
         if (this.rootId.equals(thing.metadata.name)) {
             setRoot(Optional.ofNullable(thing.reportedState.get("$children"))
-                    .map(r -> r.value)
+                    .map(r -> r.getValue())
                     .filter(Map.class::isInstance)
                     .map(Map.class::cast)
                     .map(Map::keySet)
@@ -234,7 +237,15 @@ public class TwinConnector {
         values.putAll(thing.syntheticState);
         this.values.put(name, values);
 
-        this.stateHolder.setState(this.values);
+        sendState();
+    }
+
+    private void sendState() {
+        final var values = new HashMap<String, Map<String, BasicFeature>>(this.values.size());
+        for (final var device : this.values.entrySet()) {
+            values.put(device.getKey(), ImmutableMap.copyOf(device.getValue()));
+        }
+        this.stateHolder.setState(Collections.unmodifiableMap(values));
     }
 
     @SuppressWarnings("rawtypes")
@@ -259,7 +270,7 @@ public class TwinConnector {
             this.values.remove(remove);
         }
 
-        this.stateHolder.setState(this.values);
+        sendState();
     }
 
     private void addChild(final String thingId) {

@@ -12,9 +12,22 @@ import io.quarkus.runtime.annotations.RegisterForReflection;
 
 @RegisterForReflection
 public class BasicFeature {
-    public OffsetDateTime lastUpdate;
+    private final OffsetDateTime lastUpdate;
 
-    public Object value;
+    private final Object value;
+
+    BasicFeature(final Object value, final OffsetDateTime lastUpdate) {
+        this.value = value;
+        this.lastUpdate = lastUpdate;
+    }
+
+    public Object getValue() {
+        return this.value;
+    }
+
+    public OffsetDateTime getLastUpdate() {
+        return this.lastUpdate;
+    }
 
     @Override
     public String toString() {

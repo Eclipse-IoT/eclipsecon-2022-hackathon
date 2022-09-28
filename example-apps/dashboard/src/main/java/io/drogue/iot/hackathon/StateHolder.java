@@ -24,6 +24,8 @@ public class StateHolder {
     public static class State {
         private volatile Map<String, Map<String, BasicFeature>> devices;
 
+        public static final State EMPTY = new State();
+
         State() {
             this.devices = Map.of();
         }
@@ -46,6 +48,7 @@ public class StateHolder {
                     .add("devices", this.devices)
                     .toString();
         }
+
     }
 
     @Inject
@@ -57,7 +60,7 @@ public class StateHolder {
         return this.state;
     }
 
-    public void setState(Map<String, Map<String, BasicFeature>> state) {
+    public void setState(final Map<String, Map<String, BasicFeature>> state) {
         this.state.devices = state;
         this.updates.send(this.state);
     }

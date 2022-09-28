@@ -42,20 +42,84 @@ public class Updates {
         public static native TemplateInstance state(Table table);
     }
 
+    public enum Freshness {
+        GOOD,
+        CONCERNED,
+        BAD;
+
+        public static Freshness fromData(final Map<String, BasicFeature> state) {
+            Instant lastUpdate = null;
+
+            for (final var entry : state.entrySet()) {
+                final var when = entry.getValue().getLastUpdate().toInstant();
+
+                if (lastUpdate == null) {
+                    lastUpdate = when;
+                } else if (lastUpdate.isBefore(when)) {
+                    lastUpdate = when;
+                }
+            }
+
+            if (lastUpdate == null) {
+                return BAD;
+            }
+
+            final var diff = Duration.between(lastUpdate, Instant.now());
+            if (diff.toSeconds() > 120) {
+                return BAD;
+            } else if (diff.toSeconds() > 10) {
+                return CONCERNED;
+            } else {
+                return GOOD;
+            }
+        }
+    }
+
     static class Connection {
-        Session session;
+        private final Session session;
 
-        int sortBy;
+        private int sortBy;
 
-        Direction direction;
+        private Direction direction;
+
+        private Instant lastUpdate;
+
+        private String lastContent;
+
+        private StateHolder.State lastState = StateHolder.State.EMPTY;
 
         Connection(final Session session) {
             this.session = session;
         }
 
+        /**
+         * Gets ticked every second.
+         */
+        void tick() {
+            sendRenderedState(this.lastState);
+        }
+
         void sendRenderedState(final StateHolder.State state) {
+
+            this.lastState = state;
+
             final var renderedState = renderState(state, this.sortBy, this.direction);
-            this.session.getAsyncRemote().sendText(renderedState);
+            if (!renderedState.equals(this.lastContent)) {
+                this.lastContent = renderedState;
+                this.lastUpdate = Instant.now();
+                this.session
+                        .getAsyncRemote()
+                        .sendText(renderedState);
+            } else if (Duration.between(this.lastUpdate, Instant.now()).toSeconds() > 30) {
+                try {
+                    // weird, but the "ping" method of the async client is actually a synchronous call
+                    this.session
+                            .getAsyncRemote()
+                            .sendPing(ByteBuffer.wrap(new byte[0]));
+                } catch (final Exception e) {
+                    logger.info("Failed to send ping", e);
+                }
+            }
         }
     }
 
@@ -63,30 +127,36 @@ public class Updates {
 
         final var table = new Table("Device ID", "Temperature", "Noise", "Acceleration", "Battery");
         for (final var entry : state.getDevices().entrySet()) {
+
             final var values = entry.getValue();
-            table.addRow(
-                    cell(ofNullable(entry.getKey())),
-                    cell(ofNullable(values.get("temperature"))
-                                    .flatMap(BasicFeature::toDouble),
-                            value -> String.format("%.0f °C", value)),
-                    cell(ofNullable(values.get("noise"))
-                            .flatMap(BasicFeature::toDouble)),
-                    cell(ofNullable(values.get("acceleration"))
-                                    .flatMap(f -> f.toTyped(Map.class)),
-                            value -> String.format("%s / %s / %s", value.get("x"), value.get("y"), value.get("z"))),
-                    cell(ofNullable(
-                                    values.get("battery"))
-                                    .flatMap(BasicFeature::toDouble),
-                            value -> String.format("%.2f%%", value),
-                            "N/A")
-            );
+            final var freshness = Freshness.fromData(values);
+
+            if (freshness == Freshness.GOOD || freshness == Freshness.CONCERNED) {
+                table.addRow(
+                        cell(ofNullable(entry.getKey())),
+                        cell(ofNullable(values.get("temperature"))
+                                        .flatMap(BasicFeature::toDouble),
+                                value -> String.format("%.0f °C", value)),
+                        cell(ofNullable(values.get("noise"))
+                                .flatMap(BasicFeature::toDouble)),
+                        cell(ofNullable(values.get("acceleration"))
+                                        .flatMap(f -> f.toTyped(Map.class)),
+                                value -> String.format("%s / %s / %s", value.get("x"), value.get("y"), value.get("z"))),
+                        cell(ofNullable(
+                                        values.get("battery"))
+                                        .flatMap(BasicFeature::toDouble),
+                                value -> String.format("%.2f%%", value),
+                                "N/A")
+                );
+            }
         }
 
         if (sortBy >= 0) {
             table.sortBy(sortBy, direction);
         }
 
-        return Templates.state(table).render();
+        return Templates.state(table)
+                .render();
     }
 
     private final Map<String, Connection> connections = new ConcurrentHashMap<>();
@@ -94,12 +164,9 @@ public class Updates {
     @Inject
     StateHolder state;
 
-    private Instant lastUpdate = Instant.now();
-
     @Incoming(UPDATES)
     void update(final StateHolder.State state) {
         logger.debug("State update: {}", state);
-        this.lastUpdate = Instant.now();
 
         logger.debug("Broadcasting to {} sessions", this.connections.size());
         for (final var connection : this.connections.values()) {
@@ -128,7 +195,8 @@ public class Updates {
     @OnMessage
     void onMessage(final Session session, final String message) {
         final var msg = new JsonObject(message);
-        logger.info("onMessage - msg: {}", msg);
+        logger.debug("onMessage - msg: {}", msg);
+
         if ("sortBy".equals(msg.getString("request"))) {
             final var sortBy = msg.getInteger("column", 0);
 
@@ -166,20 +234,9 @@ public class Updates {
         }
     }
 
-    @Scheduled(every = "10s")
-    void ping() {
-        if (Duration.between(this.lastUpdate, Instant.now()).getSeconds() > 60) {
-            this.lastUpdate = Instant.now();
-            final var payload = ByteBuffer.allocate(0);
-            for (final var connection : this.connections.values()) {
-                try {
-                    connection.session.getAsyncRemote().sendPing(payload);
-                } catch (final Exception e) {
-                    logger.info("Failed to ping session ({})", connection.session.getId(), e);
-                    removeSession(connection.session);
-                }
-            }
-        }
+    @Scheduled(every = "1s")
+    void tick() {
+        this.connections.values().forEach(Connection::tick);
     }
 
 }

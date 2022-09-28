@@ -28,9 +28,9 @@
                 {#let direction = table.directionForColumn(header_index) selected = table.columnSelected(header_index, "pf-m-selected")}
                     {#when header_index}
                         {#is 0}
-                            <th aria-sort="{direction}" class="pf-m-truncate pf-m-border-right pf-c-table__sticky-column pf-c-table__sort {selected}" role="columnheader" scope="col" >{#include header column = header_index label = header direction = direction/}</th>
+                            <th aria-sort="{direction}" class="pf-m-width-30 pf-m-truncate pf-m-border-right pf-c-table__sticky-column pf-c-table__sort {selected}" role="columnheader" scope="col" >{#include header column = header_index label = header direction = direction/}</th>
                         {#else}
-                            <th aria-sort="{direction}" class="pf-c-table__sort {selected}" role="columnheader" scope="col">{#include header column = header_index label = header direction = direction /}</th>
+                            <th aria-sort="{direction}" class="pf-m-width-20 pf-c-table__sort {selected}" role="columnheader" scope="col">{#include header column = header_index label = header direction = direction /}</th>
                     {/when}
                 {/let}
             {/for}
