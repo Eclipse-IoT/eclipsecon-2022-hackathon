@@ -144,9 +144,9 @@ public class Updates {
                                         .flatMap(f -> f.toTyped(Map.class)),
                                 value -> String.format("%s / %s / %s", value.get("x"), value.get("y"), value.get("z"))),
                         cell(ofNullable(
-                                        values.get("battery"))
+                                        values.get("batteryLevel"))
                                         .flatMap(BasicFeature::toDouble),
-                                value -> String.format("%.2f%%", value),
+                                value -> String.format("%.0f %%", value),
                                 "N/A")
                 );
             }
