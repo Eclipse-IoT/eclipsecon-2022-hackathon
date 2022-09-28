@@ -1,5 +1,6 @@
 
 :experimental:
+:icons: font
 
 == Pre-requisites
 
@@ -8,6 +9,8 @@
   ** Create `MultiClusterHub` resource
 
 == ACM
+
+NOTE: ACM needs to be installed and set up once. For adding a new gateway see <<Add new gateway>>.
 
 When creating a `MultiClusterHub` resource, you will need to configure a "pull secret".
 
@@ -57,7 +60,7 @@ spec:
   clusterSet: eclipsecon
 ----
 
-== Add new node
+== Add new gateway
 
 * Install dependencies
 * Install https://microshift.io[MicroShift]
