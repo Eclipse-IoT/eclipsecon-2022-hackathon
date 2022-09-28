@@ -38,7 +38,7 @@ spec:
                       cp -av /etc/meshd-init/config /var/lib/meshd/
                       cp -av /etc/meshd-init/lib /var/lib/meshd/
                       find /var/lib/meshd/
-                  image: quay.io/eclipsecon-2022/meshd:latest
+                  image: quay.io/eclipsecon-2022/meshd:0.1.0
                   imagePullPolicy: Always
                   name: init-data
                   volumeMounts:
@@ -48,7 +48,7 @@ spec:
                       name: meshd-storage
               containers:
                 - name: meshd
-                  image: quay.io/eclipsecon-2022/meshd:latest
+                  image: quay.io/eclipsecon-2022/meshd:0.1.0
                   imagePullPolicy: Always
                   command:
                     - /usr/libexec/bluetooth/bluetooth-meshd
@@ -67,11 +67,11 @@ spec:
                     - name: meshd-storage
                       mountPath: /var/lib/meshd/lib
                 - name: gateway
-                  image: quay.io/eclipsecon-2022/gateway:latest
+                  image: quay.io/eclipsecon-2022/gateway:0.1.0
                   imagePullPolicy: Always
                   args:
                     - '--drogue-device'
-                    - gateway3
+                    - <gateway> # TODO: replace with gateway device name (e.g. gateway1)
                     - '--drogue-application'
                     - eclipsecon-hackathon
                     - '--token'
@@ -81,7 +81,6 @@ spec:
                       value: info
                   securityContext:
                     privileged: true
-                    # runAsUser: 0
                   volumeMounts:
                     - mountPath: /var/run/dbus/system_bus_socket
                       name: dbus-socket
@@ -132,7 +131,7 @@ spec:
               cp -av /etc/meshd-init/config /var/lib/meshd/
               cp -av /etc/meshd-init/lib /var/lib/meshd/
               find /var/lib/meshd/
-          image: quay.io/eclipsecon-2022/meshd:latest
+          image: quay.io/eclipsecon-2022/meshd:0.1.0
           imagePullPolicy: Always
           name: init-data
           volumeMounts:
@@ -142,7 +141,7 @@ spec:
               name: meshd-storage
       containers:
         - name: meshd
-          image: quay.io/eclipsecon-2022/meshd:latest
+          image: quay.io/eclipsecon-2022/meshd:0.1.0
           imagePullPolicy: Always
           command:
             - /usr/libexec/bluetooth/bluetooth-meshd
@@ -161,11 +160,11 @@ spec:
             - name: meshd-storage
               mountPath: /var/lib/meshd/lib
         - name: gateway
-          image: quay.io/eclipsecon-2022/gateway:latest
+          image: quay.io/eclipsecon-2022/gateway:0.1.0
           imagePullPolicy: Always
           args:
             - '--drogue-device'
-            - gateway3
+            - <gateway> # TODO: replace with gateway device name (e.g. gateway1)
             - '--drogue-application'
             - eclipsecon-hackathon
             - '--token'
@@ -175,7 +174,6 @@ spec:
               value: info
           securityContext:
             privileged: true
-            # runAsUser: 0
           volumeMounts:
             - mountPath: /var/run/dbus/system_bus_socket
               name: dbus-socket
