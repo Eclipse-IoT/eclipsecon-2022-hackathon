@@ -17,6 +17,7 @@ class State {
         this.#uri = uri + "/api/updates/v1alpha1/events";
 
         console.info("Using WS URI:", this.#uri);
+        this.#setState(null);
 
         this.#connect();
     }
@@ -68,10 +69,22 @@ class State {
 
     #setState(state) {
         this.state = state;
-        if (this.state.renderedState !== undefined) {
+        if (this.state?.renderedState !== undefined) {
             this.#target.innerHTML = this.state.renderedState;
         } else {
-            this.#target.innerHTML = "";
+            this.#target.innerHTML = `
+    <div class="pf-c-empty-state">
+        <div class="pf-c-empty-state__content">
+            <i class="pf-icon pf-icon-disconnected pf-c-empty-state__icon" aria-hidden="true"></i>
+
+            <h1 class="pf-c-title pf-m-lg">Not connected</h1>
+            <div
+                    class="pf-c-empty-state__body"
+            >The connection to the backend is currently not established.
+            </div>
+        </div>
+    </div>
+`;
         }
 
     }
