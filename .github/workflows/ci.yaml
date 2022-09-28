@@ -23,7 +23,7 @@ jobs:
         run: sudo apt install libdbus-1-dev pkg-config
 
       - name: Build
-        run: cargo build --release
+        run: pushd infra; cargo build --release; popd;
 
       - name: Build firmware
         run: pushd firmware; cargo build --release; popd;

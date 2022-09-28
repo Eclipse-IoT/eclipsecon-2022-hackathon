@@ -34,7 +34,7 @@ futures = { version = "0.3", default-features = false }
 nrf-softdevice = { version = "0.1.0", features = ["ble-peripheral", "ble-central", "ble-gatt-server", "s140", "nrf52833"] }
 nrf-softdevice-s140 = { version = "0.1.0" }
 
-sensor-model = { path = "../sensor-model", features = ["defmt"] }
+sensor-model = { path = "../infra/sensor-model", features = ["defmt"] }
 hex = { version = "0.4.3", default-features = false }
 
 [features]

@@ -1,4 +1,4 @@
 .idea/
-/target
+/infra/target
 node.json
 .vscode/

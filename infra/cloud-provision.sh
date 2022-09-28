@@ -2,7 +2,7 @@
 
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
-IDMAP="$SCRIPT_DIR/example-apps/console/src/main/resources/META-INF/resources/idmap.json"
+IDMAP="$SCRIPT_DIR/../example-apps/console/src/main/resources/META-INF/resources/idmap.json"
 
 # shellcheck disable=SC2089
 device='{ "metadata": {

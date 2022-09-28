@@ -11,13 +11,17 @@ The mesh daemon communicates with the bluetooth adapter and uses the provided co
 sudo systemctl disable bluetooth
 sudo systemctl stop bluetooth
 
-cd meshd
+cd infra/meshd
 sudo /usr/libexec/bluetooth/bluetooth-meshd --config ${PWD}/config --storage ${PWD}/lib --debug
 ```
 
 ## Build the project
 
+The development of gateway (and simulator) projects is possible only on Linux platforms with libdbus installed.
+Uncomment appropriate modules in [infra/Cargo.toml](infra/Cargo.toml) to make them a part of the workspace.
+
 ```
+cd infra
 cargo build --release
 ```
 
@@ -32,6 +36,7 @@ RUST_LOG=info ./target/release/eclipsecon-gateway --drogue-device gateway1 --dro
 Or, to build and run:
 
 ```shell
+cd infra/gateway
 RUST_LOG=info cargo run --package eclipsecon-gateway -- --drogue-device gateway1 --drogue-application eclipsecon-hackathon --token dd26596e54e78fa2
 ```
 
@@ -55,7 +60,7 @@ Choose a valid unicast network address for your device. If you wish to use the [
 NOTE: Make sure the address is a 2 byte hex string with the '0x' prefix.
 
 ```
-cd pre-provision
+cd infra/pre-provision
 cargo run -- provision --node-address 0x0100 --network-key 0B5E6760156116BAB83115D4C1BFB480 --application-key 8E0A245C38A136E7D6E8429D562DA959  --chip nRF52833_xxAA
 ```
 
@@ -82,6 +87,7 @@ cargo run --release
 If you don't have a microbit, you can run the simulator:
 
 ```
+cd infra/simulator
 RUST_LOG=info ./target/release/eclipsecon-simulator --device <uuid>
 ```
 

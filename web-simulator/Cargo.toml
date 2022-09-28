@@ -24,7 +24,7 @@ wasm-logger = "0.2"
 web-sys = "0.3.59"
 yew = "0.19"
 
-sensor-model = { path = "../sensor-model", features = ["std"] }
+sensor-model = { path = "../infra/sensor-model", features = ["std"] }
 
 btmesh-common = { version = "0.1.0" }
 btmesh-models = { version = "0.1.0" }
