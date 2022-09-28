@@ -111,29 +111,45 @@ public class Updates {
         }
     }
 
+    static boolean seemsEmpty(final Map<String, BasicFeature> values) {
+        for (final var value : values.entrySet()) {
+            if (value.getKey().startsWith("$")) {
+                // ignore structural information
+                continue;
+            }
+            if (value.getValue().getValue() != null) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     static String renderState(final StateHolder.State state, final int sortBy, final Direction direction) {
 
         final var table = new Table("Device ID", "Temperature", "Noise", "Acceleration", "Battery");
         for (final var entry : state.getDevices().entrySet()) {
 
             final var values = entry.getValue();
-            table.addRow(
-                    cell(ofNullable(entry.getKey())),
-                    cell(ofNullable(values.get("temperature"))
-                                    .flatMap(BasicFeature::toDouble),
-                            value -> String.format("%.0f °C", value)),
-                    cell(ofNullable(values.get("noise"))
-                            .flatMap(BasicFeature::toDouble)),
-                    cell(ofNullable(values.get("acceleration"))
-                                    .flatMap(f -> f.toTyped(Map.class)),
-                            value -> String.format("%s / %s / %s", value.get("x"), value.get("y"), value.get("z"))),
-                    cell(ofNullable(
-                                    values.get("battery"))
-                                    .flatMap(BasicFeature::toDouble),
-                            value -> String.format("%.2f%%", value),
-                            "N/A")
-            );
 
+            if (!seemsEmpty(values)) {
+
+                table.addRow(
+                        cell(ofNullable(entry.getKey())),
+                        cell(ofNullable(values.get("temperature"))
+                                        .flatMap(BasicFeature::toDouble),
+                                value -> String.format("%.0f °C", value)),
+                        cell(ofNullable(values.get("noise"))
+                                .flatMap(BasicFeature::toDouble)),
+                        cell(ofNullable(values.get("acceleration"))
+                                        .flatMap(f -> f.toTyped(Map.class)),
+                                value -> String.format("%s / %s / %s", value.get("x"), value.get("y"), value.get("z"))),
+                        cell(ofNullable(
+                                        values.get("battery"))
+                                        .flatMap(BasicFeature::toDouble),
+                                value -> String.format("%.2f%%", value),
+                                "N/A")
+                );
+            }
         }
 
         if (sortBy >= 0) {
