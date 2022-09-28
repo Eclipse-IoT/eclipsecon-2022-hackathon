@@ -3,14 +3,14 @@ members = [
   "sensor-model",
   "model-converter",
   # Uncomment the following members in order to start developing them. It will work only on linxy platforms with libdbus installed.
-  # "gateway",
-  # "simulator",
+  "gateway",
+  "simulator",
 ]
 
 [patch.crates-io]
 bluer = { git = "https://github.com/dejanb/bluer.git", branch = "mesh" }
-btmesh-common = { git = "https://github.com/drogue-iot/btmesh.git", branch = "feature/fix_battery_1" }
-btmesh-models = { git = "https://github.com/drogue-iot/btmesh.git", branch = "feature/fix_battery_1" }
+btmesh-common = { git = "https://github.com/drogue-iot/btmesh.git", branch = "main" }
+btmesh-models = { git = "https://github.com/drogue-iot/btmesh.git", branch = "main" }
 
 #bluer = { path = "../../bluez/bluer/bluer" }
 #btmesh-common = { path = "../../drogue-iot/btmesh/btmesh-common" }
