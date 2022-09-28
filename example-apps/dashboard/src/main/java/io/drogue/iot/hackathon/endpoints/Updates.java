@@ -42,39 +42,6 @@ public class Updates {
         public static native TemplateInstance state(Table table);
     }
 
-    public enum Freshness {
-        GOOD,
-        CONCERNED,
-        BAD;
-
-        public static Freshness fromData(final Map<String, BasicFeature> state) {
-            Instant lastUpdate = null;
-
-            for (final var entry : state.entrySet()) {
-                final var when = entry.getValue().getLastUpdate().toInstant();
-
-                if (lastUpdate == null) {
-                    lastUpdate = when;
-                } else if (lastUpdate.isBefore(when)) {
-                    lastUpdate = when;
-                }
-            }
-
-            if (lastUpdate == null) {
-                return BAD;
-            }
-
-            final var diff = Duration.between(lastUpdate, Instant.now());
-            if (diff.toSeconds() > 120) {
-                return BAD;
-            } else if (diff.toSeconds() > 10) {
-                return CONCERNED;
-            } else {
-                return GOOD;
-            }
-        }
-    }
-
     static class Connection {
         private final Session session;
 
@@ -82,11 +49,11 @@ public class Updates {
 
         private Direction direction;
 
-        private Instant lastUpdate = Instant.EPOCH;
+        private Instant nextSend = Instant.now();
 
         private String lastContent;
 
-        private StateHolder.State lastState = StateHolder.State.EMPTY;
+        private boolean needSend;
 
         Connection(final Session session) {
             this.session = session;
@@ -96,37 +63,50 @@ public class Updates {
          * Gets ticked every second.
          */
         void tick() {
-            sendRenderedState(this.lastState, false);
+            if (this.needSend) {
+                sendContent();
+            } else if (Duration.between(Instant.now(), this.nextSend).toSeconds() > 30) {
+                sendPing();
+            }
+
         }
 
         void sendRenderedState(final StateHolder.State state, final boolean force) {
 
-            this.lastState = state;
-
-            // delta to last (sent) update
-            final var delta = Duration.between(this.lastUpdate, Instant.now()).toMillis();
-
             final var renderedState = renderState(state, this.sortBy, this.direction);
             if (!renderedState.equals(this.lastContent)) {
                 this.lastContent = renderedState;
-                if (force || delta >= 1_000) {
-                    // nothing sent for at least a second, send the update
-                    this.lastUpdate = Instant.now();
-                    this.session
-                            .getAsyncRemote()
-                            .sendText(renderedState);
+                if (force || Instant.now().isAfter(this.nextSend)) {
+                    sendContent();
+                } else {
+                    this.needSend = true;
                 }
-            } else if (delta > 30_000) {
-                // nothing sent for more than 30 seconds, send a ping
-                this.lastUpdate = Instant.now();
-                try {
-                    // weird, but the "ping" method of the async client is actually a synchronous call
-                    this.session
-                            .getAsyncRemote()
-                            .sendPing(ByteBuffer.wrap(new byte[0]));
-                } catch (final Exception e) {
-                    logger.info("Failed to send ping", e);
-                }
+            }
+
+        }
+
+        private void sendContent() {
+            this.needSend = false;
+            setNextSend();
+            this.session
+                    .getAsyncRemote()
+                    .sendText(this.lastContent);
+        }
+
+        private void setNextSend() {
+            this.nextSend = Instant.now().plus(Duration.ofSeconds(1));
+        }
+
+        private void sendPing() {
+            setNextSend();
+
+            try {
+                // weird, but the "ping" method of the async client is actually a synchronous call
+                this.session
+                        .getAsyncRemote()
+                        .sendPing(ByteBuffer.wrap(new byte[0]));
+            } catch (final Exception e) {
+                logger.info("Failed to send ping", e);
             }
         }
     }
@@ -137,26 +117,23 @@ public class Updates {
         for (final var entry : state.getDevices().entrySet()) {
 
             final var values = entry.getValue();
-            final var freshness = Freshness.fromData(values);
+            table.addRow(
+                    cell(ofNullable(entry.getKey())),
+                    cell(ofNullable(values.get("temperature"))
+                                    .flatMap(BasicFeature::toDouble),
+                            value -> String.format("%.0f °C", value)),
+                    cell(ofNullable(values.get("noise"))
+                            .flatMap(BasicFeature::toDouble)),
+                    cell(ofNullable(values.get("acceleration"))
+                                    .flatMap(f -> f.toTyped(Map.class)),
+                            value -> String.format("%s / %s / %s", value.get("x"), value.get("y"), value.get("z"))),
+                    cell(ofNullable(
+                                    values.get("battery"))
+                                    .flatMap(BasicFeature::toDouble),
+                            value -> String.format("%.2f%%", value),
+                            "N/A")
+            );
 
-            if (freshness == Freshness.GOOD || freshness == Freshness.CONCERNED) {
-                table.addRow(
-                        cell(ofNullable(entry.getKey())),
-                        cell(ofNullable(values.get("temperature"))
-                                        .flatMap(BasicFeature::toDouble),
-                                value -> String.format("%.0f °C", value)),
-                        cell(ofNullable(values.get("noise"))
-                                .flatMap(BasicFeature::toDouble)),
-                        cell(ofNullable(values.get("acceleration"))
-                                        .flatMap(f -> f.toTyped(Map.class)),
-                                value -> String.format("%s / %s / %s", value.get("x"), value.get("y"), value.get("z"))),
-                        cell(ofNullable(
-                                        values.get("battery"))
-                                        .flatMap(BasicFeature::toDouble),
-                                value -> String.format("%.2f%%", value),
-                                "N/A")
-                );
-            }
         }
 
         if (sortBy >= 0) {
