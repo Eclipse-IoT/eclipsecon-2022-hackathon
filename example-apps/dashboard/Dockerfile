@@ -1,10 +1,11 @@
 FROM registry.access.redhat.com/ubi9/ubi:latest AS builder
 
-RUN dnf -y install java-17-openjdk maven rsync
+RUN dnf -y install java-17-openjdk-devel maven rsync
+
 RUN mkdir /usr/src/build
 COPY . /usr/src/build
 WORKDIR /usr/src/build
-RUN mvn -B package
+RUN MAVEN_SKIP_RC=true JAVA_HOME=/usr/lib/jvm/java-17 mvn -B package
 
 FROM registry.access.redhat.com/ubi9/ubi-minimal:latest
 
