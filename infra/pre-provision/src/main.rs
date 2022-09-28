@@ -48,6 +48,10 @@ enum Cli {
 
         /// The address given to the node
         #[clap(long, parse(try_from_str=maybe_hex))]
+        flash_address: u64,
+
+        /// The address given to the node
+        #[clap(long, parse(try_from_str=maybe_hex))]
         node_address: u16,
 
         /// Network key (16 byte hex)
@@ -78,11 +82,11 @@ fn main() -> Result<()> {
     pretty_env_logger::init();
 
     let matches = Cli::parse();
-    let flash_address: u64 = 0x7F000;
 
     match matches {
         Cli::Provision {
             common,
+            flash_address,
             node_address,
             network_key,
             device_key,
