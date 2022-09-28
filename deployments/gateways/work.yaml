@@ -39,7 +39,7 @@ spec:
                       cp -av /etc/meshd-init/lib /var/lib/meshd/
                       find /var/lib/meshd/
                   image: quay.io/eclipsecon-2022/meshd:0.1.0
-                  imagePullPolicy: Always
+                  imagePullPolicy: IfNotPresent
                   name: init-data
                   volumeMounts:
                     - mountPath: /var/lib/meshd/config
@@ -49,7 +49,7 @@ spec:
               containers:
                 - name: meshd
                   image: quay.io/eclipsecon-2022/meshd:0.1.0
-                  imagePullPolicy: Always
+                  imagePullPolicy: IfNotPresent
                   command:
                     - /usr/libexec/bluetooth/bluetooth-meshd
                     - '--nodetach'
@@ -68,7 +68,7 @@ spec:
                       mountPath: /var/lib/meshd/lib
                 - name: gateway
                   image: quay.io/eclipsecon-2022/gateway:0.1.0
-                  imagePullPolicy: Always
+                  imagePullPolicy: IfNotPresent
                   args:
                     - '--drogue-device'
                     - <gateway> # TODO: replace with gateway device name (e.g. gateway1)
@@ -132,7 +132,7 @@ spec:
               cp -av /etc/meshd-init/lib /var/lib/meshd/
               find /var/lib/meshd/
           image: quay.io/eclipsecon-2022/meshd:0.1.0
-          imagePullPolicy: Always
+          imagePullPolicy: IfNotPresent
           name: init-data
           volumeMounts:
             - mountPath: /var/lib/meshd/config
@@ -142,7 +142,7 @@ spec:
       containers:
         - name: meshd
           image: quay.io/eclipsecon-2022/meshd:0.1.0
-          imagePullPolicy: Always
+          imagePullPolicy: IfNotPresent
           command:
             - /usr/libexec/bluetooth/bluetooth-meshd
             - '--nodetach'
@@ -161,7 +161,7 @@ spec:
               mountPath: /var/lib/meshd/lib
         - name: gateway
           image: quay.io/eclipsecon-2022/gateway:0.1.0
-          imagePullPolicy: Always
+          imagePullPolicy: IfNotPresent
           args:
             - '--drogue-device'
             - <gateway> # TODO: replace with gateway device name (e.g. gateway1)
