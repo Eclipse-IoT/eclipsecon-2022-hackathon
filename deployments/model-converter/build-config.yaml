@@ -14,7 +14,7 @@ spec:
     type: Git
   strategy:
     dockerStrategy:
-      dockerfilePath: model-converter/Dockerfile
+      dockerfilePath: infra/model-converter/Dockerfile
     type: Docker
   triggers:
   - type: ConfigChange
