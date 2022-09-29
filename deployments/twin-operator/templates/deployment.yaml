@@ -17,6 +17,7 @@ metadata:
           "fieldPath":"spec.template.spec.containers[?(@.name==\"server\")].image"
         }
       ]
+    checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
 spec:
   replicas: 1
   selector:
@@ -102,3 +103,13 @@ spec:
             httpGet:
               port: 9090
               path: /liveness
+
+          volumeMounts:
+            - mountPath: /etc/twin-operator/config
+              name: config
+              readOnly: true
+
+      volumes:
+        - name: config
+          configMap:
+            name: twin-operator-config

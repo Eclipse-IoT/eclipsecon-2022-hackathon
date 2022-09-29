@@ -1,0 +1,25 @@
+synthetics:
+  acceleration:
+    javaScript:
+      path: js/syn_acceleration.js
+  batteryLevel:
+    javaScript:
+      path: js/syn_batteryLevel.js
+  noise:
+    javaScript:
+      path: js/syn_noise.js
+  temperature:
+    javaScript:
+      path: js/syn_temperature.js
+  freshness:
+    javaScript:
+      path: js/syn_freshness.js
+reconciliation:
+  changed:
+    hierarchy:
+      javaScript:
+        path: js/hierarchy.js
+  deleting:
+    hierarchy:
+      javaScript:
+        path: js/hierarchy.js
