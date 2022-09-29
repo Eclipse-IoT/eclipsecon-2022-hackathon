@@ -179,6 +179,7 @@ fn main() -> Result<()> {
                     0,
                     pub_set(
                         base_address,
+                        "f0bfd803cde184133096f003ea4a3dc2",
                         app_key_idx,
                         composition[0][2].model_identifier,
                         Some(60),
@@ -194,6 +195,7 @@ fn main() -> Result<()> {
                     0,
                     pub_set(
                         base_address,
+                        "f0bfd803cde184133096f003ea4a3dc2",
                         app_key_idx,
                         composition[0][3].model_identifier,
                         Some(1),
@@ -209,6 +211,7 @@ fn main() -> Result<()> {
                     1,
                     pub_set(
                         left_address,
+                        "ccb0c3e5de893a0bc365e2f6be7b7859",
                         app_key_idx,
                         composition[1][0].model_identifier,
                         None,
@@ -223,6 +226,7 @@ fn main() -> Result<()> {
                     2,
                     pub_set(
                         right_address,
+                        "0b28d99027593490fc3b711a405b3354",
                         app_key_idx,
                         composition[2][0].model_identifier,
                         None,
@@ -239,11 +243,12 @@ fn main() -> Result<()> {
 
 fn pub_set(
     address: UnicastAddress,
+    pub_addr: &str,
     app_key_index: AppKeyIndex,
     model: ModelIdentifier,
     period_secs: Option<u8>,
 ) -> PublicationDetails {
-    let label = LabelUuid::new(decode_key("f0bfd803cde184133096f003ea4a3dc2").unwrap()).unwrap();
+    let label = LabelUuid::new(decode_key(pub_addr).unwrap()).unwrap();
     let pub_address = PublishAddress::Label(label);
     let publish_period = period_secs
         .map(|period_secs| PublishPeriod::new(period_secs, Resolution::Seconds1))
