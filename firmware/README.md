@@ -1,6 +1,6 @@
 # eclipsecon-device
 
-Firmware running on the EclipseCon 2022 Hackathon devices. The firmware implements a Bluetooth Mesh end node according to the Bluetooth Mesh specification. The sensors and peripherals of the micro:bit is exposed through standardized mesh models:
+Firmware running on the EclipseCon 2022 Hackathon devices. The firmware implements a Bluetooth Mesh end node according to the Bluetooth Mesh specification. The sensors and peripherals of the micro:bit are exposed through standardized mesh models:
 
 * Button 'A' and 'B' - Generic OnOff Client. This model allows a client to emit `on` and `off` events, which can be used to trigger some event or command.
 * LED matrix - Generic OnOff Server. An external command can be used to put the server into an `on` or `off` state. On the micro:bit, the `on` state will enable a blinker task, whereas the `off` state will disable that task.
@@ -9,7 +9,7 @@ Firmware running on the EclipseCon 2022 Hackathon devices. The firmware implemen
 
 In addition, there are a few TODO's for hackathon participants who want to get their hands dirty with embedded Rust. Each task has complementary work on the cloud side for processing data and sending commands.
 
-* Use the accelerometer to supply x, y, z acceleration data. The `sensor` module can be modified used to read accelerometer data and emit motion 3D acceleration readings.
+* Use the accelerometer to supply x, y, z acceleration data. The `sensor` module can be modified to read accelerometer data and emit motion 3D acceleration readings.
 * Use the microphone to implement a noise detection device. The `sensor` module can be modified to read sound levels and emit sound level values.
 * Use the onboard speaker to implement a jukebox for playing simple tunes. Modify the `onoff` module to play a tune together with the existing blinking when 'on'.
 
