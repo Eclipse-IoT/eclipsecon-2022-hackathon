@@ -122,9 +122,9 @@ fn main() -> Result<()> {
 
             let mut front = ElementDescriptor::new(FRONT);
             front.add_model(ModelIdentifier::SIG(0x1000));
+            front.add_model(ModelIdentifier::SIG(0x1002));
             front.add_model(ModelIdentifier::SIG(0x100C));
             front.add_model(ModelIdentifier::SIG(0x1101));
-            front.add_model(ModelIdentifier::SIG(0x1002));
 
             let mut left = ElementDescriptor::new(LEFT);
             left.add_model(ModelIdentifier::SIG(0x1001));

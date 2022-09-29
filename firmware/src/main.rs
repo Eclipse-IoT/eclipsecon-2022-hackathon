@@ -112,8 +112,8 @@ pub struct Device {
 // An element with multiple models.
 #[element(location = "front")]
 struct Front {
-    display: Display,
     speaker: Speaker,
+    display: Display,
     battery: Battery,
     sensor: Sensor,
 }
