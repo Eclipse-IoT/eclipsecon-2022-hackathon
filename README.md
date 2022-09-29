@@ -2,7 +2,7 @@
 
 This repository contains software, firmware and documentation for the EclipseCon 2022 IoT hackathon.
 
-If you have questions, please reach out to use before, during or even after the hackathon. Either online, or in-person
+If you have questions, please reach out to us before, during or even after the hackathon. Either online, or in-person
 during the conference.
 
 We might do a short introduction during the community day on Monday. Or you can ask at the Red Hat booth.
@@ -50,7 +50,7 @@ For working on a quarkus application consuming data, have a look at the [example
 
 ## BBC micro:bit simulator
 
-If you don't have a BBC micro:bit, you can use on of the following ways to simulate a device:
+If you don't have a BBC micro:bit, you can use one of the following ways to simulate a device:
 
 * A WASM-based simulator that connects to Drogue IoT, and which can run in any browser. Use this to prototype backend applications without needing to set up a bluetooth mesh network. Note that this simulates a single device, not a full mesh.
   
@@ -65,7 +65,7 @@ If you don't have a BBC micro:bit, you can use on of the following ways to simul
 
 ## Sensor data model
 
-The sensor data is wrapped in a [cloudevent](cloudevents.io) (when consuming from the MQTT and WS endpoints)
+The sensor data is wrapped in a [cloudevent](cloudevents.io) (when consuming from the MQTT and WS endpoints).
 Here is what the payload of a partial update looks like, excluding the cloudevent metadata :
 
 ```json
