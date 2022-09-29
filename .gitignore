@@ -1,4 +1,5 @@
 .idea/
 /infra/target
+/infra/meshd/lib/**/*.bak
 node.json
 .vscode/
