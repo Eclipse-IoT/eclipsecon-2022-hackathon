@@ -11,6 +11,7 @@ use btmesh_models::{
             GenericBatteryFlags, GenericBatteryFlagsCharging, GenericBatteryFlagsIndicator,
             GenericBatteryFlagsPresence, GenericBatteryMessage, GenericBatteryStatus,
         },
+        level::{GenericLevelMessage, GenericLevelServer},
         onoff::{GenericOnOffMessage, GenericOnOffServer},
     },
     sensor::SensorStatus,
@@ -459,9 +460,20 @@ impl App {
                                 brightness: app.matrix.brightness,
                             }
                         }))]
+                    } else if let Ok(Some(GenericLevelMessage::Set(msg))) =
+                        GenericLevelServer::parse(&opcode, &command.parameters)
+                    {
+                        vec![Msg::Set(Box::new(move |app| {
+                            app.matrix = MatrixState {
+                                on: app.matrix.on,
+                                brightness: msg.level as u8,
+                            }
+                        }))]
                     } else {
                         vec![]
                     }
+
+                    // TODO: Publish status?
                 });
 
                 let on_connection_state = ctx
