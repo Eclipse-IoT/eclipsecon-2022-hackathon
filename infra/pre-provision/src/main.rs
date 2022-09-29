@@ -167,21 +167,6 @@ fn main() -> Result<()> {
                     .unwrap();
             }
 
-            // Button publication
-            config
-                .publications_mut()
-                .set(
-                    &composition,
-                    0,
-                    pub_set(
-                        address,
-                        app_key_idx,
-                        composition[0][0].model_identifier,
-                        None,
-                    ),
-                )
-                .unwrap();
-
             // Battery service publication
             config
                 .publications_mut()
@@ -211,6 +196,23 @@ fn main() -> Result<()> {
                     ),
                 )
                 .unwrap();
+
+            // Button publications
+            for i in 1..3 {
+                config
+                    .publications_mut()
+                    .set(
+                        &composition,
+                        i,
+                        pub_set(
+                            address,
+                            app_key_idx,
+                            composition[i][0].model_identifier,
+                            None,
+                        ),
+                    )
+                    .unwrap();
+            }
 
             provision(common, flash_address, chip_erase, config)?;
             Ok(())

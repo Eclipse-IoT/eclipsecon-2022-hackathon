@@ -29,9 +29,11 @@ device='{ "metadata": {
 for row in $( jq -c '.[]' "${IDMAP}"); do
     ID=$(echo "$row" | jq -r ".id")
     ADDRESS=$(echo "$row" | jq -r ".address")
+    LEFT=$(echo "$row" | jq -r ".left")
+    RIGHT=$(echo "$row" | jq -r ".right")
 
     # shellcheck disable=SC2090
-    JSON=$(echo "$device" | jq ".metadata.name = \"$ID\" | .spec.alias += [\"$ADDRESS\"]")
+    JSON=$(echo "$device" | jq ".metadata.name = \"$ID\" | .spec.alias += [\"$ADDRESS\",\"$LEFT\",\"$RIGHT\"]")
 
     echo "$JSON" | jq -c | drg apply -f -
 done
