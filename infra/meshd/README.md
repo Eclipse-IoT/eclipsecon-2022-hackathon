@@ -1,6 +1,6 @@
 # meshcfg
 
-Running a mesh network on a Linux host with blueooth mesh daemon. 
+Running a mesh network on a Linux host with bluetooth mesh daemon.
 
 To start the daemon:
 
