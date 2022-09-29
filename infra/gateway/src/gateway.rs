@@ -167,12 +167,14 @@ pub async fn run(
                                             };
                                             // TODO: Hmm, where to get this?
                                             let app_key = 0;
-                                            match node.send(&raw, path, address, app_key).await {
-                                                Ok(_) => {
-                                                    log::info!("Forwarded message to device");
-                                                }
-                                                Err(e) => {
-                                                    log::warn!("Error forwarding message to device: {:?}", e);
+                                            for i in 0..3 {
+                                                match node.send(&raw, path.clone(), address, app_key).await {
+                                                    Ok(_) => {
+                                                        log::info!("Forwarded message to device");
+                                                    }
+                                                    Err(e) => {
+                                                        log::warn!("Error forwarding message to device: {:?}", e);
+                                                    }
                                                 }
                                             }
                                         }

@@ -28,8 +28,8 @@ impl Display {
                 InboundModelPayload::Message(message, _) => match message {
                     GenericLevelMessage::Set(val) => {
                         let level: u8 = val.level.clamp(u8::MIN as i16, u8::MAX as i16) as u8;
+                        defmt::info!("Setting display level: {}", level);
                         if level == 0 {
-                            defmt::info!("Setting display level: {}", level);
                             return None;
                         } else {
                             return Some(Brightness::new(level));
@@ -37,8 +37,8 @@ impl Display {
                     }
                     GenericLevelMessage::SetUnacknowledged(val) => {
                         let level: u8 = val.level.clamp(u8::MIN as i16, u8::MAX as i16) as u8;
+                        defmt::info!("Setting display level: {}", level);
                         if level == 0 {
-                            defmt::info!("Setting display level: {}", level);
                             return None;
                         } else {
                             return Some(Brightness::new(level));
