@@ -23,7 +23,6 @@ const DeviceControl: React.FunctionComponent = () => {
   const onClick = async () => {
     await setDisplay(endpoints, auth, {
       brightness,
-      enabled: brightness > 0
     }).then(() => {
       toast.addAlert?.(AlertVariant.success, "Sent display command", 5000);
     }).catch((err) => {
@@ -42,15 +41,15 @@ const DeviceControl: React.FunctionComponent = () => {
             <NumberInput
               value={brightness}
               min={0}
-              max={255}
+              max={10}
               onMinus={() => {
-                setBrightness(brightness - 5);
+                setBrightness(brightness - 1);
               }}
               onChange={(event) => {
                 if (event.target instanceof HTMLInputElement) {
                   let b = Number(event.target.value);
-                  if (b > 255) {
-                    b = 255;
+                  if (b > 10) {
+                    b = 10;
                   }
                   if (b < 0) {
                     b = 0;
@@ -59,7 +58,7 @@ const DeviceControl: React.FunctionComponent = () => {
                 }
               }}
               onPlus={() => {
-                setBrightness(brightness + 5);
+                setBrightness(brightness + 1);
               }}
               minusBtnAriaLabel="minus"
               plusBtnAriaLabel="plus"

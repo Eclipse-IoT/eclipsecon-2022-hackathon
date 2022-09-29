@@ -7,27 +7,40 @@ import io.quarkus.runtime.annotations.RegisterForReflection;
  */
 @RegisterForReflection
 public class CommandPayload {
-    private final Long address;
-    private final OnOffSet display;
+    private final long address;
+    private OnOffSet speaker;
+    private LevelSet display;
 
-    public CommandPayload(Long address, OnOffSet display) {
+    public CommandPayload(long address) {
         this.address = address;
-        this.display = display;
     }
 
-    public OnOffSet getDisplay() {
-        return display;
-    }
-
-    public Long getAddress() {
+    public long getAddress() {
         return address;
+    }
+
+    public OnOffSet getSpeaker() {
+        return speaker;
+    }
+
+    public LevelSet getDisplay() {
+        return display;
     }
 
     @Override
     public String toString() {
         return "CommandPayload{" +
                 "address=" + address +
+                ", speaker=" + speaker +
                 ", display=" + display +
                 '}';
+    }
+
+    public void setSpeaker(OnOffSet speaker) {
+        this.speaker = speaker;
+    }
+
+    public void setDisplay(LevelSet display) {
+        this.display = display;
     }
 }

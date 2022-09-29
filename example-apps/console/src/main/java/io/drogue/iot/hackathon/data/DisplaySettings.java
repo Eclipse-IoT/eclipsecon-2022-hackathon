@@ -10,5 +10,5 @@ public class DisplaySettings {
 
     public Integer brightness;
 
-    public boolean enabled;
+    public Boolean enable;
 }

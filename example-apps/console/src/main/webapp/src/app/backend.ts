@@ -168,7 +168,6 @@ const useGameService = (): [Service<DeviceClaim>, DispatchWithoutAction] => {
 
 interface DisplaySettings {
   brightness: number;
-  enabled: boolean;
 }
 
 interface RequestError {

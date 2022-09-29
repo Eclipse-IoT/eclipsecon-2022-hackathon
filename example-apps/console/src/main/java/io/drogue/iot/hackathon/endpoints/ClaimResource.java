@@ -1,8 +1,10 @@
 package io.drogue.iot.hackathon.endpoints;
 
 import java.util.Optional;
+import java.util.UUID;
 
 import javax.inject.Inject;
+import javax.transaction.Transactional;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -10,12 +12,13 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 
+import io.drogue.iot.hackathon.events.EventDispatcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.drogue.iot.hackathon.Processor;
 import io.drogue.iot.hackathon.registry.Password;
 import io.drogue.iot.hackathon.registry.Registry;
 import io.drogue.iot.hackathon.service.DeviceClaim;
@@ -35,13 +38,13 @@ public class ClaimResource {
     DeviceClaimService service;
 
     @Inject
-    Processor processor;
-
-    @Inject
     SecurityIdentity identity;
 
     @Inject
     Registry registry;
+
+    @Inject
+    EventDispatcher dispatcher;
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
@@ -71,7 +74,7 @@ public class ClaimResource {
     @PUT
     public void claimDevice(@QueryParam("claimId") final String claimId) {
         var canCreate = this.identity.hasRole("device-admin");
-        this.processor.claimDevice(claimId, this.identity.getPrincipal().getName(), canCreate);
+        this.claimDevice(claimId, this.identity.getPrincipal().getName(), canCreate);
     }
 
     @PUT
@@ -79,7 +82,7 @@ public class ClaimResource {
     public void claimSimulator() {
         logger.warn("Failed");
         try {
-            this.processor.claimSimulatorDevice(this.identity.getPrincipal().getName());
+            this.claimSimulatorDevice(this.identity.getPrincipal().getName());
         } catch (Exception e) {
             logger.warn("Failed to claim simulator", e);
             throw e;
@@ -89,9 +92,43 @@ public class ClaimResource {
     @DELETE
     @Produces(MediaType.APPLICATION_JSON)
     public Boolean releaseDevice() {
-        this.processor.releaseDevice(this.identity.getPrincipal().getName());
+        releaseDevice(this.identity.getPrincipal().getName());
         var result = this.service.releaseDevice(this.identity.getPrincipal().getName());
         logger.info("Released device: {}", result);
         return result;
+    }
+
+
+    @Transactional
+    private void claimDevice(final String claimId, final String userId, final boolean canCreate) {
+        this.service.claimDevice(claimId, userId, canCreate);
+    }
+
+    @Transactional
+    private void claimSimulatorDevice(final String userId) {
+        var id = "simulator-" + UUID.randomUUID();
+        var pwd = UUID.randomUUID().toString();
+        this.service.claimDevice(id, userId, true);
+        this.registry.createSimulatorDevice(id, pwd);
+    }
+
+    @Transactional
+    public void releaseDevice(final String userId) {
+        var claim = this.service.getDeviceClaimFor(userId);
+        claim.ifPresent(deviceClaim -> {
+            if (deviceClaim.getId().startsWith("simulator-")) {
+                try {
+                    this.registry.deleteDevice(deviceClaim.getId());
+                } catch (WebApplicationException e) {
+                    if (e.getResponse().getStatus() != 404) {
+                        // ignore 404
+                        throw e;
+                    }
+                }
+            }
+            this.dispatcher.releaseDevice(deviceClaim.getId());
+        });
+
+        this.service.releaseDevice(userId);
     }
 }
