@@ -124,6 +124,7 @@ fn main() -> Result<()> {
             front.add_model(ModelIdentifier::SIG(0x1000));
             front.add_model(ModelIdentifier::SIG(0x100C));
             front.add_model(ModelIdentifier::SIG(0x1101));
+            front.add_model(ModelIdentifier::SIG(0x1002));
 
             let mut left = ElementDescriptor::new(LEFT);
             left.add_model(ModelIdentifier::SIG(0x1001));
@@ -141,7 +142,7 @@ fn main() -> Result<()> {
             let mut config: ProvisionedConfiguration = (device_info, secrets, network_state).into();
 
             // Bind all models in front element
-            for i in 0..3 {
+            for i in 0..4 {
                 config
                     .bindings_mut()
                     .bind(
