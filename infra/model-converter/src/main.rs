@@ -3,7 +3,10 @@ use btmesh_common::opcode::Opcode;
 use btmesh_models::{
     generic::{
         battery::{GenericBatteryClient, GenericBatteryFlagsPresence, GenericBatteryMessage},
-        onoff::{GenericOnOffMessage, GenericOnOffServer, Set as GenericOnOffSet},
+        level::{GenericLevelClient, GenericLevelMessage, GenericLevelSet},
+        onoff::{
+            GenericOnOffClient, GenericOnOffMessage, GenericOnOffServer, Set as GenericOnOffSet,
+        },
     },
     sensor::SensorMessage,
     Message, Model,
@@ -46,7 +49,7 @@ async fn convert_command(mut event: Event) -> Event {
 fn json2command(data: &Value) -> Option<RawMessage> {
     if let Value::Object(data) = data {
         if let Some(Value::Number(address)) = data.get("address") {
-            if let Some(Value::Object(state)) = data.get("display") {
+            if let Some(Value::Object(state)) = data.get("speaker") {
                 let location = state["location"].as_u64().unwrap_or(0);
                 let on = state["on"].as_bool().unwrap_or(false);
                 let set = GenericOnOffSet {
@@ -56,6 +59,31 @@ fn json2command(data: &Value) -> Option<RawMessage> {
                     delay: None,
                 };
                 let msg = GenericOnOffMessage::Set(set);
+
+                let mut opcode: heapless::Vec<u8, 16> = heapless::Vec::new();
+                msg.opcode().emit(&mut opcode).unwrap();
+
+                let mut parameters: heapless::Vec<u8, 386> = heapless::Vec::new();
+                msg.emit_parameters(&mut parameters).unwrap();
+                let message = RawMessage {
+                    address: Some(address.as_u64().unwrap() as u16),
+                    location: location as u16,
+                    opcode: opcode.to_vec(),
+                    parameters: parameters.to_vec(),
+                };
+                return Some(message);
+            }
+
+            if let Some(Value::Object(state)) = data.get("display") {
+                let location = state["location"].as_u64().unwrap_or(0);
+                let level = state["level"].as_u64().unwrap_or(0);
+                let set = GenericLevelSet {
+                    level: level as i16,
+                    tid: 0,
+                    transition_time: None,
+                    delay: None,
+                };
+                let msg = GenericLevelMessage::Set(set);
 
                 let mut opcode: heapless::Vec<u8, 16> = heapless::Vec::new();
                 msg.opcode().emit(&mut opcode).unwrap();
@@ -89,6 +117,20 @@ fn telemetry2json(msg: RawMessage) -> Option<Value> {
         GenericOnOffServer::parse(&opcode, parameters)
     {
         return Some(json!({ "button": {"on": set.on_off == 1, "location": location }}));
+    }
+
+    if let Ok(Some(GenericOnOffMessage::Status(status))) =
+        GenericOnOffClient::parse(&opcode, parameters)
+    {
+        return Some(
+            json!({ "speaker": {"on": status.present_on_off == 1, "location": location }}),
+        );
+    }
+
+    if let Ok(Some(GenericLevelMessage::Status(status))) =
+        GenericLevelClient::parse(&opcode, parameters)
+    {
+        return Some(json!({ "display": {"level": status.present_level, "location": location }}));
     }
 
     if let Ok(Some(SensorMessage::Status(mut status))) = SensorClient::parse(&opcode, parameters) {
