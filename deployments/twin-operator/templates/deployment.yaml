@@ -54,6 +54,9 @@ spec:
             - name: OPERATOR__TOKEN
               value: {{ .Values.drogueCloud.api.token | quote }}
 
+            - name: TWIN__CONFIGURATION
+              value: /etc/twin-operator/config/template.yaml
+
             - name: TWIN__CLIENT__URL
               value: https://api-eclipsecon-2022.apps.sandbox.drogue.world
             - name: TWIN__CLIENT__ISSUER_URL
@@ -108,7 +111,7 @@ spec:
             - mountPath: /etc/twin-operator/config
               name: config
               readOnly: true
-            - mountPath: /etc/twin-operator/config/js
+            - mountPath: /etc/twin-operator/js
               name: config-js
               readOnly: true
 
