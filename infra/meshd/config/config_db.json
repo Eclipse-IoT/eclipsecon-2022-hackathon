@@ -87,7 +87,6 @@
                 0
               ],
               "subscribe":[
-                "f0bfd803cde184133096f003ea4a3dc2"
               ]
             }
           ],
@@ -102,7 +101,6 @@
                 0
               ],
               "subscribe":[
-                "f0bfd803cde184133096f003ea4a3dc2"
               ]
             }
           ],
@@ -130,7 +128,7 @@
         "proxy":2,
         "lowPower":2
       },
-      "crpl":"0000"
+      "crpl":"0064"
     }
   ],
   "provisioners":[
