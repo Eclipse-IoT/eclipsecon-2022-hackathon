@@ -111,16 +111,25 @@ public class Updates {
         }
     }
 
+    static final String[] EXPECTED_PROPERTIES = new String[] {
+            "temperature",
+            "batteryLevel",
+            "noise",
+            "acceleration",
+    };
+
     static boolean seemsEmpty(final Map<String, BasicFeature> values) {
-        for (final var value : values.entrySet()) {
-            if (value.getKey().startsWith("$")) {
-                // ignore structural information
+
+        for (var name : EXPECTED_PROPERTIES) {
+            var value = values.get(name);
+            if (value == null) {
                 continue;
             }
-            if (value.getValue().getValue() != null) {
+            if (value.getValue() != null) {
                 return false;
             }
         }
+        
         return true;
     }
 
