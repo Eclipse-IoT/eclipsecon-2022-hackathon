@@ -4,6 +4,7 @@ use btmesh_models::{
     self,
     generic::{
         battery::GenericBatteryClient,
+        level::GenericLevelClient,
         onoff::{GenericOnOffClient, GenericOnOffServer},
     },
     Model,
