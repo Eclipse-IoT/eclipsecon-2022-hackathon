@@ -27,18 +27,18 @@ impl Display {
             match ctx.receive().await {
                 InboundModelPayload::Message(message, _) => match message {
                     GenericLevelMessage::Set(val) => {
-                        defmt::info!("Setting display level: {}", val.level);
                         let level: u8 = val.level.clamp(u8::MIN as i16, u8::MAX as i16) as u8;
                         if level == 0 {
+                            defmt::info!("Setting display level: {}", level);
                             return None;
                         } else {
                             return Some(Brightness::new(level));
                         }
                     }
                     GenericLevelMessage::SetUnacknowledged(val) => {
-                        defmt::info!("Setting display level: {}", val.level);
                         let level: u8 = val.level.clamp(u8::MIN as i16, u8::MAX as i16) as u8;
                         if level == 0 {
+                            defmt::info!("Setting display level: {}", level);
                             return None;
                         } else {
                             return Some(Brightness::new(level));
@@ -77,7 +77,7 @@ impl Display {
         // - Clear the display
         // - Pause for 1 second before next iteration
         loop {
-            Self::display(display, BITMAP, Duration::from_secs(1)).await;
+            Self::display(display, BITMAP, Duration::from_millis(500)).await;
             display.clear();
             Timer::after(Duration::from_secs(1)).await;
         }

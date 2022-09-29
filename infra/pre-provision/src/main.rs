@@ -191,7 +191,7 @@ fn main() -> Result<()> {
                     pub_set(
                         address,
                         app_key_idx,
-                        composition[0][1].model_identifier,
+                        composition[0][2].model_identifier,
                         Some(60),
                     ),
                 )
@@ -206,7 +206,7 @@ fn main() -> Result<()> {
                     pub_set(
                         address,
                         app_key_idx,
-                        composition[0][2].model_identifier,
+                        composition[0][3].model_identifier,
                         Some(1),
                     ),
                 )
