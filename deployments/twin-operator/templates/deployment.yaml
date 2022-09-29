@@ -108,8 +108,14 @@ spec:
             - mountPath: /etc/twin-operator/config
               name: config
               readOnly: true
+            - mountPath: /etc/twin-operator/config/js
+              name: config-js
+              readOnly: true
 
       volumes:
         - name: config
           configMap:
             name: twin-operator-config
+        - name: config-js
+          configMap:
+            name: twin-operator-config-js

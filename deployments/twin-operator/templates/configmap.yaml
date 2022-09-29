@@ -1,3 +1,4 @@
+---
 kind: ConfigMap
 apiVersion: v1
 metadata:
@@ -9,8 +10,17 @@ metadata:
 data:
   template.yaml: |
     {{- $.Files.Get "config/template.yaml" | nindent 4}}
-
+---
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: twin-operator-config-js
+  labels:
+    app.kubernetes.io/name: twin-operator
+    app.kubernetes.io/instance: eclipsecon-2022
+    app.kubernetes.io/component: twin-operator
+data:
   {{ range $path, $_ :=  .Files.Glob  "config/js/*.js" }}
-  "js/{{ base $path }}": |
+  {{ base $path }}: |
   {{- $.Files.Get $path | nindent 4 }}
   {{ end }}
