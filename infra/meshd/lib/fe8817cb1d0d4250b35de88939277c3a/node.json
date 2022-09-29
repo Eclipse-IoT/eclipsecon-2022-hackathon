@@ -70,7 +70,13 @@
         {
           "modelId":"1000",
           "subEnabled":true,
-          "pubEnabled":true
+          "pubEnabled":true,
+          "bind":[
+            "0000"
+          ],
+          "subscribe":[
+            "f0bfd803cde184133096f003ea4a3dc2"
+          ]
         }
       ]
     },
@@ -81,7 +87,13 @@
         {
           "modelId":"1000",
           "subEnabled":true,
-          "pubEnabled":true
+          "pubEnabled":true,
+          "bind":[
+            "0000"
+          ],
+          "subscribe":[
+            "f0bfd803cde184133096f003ea4a3dc2"
+          ]
         }
       ]
     }

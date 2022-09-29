@@ -84,8 +84,10 @@
             {
               "modelId":"1000",
               "bind":[
+                0
               ],
               "subscribe":[
+                "f0bfd803cde184133096f003ea4a3dc2"
               ]
             }
           ],
@@ -97,8 +99,10 @@
             {
               "modelId":"1000",
               "bind":[
+                0
               ],
               "subscribe":[
+                "f0bfd803cde184133096f003ea4a3dc2"
               ]
             }
           ],
