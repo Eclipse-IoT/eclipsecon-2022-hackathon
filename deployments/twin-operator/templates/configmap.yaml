@@ -11,6 +11,6 @@ data:
     {{- $.Files.Get "config/template.yaml" | nindent 4}}
 
   {{ range $path, $_ :=  .Files.Glob  "config/js/*.js" }}
-  js/{{ base $path }}: |
+  "js/{{ base $path }}": |
   {{- $.Files.Get $path | nindent 4 }}
   {{ end }}
