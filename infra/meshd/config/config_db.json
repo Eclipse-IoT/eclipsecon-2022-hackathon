@@ -66,6 +66,14 @@
               "subscribe":[
                 "f0bfd803cde184133096f003ea4a3dc2"
               ]
+            },
+            {
+              "modelId":"1003",
+              "bind":[
+                0
+              ],
+              "subscribe":[
+              ]
             }
           ],
           "index":0,
