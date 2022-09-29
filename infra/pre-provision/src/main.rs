@@ -196,7 +196,7 @@ fn main() -> Result<()> {
                         base_address,
                         app_key_idx,
                         composition[0][3].model_identifier,
-                        Some(10),
+                        Some(1),
                     ),
                 )
                 .unwrap();

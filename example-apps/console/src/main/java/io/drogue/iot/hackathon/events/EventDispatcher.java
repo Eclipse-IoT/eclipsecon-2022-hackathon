@@ -78,7 +78,7 @@ public class EventDispatcher {
     }
 
     void broadcast(@NotNull String deviceId, DevicePayload payload, Instant lastChange) {
-        logger.info("Broadcast payload: {}", payload);
+        logger.info("Broadcast payload from {}: {}", deviceId, payload);
 
         State newState = new State(lastChange, payload.getState());
         if (payload.isPartial()) {
