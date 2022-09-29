@@ -31,6 +31,14 @@
           ]
         },
         {
+          "modelId":"1003",
+          "subEnabled":true,
+          "pubEnabled":true,
+          "bind":[
+            "0000"
+          ]
+        },
+        {
           "modelId":"100d",
           "subEnabled":true,
           "pubEnabled":true,
@@ -51,15 +59,8 @@
           "subscribe":[
             "f0bfd803cde184133096f003ea4a3dc2"
           ]
-        },
-        {
-          "modelId":"1003",
-          "subEnabled":true,
-          "pubEnabled":true,
-          "bind":[
-            "0000"
-          ]
         }
+
       ]
     },
     {

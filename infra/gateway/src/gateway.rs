@@ -59,9 +59,9 @@ pub async fn run(
                 location: Some(front_loc),
                 models: vec![
                     Arc::new(FromDrogue::new(GenericOnOffClient)),
+                    Arc::new(FromDrogue::new(GenericLevelClient)),
                     Arc::new(FromDrogue::new(GenericBatteryClient)),
                     Arc::new(FromDrogue::new(Sensor::new())),
-                    Arc::new(FromDrogue::new(GenericLevelClient)),
                 ],
                 control_handle: Some(element_handle.clone()),
             },
