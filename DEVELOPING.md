@@ -33,7 +33,7 @@ cargo build --release
 
 ## Starting the gateway
 
-Ensure the [default Drogue Cloud connection settings](https://github.com/Eclipse-IoT/eclipsecon-2022-hackathon/blob/main/gateway/src/main.rs) match your environment!
+Ensure the [default Drogue Cloud connection settings](https://github.com/Eclipse-IoT/eclipsecon-2022-hackathon/blob/main/infra/gateway/src/main.rs) match your environment!
 
 ```
 RUST_LOG=info ./target/release/eclipsecon-gateway --drogue-device gateway1 --drogue-application eclipsecon-hackathon --token dd26596e54e78fa2
