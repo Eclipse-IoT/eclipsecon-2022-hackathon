@@ -56,7 +56,7 @@ impl Display {
     pub async fn display(display: &mut LedMatrix, frame: Frame<5, 5>, length: Duration) {
         display.apply(frame);
         let end = Instant::now() + length;
-        let mut ticker = Ticker::every(Duration::from_micros(500));
+        let mut ticker = Ticker::every(Duration::from_millis(5));
         while Instant::now() < end {
             display.render();
             ticker.next().await;
