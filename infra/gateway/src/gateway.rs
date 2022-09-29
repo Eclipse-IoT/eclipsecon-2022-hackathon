@@ -60,6 +60,7 @@ pub async fn run(
                     Arc::new(FromDrogue::new(GenericOnOffClient)),
                     Arc::new(FromDrogue::new(GenericBatteryClient)),
                     Arc::new(FromDrogue::new(Sensor::new())),
+                    Arc::new(FromDrogue::new(GenericLevelClient)),
                 ],
                 control_handle: Some(element_handle.clone()),
             },
