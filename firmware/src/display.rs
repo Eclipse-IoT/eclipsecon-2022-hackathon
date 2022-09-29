@@ -56,7 +56,7 @@ impl Display {
     pub async fn display(display: &mut LedMatrix, frame: Frame<5, 5>, length: Duration) {
         display.apply(frame);
         let end = Instant::now() + length;
-        let mut ticker = Ticker::every(Duration::from_micros(5));
+        let mut ticker = Ticker::every(Duration::from_micros(500));
         while Instant::now() < end {
             display.render();
             ticker.next().await;
@@ -69,8 +69,6 @@ impl Display {
         // Enable all LEDs
         const BITMAP: Frame<5, 5> =
             fonts::frame_5x5(&[0b11111, 0b11111, 0b11111, 0b11111, 0b11111]);
-
-        const CLEAR: Frame<5, 5> = fonts::frame_5x5(&[0b11111, 0b11111, 0b11111, 0b11111, 0b11111]);
 
         // For each blink iteration does the following:
         // - Enable bitmap to frame buffer for 1 second
@@ -96,7 +94,7 @@ impl BluetoothMeshModel<GenericLevelServer> for Display {
         mut ctx: C,
     ) -> Self::RunFuture<'_, C> {
         async move {
-            let mut brightness = None;
+            let mut brightness: Option<Brightness> = None;
             loop {
                 if let Some(b) = brightness {
                     self.display.set_brightness(b);
