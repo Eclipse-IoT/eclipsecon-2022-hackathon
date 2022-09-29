@@ -14,6 +14,12 @@ sudo systemctl stop bluetooth
 cd infra/meshd
 sudo /usr/libexec/bluetooth/bluetooth-meshd --config ${PWD}/config --storage ${PWD}/lib --debug
 ```
+If you don't have `/usr/libexec/bluetooth/bluetooth-meshd` on your system then
+you'll need to install the `bluez-mesh` package. For example, to install using
+the `dnf` package manager the following command can be used:
+```console
+sudo dnf install -y bluez-mesh
+```
 
 ## Build the project
 
