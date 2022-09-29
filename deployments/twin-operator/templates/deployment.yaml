@@ -25,6 +25,8 @@ spec:
       app.kubernetes.io/name: twin-operator
       app.kubernetes.io/instance: eclipsecon-2022
       app.kubernetes.io/component: twin-operator
+  strategy:
+    type: Recreate
   template:
     metadata:
       labels:
