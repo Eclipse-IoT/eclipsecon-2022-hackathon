@@ -83,8 +83,15 @@ for the MQTT endpoint.
 ### supported payload
 
 Sending JSON to device is nice, but sending something that will actually do something is better. 
-Here are the commands supported by the sensor board : 
+Here are the command payload supported by the sensor board. Note that it's possible to send a partial command, 
+only to update the display for example.
 
 ```yaml
-todo
+address: u8 # the device address on the mesh
+speaker:
+  location: u8 # optional
+  on: bool
+display:
+  location: u8 # optional
+  level: u64
 ```
