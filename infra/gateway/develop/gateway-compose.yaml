@@ -1,0 +1,32 @@
+version: "2"
+services:
+  meshd:
+    image: quay.io/eclipsecon-2022/meshd:0.1.0
+    command: >
+      /usr/libexec/bluetooth/bluetooth-meshd
+      '--nodetach'
+      '--config'
+      /var/lib/meshd/config
+      '--storage'
+      /var/lib/meshd/lib
+    privileged: true
+    network_mode: host
+    volumes:
+      - /tmp/meshd/config:/var/lib/meshd/config
+      - /tmp/meshd/lib:/var/lib/meshd/lib
+      - /var/run/dbus/system_bus_socket:/var/run/dbus/system_bus_socket
+  gateway:
+    image: quay.io/eclipsecon-2022/gateway:0.1.0
+    command:
+      - '--drogue-device'
+      - gateway4
+      - '--drogue-application'
+      - eclipsecon-hackathon
+      - '--token'
+      - dd26596e54e78fa2
+    environment:
+      RUST_LOG: info
+    privileged: true
+    network_mode: host
+    volumes:
+      - /var/run/dbus/system_bus_socket:/var/run/dbus/system_bus_socket
