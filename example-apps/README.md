@@ -89,9 +89,9 @@ only to update the display for example.
 ```yaml
 address: u8 # the device address on the mesh
 speaker:
-  location: u8
+  location: u8 # optional
   on: bool
 display:
-  location: u8
+  location: u8 # optional
   level: u64
 ```
