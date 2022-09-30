@@ -104,9 +104,16 @@ state:
       temperature: i8 # the temperature, a Celsius value.
   battery: 
     flags: 
-      presence: String # possible values are "NotPresent" or "PresentRemovable"
+      presence: String # possible values are "NotPresent", "PresentRemovable", "PresentNotRemovable" or "Unknown"
     level: u8 
     location: u8
-
-# todo complete
+  button:
+    on: bool
+    location: u8
+  speaker:
+    on: bool
+    location: u8
+  display:
+    level: 
+    location: u8
 ```
