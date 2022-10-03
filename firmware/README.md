@@ -5,13 +5,13 @@ Firmware running on the EclipseCon 2022 Hackathon devices. The firmware implemen
 * Button 'A' and 'B' - Generic OnOff Client. This model allows a client to emit `on` and `off` events, which can be used to trigger some event or command.
 * LED matrix - Generic OnOff Server. An external command can be used to put the server into an `on` or `off` state. On the micro:bit, the `on` state will enable a blinker task, whereas the `off` state will disable that task.
 * Builtin temperature - SensorServer. The sensor server can be configured to emit sensor data periodically.
-* Battery - Generic Battery Server. The battery server can be configured to emit battery status events periodically.
+* Battery - Generic Battery Server. The battery server emits battery status events periodically.
 
 In addition, there are a few TODO's for hackathon participants who want to get their hands dirty with embedded Rust. Each task has complementary work on the cloud side for processing data and sending commands.
 
 * Use the accelerometer to supply x, y, z acceleration data. The `sensor` module can be modified to read accelerometer data and emit motion 3D acceleration readings.
 * Use the microphone to implement a noise detection device. The `sensor` module can be modified to read sound levels and emit sound level values.
-* Use the onboard speaker to implement a jukebox for playing simple tunes. Modify the `onoff` module to play a tune together with the existing blinking when 'on'.
+* Use the onboard speaker to implement a jukebox for playing simple tunes. Modify the `onoff` module to play a tune when 'on'.
 
 Installing the toolchain software as instructed below before the event allows you to spend more time on the hackathon tasks!
 
@@ -24,7 +24,7 @@ Hardware:
 Software:
 
 * [`rustup`](https://rustup.rs/)
-* [`probe-run`](https://crates.io/crates/probe-run)
+* [`cargo-embed`](https://crates.io/crates/cargo-embed)
 * [`cargo-flash`](https://crates.io/crates/cargo-flash)
 
 ## Debugging the application
@@ -32,7 +32,7 @@ Software:
 To run the application with debugging attached, make sure your device is connected, and run the following command:
 
 ```
-cargo run --release
+cargo embed --release
 ```
 
 ## Flashing application for battery powered use
