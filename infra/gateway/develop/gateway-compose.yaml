@@ -9,6 +9,8 @@ services:
       /var/lib/meshd/config
       '--storage'
       /var/lib/meshd/lib
+      # Uncomment to debug meshd
+      # --debug
     privileged: true
     network_mode: host
     volumes:
@@ -19,13 +21,13 @@ services:
     image: quay.io/eclipsecon-2022/gateway:0.1.0
     command:
       - '--drogue-device'
-      - gateway4
+      - ${DEVICE}
       - '--drogue-application'
       - eclipsecon-hackathon
       - '--token'
-      - dd26596e54e78fa2
+      - ${TOKEN}
     environment:
-      RUST_LOG: info
+      RUST_LOG: ${LOG}
     privileged: true
     network_mode: host
     volumes:

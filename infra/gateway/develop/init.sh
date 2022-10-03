@@ -1,6 +1,6 @@
 #!/bin/bash
 
-rm -rf /tmp/meshd/
+sudo rm -rf /tmp/meshd/
 mkdir /tmp/meshd
 
 cp -r ../meshd/config /tmp/meshd/config
