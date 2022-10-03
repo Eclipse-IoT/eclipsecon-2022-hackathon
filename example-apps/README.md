@@ -80,6 +80,8 @@ You can find [here](https://book.drogue.io/drogue-cloud/dev/api/endpoints.html#_
 HTTP endpoint, and [here](https://book.drogue.io/drogue-cloud/dev/user-guide/integration-mqtt.html#_publish_commands) 
 for the MQTT endpoint.
 
+Note that the command value must be `sensor`.
+
 ### supported payload
 
 Sending JSON to device is nice, but sending something that will actually do something is better. 
@@ -93,5 +95,21 @@ speaker:
   on: bool
 display:
   location: u8 # optional
-  level: u64
+  level: u8   # brightness value between 0 and 255
+```
+
+### Example 
+
+This command would set the display to 0 : 
+```bash 
+curl -X 'POST' \
+  'https://api.sandbox.drogue.cloud/api/command/v1alpha1/apps/eclipsecon-hackathon/devices/alligator?command=sensor' \
+  -H 'Authorization: Bearer <yourToken>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+  "address": 0,
+  "display": {
+    "level": 0
+  }
+}'
 ```
