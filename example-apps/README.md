@@ -95,7 +95,7 @@ speaker:
   on: bool
 display:
   location: u8 # optional
-  level: u8   # brightness value between 0 and 255
+  level: u8   # brightness value between 0 and 10
 ```
 
 ### Example 
