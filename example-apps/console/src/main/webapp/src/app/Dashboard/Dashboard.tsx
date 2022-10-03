@@ -117,7 +117,7 @@ const Dashboard: React.FunctionComponent = () => {
           <Toolbar>
             <ToolbarContent>
               <ToolbarItem variant="label">Claimed</ToolbarItem>
-              <ToolbarItem>{service.payload?.id}</ToolbarItem>
+              <ToolbarItem>{service.payload?.id} (address {service.payload?.provisioningId})</ToolbarItem>
 
               {service.payload?.id?.startsWith("simulator-") && (
                 <>
