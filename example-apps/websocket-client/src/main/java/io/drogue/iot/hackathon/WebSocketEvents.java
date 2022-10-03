@@ -47,7 +47,9 @@ public class WebSocketEvents implements QuarkusApplication {
         URI endpoint = URI.create(url);
         System.out.println("Connecting to " + url);
         try (var session = ContainerProvider.getWebSocketContainer().connectToServer(SocketClient.class, endpoint)) {
-            while (true) {}
+            while (true) {
+                Thread.sleep(1000);
+            }
         }
     }
 
