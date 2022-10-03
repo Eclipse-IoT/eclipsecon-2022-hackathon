@@ -50,8 +50,14 @@ fn json2command(data: &Value) -> Option<RawMessage> {
     if let Value::Object(data) = data {
         if let Some(Value::Number(address)) = data.get("address") {
             if let Some(Value::Object(state)) = data.get("speaker") {
-                let location = state["location"].as_u64().unwrap_or(0);
-                let on = state["on"].as_bool().unwrap_or(false);
+                let location = state
+                    .get("location")
+                    .map(|s| s.as_u64().unwrap_or(0))
+                    .unwrap_or(0);
+                let on = state
+                    .get("on")
+                    .map(|s| s.as_bool().unwrap_or(false))
+                    .unwrap_or(false);
                 let set = GenericOnOffSet {
                     on_off: if on { 1 } else { 0 },
                     tid: 0,
@@ -75,8 +81,16 @@ fn json2command(data: &Value) -> Option<RawMessage> {
             }
 
             if let Some(Value::Object(state)) = data.get("display") {
-                let location = state["location"].as_u64().unwrap_or(0);
-                let level = state["level"].as_u64().unwrap_or(0);
+                let location = state
+                    .get("location")
+                    .map(|s| s.as_u64().unwrap_or(0))
+                    .unwrap_or(0);
+
+                let level = state
+                    .get("level")
+                    .map(|l| l.as_u64().unwrap_or(0))
+                    .unwrap_or(0);
+
                 let set = GenericLevelSet {
                     level: level as i16,
                     tid: 0,
