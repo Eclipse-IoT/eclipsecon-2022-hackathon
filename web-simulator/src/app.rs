@@ -454,6 +454,7 @@ impl App {
                     if let Ok(Some(GenericOnOffMessage::Set(msg))) =
                         GenericOnOffServer::parse(&opcode, &command.parameters)
                     {
+                        log::info!("Set matrix to {}!", msg.on_off);
                         vec![Msg::Set(Box::new(move |app| {
                             app.matrix = MatrixState {
                                 on: msg.on_off == 1,
@@ -463,10 +464,11 @@ impl App {
                     } else if let Ok(Some(GenericLevelMessage::Set(msg))) =
                         GenericLevelServer::parse(&opcode, &command.parameters)
                     {
+                        log::info!("Set level to {}", msg.level);
                         vec![Msg::Set(Box::new(move |app| {
                             app.matrix = MatrixState {
                                 on: app.matrix.on,
-                                brightness: msg.level as u8,
+                                brightness: (msg.level * 255 / 10) as u8,
                             }
                         }))]
                     } else {
