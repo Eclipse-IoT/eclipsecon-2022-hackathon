@@ -176,7 +176,7 @@ impl Component for App {
         Self {
             state: SimulatorState::Stopped,
             matrix: MatrixState {
-                on: false,
+                on: true,
                 brightness: 255,
             },
             temperature: 22,
