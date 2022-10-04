@@ -16,7 +16,7 @@ use adc::*;
 use battery::*;
 use btmesh_device::BluetoothMeshModel;
 use btmesh_macro::{device, element};
-use btmesh_nrf_softdevice::*;
+use btmesh_nrf_softdevice::{BluetoothMeshDriverConfig, Driver};
 use button::*;
 use core::future::Future;
 use display::*;
