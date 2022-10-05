@@ -11,9 +11,10 @@ Some important links:
 
 * [Slides](https://docs.google.com/presentation/d/1xq4taSold1GCIjKdR9hy7n3Cyyb4GKXRvnE2stboVw4)
 * [Scratchpad](https://hackmd.io/9D5pbxHlR-KH236PSqaYew)
-* Applications:
+* Applications
   * [Console](https://console-eclipsecon-2022.apps.sandbox.drogue.world/)
-  * [Dashboard]( https://dashboard-eclipsecon-2022.apps.sandbox.drogue.world/)
+  * [Dashboard](https://dashboard-eclipsecon-2022.apps.sandbox.drogue.world/)
+  * [OPC UA Server](opc.tcp://a619b000489564b4c8d667f2707cfc9f-1586875243.eu-west-1.elb.amazonaws.com:4840/drogue-iot)
 
 ## Before the hackathon
 
