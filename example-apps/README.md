@@ -6,17 +6,16 @@ It's designed to be simple, so you can look around and grab the building blocks 
 get going with your own ideas !
 
 - [websocket-client](websocket-client) is the simplest app, it subscribes to all events coming through the hackathon devices and logs them to the console.
-- [console](console) allows you to claim the device that you were handed out. It uses MQTT to stream
-the data coming from the claimed device.
+- [console](console) allows you to claim the device that you were handed out. It uses MQTT to stream the data coming from the claimed device.
 - The [dashboard](dashboard) aggregates the data coming from all the devices, using websocket. It then displays a live dashboard.
 
 # Consuming sensor data
 
 There are a few different ways an application can obtain the data from a sensor:
 
-    - subscribe to the event stream through the integration endpoints (MQTT or WebSocket)
-    - get the events directly from the kafka topic
-    - Query doppelgaenger (our digital kinda twin) to get the last known state of the device
+- subscribe to the event stream through the integration endpoints (MQTT or WebSocket)
+- get the events directly from the kafka topic
+- Query doppelgaenger (our digital kinda twin) to get the last known state of the device
 
 It's worth noting that sensors sends out "partial" updates, meaning that if only one button was pressed, the payload
 will only contain the state of that button. Other sensor data may not be included in each update.

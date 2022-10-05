@@ -19,12 +19,24 @@ When you press the 'Update' button, the new settings will be sent to the device.
 This is a normal Quarkus application, and you can simply run it using `mvn quarkus:dev`. Or any of the other ways
 Quarkus applications can be run.
 
-### Locally
+**NOTE:** When you run a local version of this, you will re-use the connection to the devices, but create your own
+Keycloak and Device Claim state. So please only use our own devices to work with.
+
+### Backend
 
 This application requires a PostgreSQL and a Keycloak instance. You can start one using:
 
 ```shell
 podman-compose -f develop/docker-compose.yaml up
+```
+
+You need to provide some configuration, we recommend to create a `.env` file in this directory, providing the
+following information:
+
+```shell
+MP_MESSAGING_INCOMING_TELEMETRY_CLIENT_ID=<unique id>
+DROGUE_API_USER=eclipsecon
+DROGUE_API_KEY=<drogue iot access token>
 ```
 
 Then start the Quarkus application from your IDE, or using:
@@ -42,7 +54,7 @@ cd src/main/webapp
 npm run start:dev
 ```
 
-### Kubernetes
+## Deploying to Kubernetes
 
 The repository has a [`deploy/`](/deploy) folder, which contains deployment scripts for Kubernetes.
 
