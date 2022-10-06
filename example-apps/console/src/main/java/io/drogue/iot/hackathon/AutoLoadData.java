@@ -10,6 +10,7 @@ import javax.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.drogue.iot.hackathon.service.DeviceClaimService;
@@ -22,6 +23,7 @@ public class AutoLoadData {
     private final static Logger logger = LoggerFactory.getLogger(AutoLoadData.class);
 
     @RegisterForReflection
+    @JsonIgnoreProperties(ignoreUnknown=true)
     static class IdMapEntry {
         public String id;
 
