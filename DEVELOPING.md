@@ -23,11 +23,10 @@ sudo dnf install -y bluez-mesh
 
 ## Build the project
 
-The development of gateway (and simulator) projects is possible only on Linux platforms with libdbus installed.
+The development of gateway (and simulator) projects is possible only on Linux platforms with `libdbus` installed.
 Uncomment appropriate modules in [infra/Cargo.toml](infra/Cargo.toml) to make them a part of the workspace.
 
 ```
-cd infra
 cargo build --release
 ```
 
@@ -44,6 +43,16 @@ Or, to build and run:
 ```shell
 cd infra/gateway
 RUST_LOG=info cargo run --package eclipsecon-gateway -- --drogue-device gateway1 --drogue-application eclipsecon-hackathon --token dd26596e54e78fa2
+```
+
+## Start containerized mesh and gateway
+
+You can use docker compose to easily start both mesh daemon and gateway together
+
+```
+cd infra/gateway
+develop/init.sh # only the first time and when you want to reset gateway state
+docker-compose -f develop/gateway-compose.yaml up
 ```
 
 ## Installing softdevice on microbit (only needed first time)
