@@ -4,9 +4,9 @@ kind: Namespace
 metadata:
   name: eclipsecon-gateway
 
----
+# ---
 apiVersion: apps/v1
-kind: Deployment
+kind: DaemonSet
 metadata:
   name: mesh-gateway
   namespace: eclipsecon-gateway
@@ -52,7 +52,6 @@ spec:
             - /var/lib/meshd/lib
           securityContext:
             privileged: true
-          hostNetwork: true
           volumeMounts:
             - mountPath: /var/run/dbus/system_bus_socket
               name: dbus-socket
@@ -75,7 +74,6 @@ spec:
               value: info
           securityContext:
             privileged: true
-          hostNetwork: true  
           volumeMounts:
             - mountPath: /var/run/dbus/system_bus_socket
               name: dbus-socket
