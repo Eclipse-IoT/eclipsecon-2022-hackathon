@@ -100,12 +100,12 @@ public class ClaimResource {
 
 
     @Transactional
-    private void claimDevice(final String claimId, final String userId, final boolean canCreate) {
+    void claimDevice(final String claimId, final String userId, final boolean canCreate) {
         this.service.claimDevice(claimId, userId, canCreate);
     }
 
     @Transactional
-    private void claimSimulatorDevice(final String userId) {
+    void claimSimulatorDevice(final String userId) {
         var id = "simulator-" + UUID.randomUUID();
         var pwd = UUID.randomUUID().toString();
         this.service.claimDevice(id, userId, true);
