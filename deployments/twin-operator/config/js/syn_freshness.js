@@ -3,7 +3,7 @@ let lastUpdate = null;
 let num = 0;
 let debug = undefined; // can be set to []
 
-for (const [key, value] of Object.entries(context.newState.reportedState)) {
+for (const [key, value] of Object.entries(context.newState.reportedState || {})) {
     if (key.startsWith("$")) {
         continue;
     }
