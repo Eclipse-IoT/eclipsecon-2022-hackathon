@@ -36,26 +36,49 @@ import io.vertx.mutiny.core.Vertx;
 import io.vertx.mutiny.core.http.HttpClient;
 import io.vertx.mutiny.core.http.WebSocket;
 
+/**
+ * A connector to the twin notifications.
+ * <p>
+ * This connector establishes a websocket connection to the twin backend, and keeps it open.
+ * It also listens to the announces "things" of the mesh, and subscribes to their data.
+ */
 @Startup
 @ApplicationScoped
 public class TwinConnector {
     private static final Logger logger = LoggerFactory.getLogger(TwinConnector.class);
 
+    /**
+     * The twin application name.
+     */
     @ConfigProperty(name = "drogue.application")
     String application;
 
+    /**
+     * The base API URL of the twin backend.
+     */
     @ConfigProperty(name = "drogue.doppelgaenger.api")
     URI apiUrl;
 
+    /**
+     * The root thing of the bluetooth mesh.
+     */
     @ConfigProperty(name = "drogue.doppelgaenger.rootId")
     String rootId;
 
+    /**
+     * The client for retrieving fresh OAuth2 tokens for the Twin websocket connection.
+     */
     @Inject
     OidcClient client;
 
     @Inject
     Vertx vertx;
 
+    /**
+     * The holder of the state.
+     * <p>
+     * This instance will receive the state updates from the twin connection.
+     */
     @Inject
     StateHolder stateHolder;
 
@@ -96,6 +119,12 @@ public class TwinConnector {
         }
     }
 
+    /**
+     * Perform a new connection attempt.
+     *
+     * This will fetch a new OAuth2 token, and then try to connect to the websocket endpoint.
+     * If this succeeds, it will start processing, otherwise it will try to reconnect.
+     */
     private void connect() {
         logger.info("Connecting websocket");
         if (this.stopped) {
@@ -128,6 +157,11 @@ public class TwinConnector {
                 .with(this::connected, this::failed);
     }
 
+    /**
+     * Called when the websocket connection was established.
+     *
+     * @param webSocket The connected websocket.
+     */
     private void connected(final WebSocket webSocket) {
         logger.info("Connected");
         webSocket
@@ -139,17 +173,26 @@ public class TwinConnector {
         subscribe(this.rootId);
     }
 
+    /**
+     * Called when the websocket got closed.
+     */
     private void closed() {
         logger.info("Connection closed by remote");
         disconnected();
     }
 
+    /**
+     * Called when the websocket failed.
+     */
     private void failed(final Throwable throwable) {
         logger.info("Connect failed", throwable);
         this.connecting = null;
         disconnected();
     }
 
+    /**
+     * Handle getting disconnected.
+     */
     private void disconnected() {
         this.ws = null;
         // clear known children
@@ -160,6 +203,11 @@ public class TwinConnector {
         reconnect();
     }
 
+    /**
+     * Handle a re-connect situation.
+     *
+     * This method will only schedule a re-connect if the connector is still active.
+     */
     private void reconnect() {
         logger.info("Checking reconnect");
         if (this.connecting == null && !this.stopped) {
@@ -171,6 +219,11 @@ public class TwinConnector {
         }
     }
 
+    /**
+     * Process incoming messages.
+     *
+     * @param message The message to process.
+     */
     private void onMessage(final String message) {
         logger.debug("onMessage: {}", message);
         final var json = new JsonObject(message);
@@ -191,6 +244,11 @@ public class TwinConnector {
         }
     }
 
+    /**
+     * Send a request to subscribe to a thing.
+     *
+     * @param thingId The thing to unsubscribe from.
+     */
     void subscribe(final String thingId) {
         final var r = new ThingRequest();
         r.type = ThingRequestType.Subscribe;
@@ -198,6 +256,11 @@ public class TwinConnector {
         send(Json.encode(r));
     }
 
+    /**
+     * Send a request to unsubscribe from a thing.
+     *
+     * @param thingId The thing to unsubscribe from.
+     */
     void unsubscribe(final String thingId) {
         final var r = new ThingRequest();
         r.type = ThingRequestType.Unsubscribe;
@@ -205,6 +268,11 @@ public class TwinConnector {
         send(Json.encode(r));
     }
 
+    /**
+     * Send a text message to the server side.
+     *
+     * @param text The text to send.
+     */
     void send(final String text) {
         final var ws = this.ws;
         if (ws != null) {

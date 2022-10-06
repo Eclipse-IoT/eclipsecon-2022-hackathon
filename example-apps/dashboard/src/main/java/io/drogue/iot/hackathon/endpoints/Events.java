@@ -1,7 +1,7 @@
 package io.drogue.iot.hackathon.endpoints;
 
 import static io.drogue.iot.hackathon.StateHolder.UPDATES;
-import static io.drogue.iot.hackathon.endpoints.Cell.cell;
+import static io.drogue.iot.hackathon.endpoints.render.Cell.cell;
 import static java.util.Optional.ofNullable;
 
 import java.io.IOException;
@@ -25,23 +25,47 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.drogue.iot.hackathon.StateHolder;
+import io.drogue.iot.hackathon.endpoints.render.Direction;
+import io.drogue.iot.hackathon.endpoints.render.Table;
 import io.drogue.iot.hackathon.model.BasicFeature;
 import io.quarkus.qute.CheckedTemplate;
 import io.quarkus.qute.TemplateInstance;
 import io.quarkus.scheduler.Scheduled;
 import io.vertx.core.json.JsonObject;
 
+/**
+ * Endpoint for state events.
+ * <p>
+ * This is a web socket endpoint, which will send out an aggregate view of all things.
+ * Each session has its session state and will receive a customized rendering of the current state.
+ * <p>
+ * It is using the <a href="https://quarkus.io/guides/qute">Qute</a> rendering engine from Quarkus.
+ * <p>
+ * <h3>Tasks:</h3>
+ * <ul>
+ *     <li>Cache renderings for sessions with the same state</li>
+ * </ul>
+ */
 @ServerEndpoint("/api/updates/v1alpha1/events")
 @ApplicationScoped
-public class Updates {
+public class Events {
 
-    private static final Logger logger = LoggerFactory.getLogger(Updates.class);
+    private static final Logger logger = LoggerFactory.getLogger(Events.class);
 
+    /**
+     * Binding to the template in {@code resources/templates/Events}
+     */
     @CheckedTemplate
     public static class Templates {
         public static native TemplateInstance state(Table table);
     }
 
+    /**
+     * A connection (session state) to a listener.
+     * <p>
+     * The connection will try to limit changes. So only changed which changed the rendered content are sent,
+     * as well a limit to not send more often than one second.
+     */
     static class Connection {
         private final Session session;
 
@@ -85,6 +109,9 @@ public class Updates {
 
         }
 
+        /**
+         * Actually send the content.
+         */
         private void sendContent() {
             this.needSend = false;
             setNextSend();
@@ -93,10 +120,16 @@ public class Updates {
                     .sendText(this.lastContent);
         }
 
+        /**
+         * Record the time until the next send.
+         */
         private void setNextSend() {
             this.nextSend = Instant.now().plus(Duration.ofSeconds(1));
         }
 
+        /**
+         * Send a ping.
+         */
         private void sendPing() {
             setNextSend();
 
@@ -118,10 +151,19 @@ public class Updates {
             "acceleration",
     };
 
+    /**
+     * Check if a thing "seems" empty.
+     * <p>
+     * Things are never really empty, as they contain some technical information.
+     * So, this is our definition of "empty" for the end user.
+     *
+     * @param values The current values of the thing.
+     * @return The result.
+     */
     static boolean seemsEmpty(final Map<String, BasicFeature> values) {
 
-        for (var name : EXPECTED_PROPERTIES) {
-            var value = values.get(name);
+        for (final var name : EXPECTED_PROPERTIES) {
+            final var value = values.get(name);
             if (value == null) {
                 continue;
             }
@@ -129,10 +171,18 @@ public class Updates {
                 return false;
             }
         }
-        
+
         return true;
     }
 
+    /**
+     * Render the provided state.
+     *
+     * @param state The state to render.
+     * @param sortBy The column to sort by. A negative number indicates to not sort.
+     * @param direction The direction to sort by. Must not be {@code null} in case the sortBy field indicates that sorting is required.
+     * @return The rendered output.
+     */
     static String renderState(final StateHolder.State state, final int sortBy, final Direction direction) {
 
         final var table = new Table("Device ID", "Temperature", "Noise", "Acceleration", "Battery");
@@ -169,11 +219,22 @@ public class Updates {
                 .render();
     }
 
+    /**
+     * A map of the current connections.
+     */
     private final Map<String, Connection> connections = new ConcurrentHashMap<>();
 
+    /**
+     * A reference to the current state.
+     */
     @Inject
     StateHolder state;
 
+    /**
+     * Called when updates get published on the {@link UPDATES} channel.
+     *
+     * @param state The new state.
+     */
     @Incoming(UPDATES)
     void update(final StateHolder.State state) {
         logger.debug("State update: {}", state);
@@ -202,6 +263,12 @@ public class Updates {
         removeSession(session);
     }
 
+    /**
+     * Handle messages from the listener.
+     *
+     * @param session The session which received the message.
+     * @param message The received message.
+     */
     @OnMessage
     void onMessage(final Session session, final String message) {
         final var msg = new JsonObject(message);
@@ -228,6 +295,13 @@ public class Updates {
         }
     }
 
+    /**
+     * Add a new session.
+     * <p>
+     * This will add the session to the internal state, and also send an initial update.
+     *
+     * @param session The new session to add.
+     */
     void addSession(final Session session) {
         final var connection = new Connection(session);
         final var lastState = this.state.getState();
@@ -235,6 +309,11 @@ public class Updates {
         this.connections.put(session.getId(), connection);
     }
 
+    /**
+     * Remove and close a session.
+     *
+     * @param session The session to remove.
+     */
     void removeSession(final Session session) {
         this.connections.remove(session.getId());
         try {
@@ -244,6 +323,9 @@ public class Updates {
         }
     }
 
+    /**
+     * Scheduler, ticking all connections.
+     */
     @Scheduled(every = "1s")
     void tick() {
         this.connections.values().forEach(Connection::tick);

@@ -1,4 +1,4 @@
-package io.drogue.iot.hackathon.endpoints;
+package io.drogue.iot.hackathon.endpoints.render;
 
 import java.util.Optional;
 import java.util.function.Function;
@@ -42,15 +42,15 @@ public class Cell {
         return (Comparable<?>) value;
     }
 
-    static <T> Cell cell(final Optional<T> value) {
+    public static <T> Cell cell(final Optional<T> value) {
         return cell(value, Object::toString, "");
     }
 
-    static <T> Cell cell(final Optional<T> value, final Function<T, String> render) {
+    public static <T> Cell cell(final Optional<T> value, final Function<T, String> render) {
         return cell(value, render, "");
     }
 
-    static <T> Cell cell(final Optional<T> value, final Function<T, String> render, final String other) {
+    public static <T> Cell cell(final Optional<T> value, final Function<T, String> render, final String other) {
         return new Cell(value, value.map(render).orElse(other));
     }
 

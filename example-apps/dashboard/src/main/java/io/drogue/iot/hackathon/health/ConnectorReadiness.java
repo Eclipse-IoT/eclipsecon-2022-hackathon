@@ -9,6 +9,9 @@ import org.eclipse.microprofile.health.Readiness;
 
 import io.drogue.iot.hackathon.TwinConnector;
 
+/**
+ * Health check for the connector.
+ */
 @Readiness
 public class ConnectorReadiness implements HealthCheck {
 
@@ -17,7 +20,7 @@ public class ConnectorReadiness implements HealthCheck {
 
     @Override
     public HealthCheckResponse call() {
-        HealthCheckResponseBuilder responseBuilder = HealthCheckResponse.named("Twin WebSocket Connector");
+        final HealthCheckResponseBuilder responseBuilder = HealthCheckResponse.named("Twin WebSocket Connector");
 
         return responseBuilder
                 .status(this.twinConnector.isConnected())

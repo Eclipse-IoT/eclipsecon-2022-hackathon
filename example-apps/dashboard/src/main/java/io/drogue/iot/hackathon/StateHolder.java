@@ -14,6 +14,9 @@ import io.drogue.iot.hackathon.model.BasicFeature;
 import io.smallrye.reactive.messaging.annotations.Broadcast;
 import io.vertx.core.json.Json;
 
+/**
+ * Hold the current state and send updates.
+ */
 @ApplicationScoped
 public class StateHolder {
 
@@ -51,6 +54,11 @@ public class StateHolder {
 
     }
 
+    /**
+     * The emitter used to send updates.
+     * <p>
+     * Sending changes to this channel will trigger all receivers/subscribers on the same channel.
+     */
     @Inject
     @Channel(UPDATES)
     @Broadcast
@@ -60,6 +68,11 @@ public class StateHolder {
         return this.state;
     }
 
+    /**
+     * Set the new state, and send an update.
+     *
+     * @param state The new state, must not be {@code null}.
+     */
     public void setState(final Map<String, Map<String, BasicFeature>> state) {
         this.state.devices = state;
         this.updates.send(this.state);

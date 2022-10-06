@@ -1,4 +1,4 @@
-package io.drogue.iot.hackathon.endpoints;
+package io.drogue.iot.hackathon.endpoints.render;
 
 import java.util.Arrays;
 import java.util.Comparator;
@@ -19,11 +19,11 @@ public class Table {
 
     private Direction direction;
 
-    Table(final String... header) {
+    public Table(final String... header) {
         this.header = List.of(header);
     }
 
-    void addRow(final Cell... cells) {
+    public void addRow(final Cell... cells) {
         if (cells.length != this.header.size()) {
             throw new IllegalArgumentException(String.format(
                     "Expect %s values based on the provided headers, got only %s",
