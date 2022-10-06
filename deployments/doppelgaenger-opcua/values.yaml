@@ -27,6 +27,9 @@ deployment:
 
   replicas: 1
 
+  image: ghcr.io/drogue-iot/drogue-doppelgaenger-opcua-server:0.1.0-alpha.3
+  imagePullPolicy: IfNotPresent
+
   # allow configuring kubernetes resource requests/limits
   # resources: {}
 

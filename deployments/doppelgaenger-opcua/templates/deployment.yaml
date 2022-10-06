@@ -18,8 +18,8 @@ spec:
     spec:
       containers:
         - name: service
-          image: ghcr.io/drogue-iot/drogue-doppelgaenger-opcua-server:latest
-          imagePullPolicy: Always
+          image: {{ .Values.deployment.image | quote }}
+          imagePullPolicy: {{ .Values.deployment.imagePullPolicy }}
 
           ports:
             - containerPort: 8080
