@@ -19,6 +19,7 @@ use btmesh_macro::{device, element};
 use btmesh_nrf_softdevice::{BluetoothMeshDriverConfig, Driver};
 use button::*;
 use core::future::Future;
+use defmt::info;
 use display::*;
 use embassy_executor::Spawner;
 use embassy_nrf::interrupt;
@@ -45,6 +46,7 @@ use panic_reset as _;
 // Application main entry point. The spawner can be used to start async tasks.
 #[embassy_executor::main]
 async fn main(_s: Spawner) {
+    info!("EclipseCon 2022 Hackaton");
     // A board type to access peripherals on the microbit.
     let board = Microbit::new(config());
 
