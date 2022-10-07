@@ -61,24 +61,41 @@ overflow-checks = false
 embassy-executor = { git = "https://github.com/embassy-rs/embassy.git", rev = "3b58ac1bf86a2373e479e8e3cf92d2df7c29e00b" }
 embassy-nrf = { git = "https://github.com/embassy-rs/embassy.git", rev = "3b58ac1bf86a2373e479e8e3cf92d2df7c29e00b" }
 embassy-time = { git = "https://github.com/embassy-rs/embassy.git", rev = "3b58ac1bf86a2373e479e8e3cf92d2df7c29e00b" }
-embassy-sync = { git = "https://github.com/embassy-rs/embassy.git", rev = "3b58ac1bf86a2373e479e8e3cf92d2df7c29e00b" }
-nrf-softdevice = { git = "https://github.com/embassy-rs/nrf-softdevice.git", rev = "fb9605a108ba45eb022ac9ce7f7be7041efe9523" }
 nrf-softdevice-macro = { git = "https://github.com/embassy-rs/nrf-softdevice.git", rev = "fb9605a108ba45eb022ac9ce7f7be7041efe9523" }
 nrf-softdevice-s140 = { git = "https://github.com/embassy-rs/nrf-softdevice.git", rev = "fb9605a108ba45eb022ac9ce7f7be7041efe9523" }
 
+# To use a local checkout of drogue-iot/btmesh comment out the following
+# patches:
 btmesh-common = { git = "https://github.com/drogue-iot/btmesh.git", branch = "main" }
 btmesh-models = { git = "https://github.com/drogue-iot/btmesh.git", branch = "main" }
 btmesh-device = { git = "https://github.com/drogue-iot/btmesh.git", branch = "main" }
 btmesh-macro = { git = "https://github.com/drogue-iot/btmesh.git", branch = "main" }
 btmesh-driver = { git = "https://github.com/drogue-iot/btmesh.git", branch = "main" }
 btmesh-nrf-softdevice = { git = "https://github.com/drogue-iot/btmesh.git", branch = "main" }
+embassy-sync = { git = "https://github.com/embassy-rs/embassy.git", rev = "3b58ac1bf86a2373e479e8e3cf92d2df7c29e00b" }
+nrf-softdevice = { git = "https://github.com/embassy-rs/nrf-softdevice.git", rev = "fb9605a108ba45eb022ac9ce7f7be7041efe9523" }
 
-#btmesh-device = { path = "../../drogue-iot/btmesh/btmesh-device" }
-#btmesh-macro = { path = "../../drogue-iot/btmesh/btmesh-macro" }
-#btmesh-common = { path = "../../drogue-iot/btmesh/btmesh-common" }
-#btmesh-models = { path = "../../drogue-iot/btmesh/btmesh-models" }
-#btmesh-driver = { path = "../../drogue-iot/btmesh/btmesh-driver" }
-#btmesh-nrf-softdevice = { path = "../../drogue-iot/btmesh/btmesh-nrf-softdevice" }
+# After commenting out the above patches, clone drogue-iot/btmesh:
+# git clone git@github.com:drogue-iot/btmesh.git ../../drogue-iot/btmesh
+#
+# Next comment in the following patches:
+#nrf-softdevice = { git = "https://github.com/embassy-rs/nrf-softdevice.git", branch = "master" }
+#embassy-sync = { git = "https://github.com/embassy-rs/embassy.git", branch = "master" }
+#btmesh-device = { path = "../../drogue/btmesh/btmesh-device" }
+#btmesh-macro = { path = "../../drogue/btmesh/btmesh-macro" }
+#btmesh-common = { path = "../../drogue/btmesh/btmesh-common" }
+#btmesh-models = { path = "../../drogue/btmesh/btmesh-models" }
+#btmesh-driver = { path = "../../drogue/btmesh/btmesh-driver" }
+#btmesh-nrf-softdevice = { path = "../../drogue/btmesh/btmesh-nrf-softdevice" }
+
+# At the time of this writing (2022-10-07) it might be required to specify
+# '+nightly' when building:
+# $ cargo +nightly run --release
+
+# Note that the above cargo command will update Cargo.lock, and if you want to
+# switch back to using the non-local drogue-iot/btmesh crates then revert the
+# changes to Cargo.lock:
+# git checkout Cargo.lock
 
 #[patch."https://github.com/lulf/microbit-async.git"]
 #microbit-async = { path = "../../microbit-async/microbit" }
