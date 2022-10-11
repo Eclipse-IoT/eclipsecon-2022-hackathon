@@ -142,8 +142,8 @@ sudo dnf remove -y microshift
 ----
 
 * Force Fedora 35 build by editing
-'/etc/yum.repos.d/_copr\:copr.fedorainfracloud.org\:group_redhat-et\:microshift.repo' file
-and replace '$releasever' with '35' in the 'baseurl', like
+`/etc/yum.repos.d/_copr\:copr.fedorainfracloud.org\:group_redhat-et\:microshift.repo` file
+and replace `$releasever` with `35` in the `baseurl`, like
 
 [source]
 ---
