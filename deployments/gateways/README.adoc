@@ -146,9 +146,9 @@ sudo dnf remove -y microshift
 and replace `$releasever` with `35` in the `baseurl`, like
 
 [source]
----
+----
 baseurl=https://download.copr.fedorainfracloud.org/results/@redhat-et/microshift/fedora-35-$basearch/
----
+----
 
 * Install MicroShift again
 
