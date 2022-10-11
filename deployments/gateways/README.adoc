@@ -129,6 +129,35 @@ sudo firewall-cmd --reload
 sudo systemctl enable microshift --now
 ----
 
+==== Troubleshoot
+
+In case you have issues with MicroShift installation:
+
+* Remove the installation
+
+[source,shell]
+----
+sudo systemctl remove microshift
+sudo dnf remove -y microshift
+----
+
+* Force Fedora 35 build by editing
+'/etc/yum.repos.d/_copr\:copr.fedorainfracloud.org\:group_redhat-et\:microshift.repo' file
+and replace '$releasever' with '35' in the 'baseurl', like
+
+[source]
+---
+baseurl=https://download.copr.fedorainfracloud.org/results/@redhat-et/microshift/fedora-35-$basearch/
+---
+
+* Install MicroShift again
+
+[source,shell]
+----
+sudo dnf install -y microshift
+sudo systemctl enable microshift --now
+----
+
 === Command line access on the gateway
 
 Install the `oc` binary:
