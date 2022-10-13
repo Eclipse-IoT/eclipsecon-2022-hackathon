@@ -37,7 +37,7 @@ cargo embed --release
 
 ## Flashing application for battery powered use
 
-To run off battery, the application should be flashed without the debug probe attach. You can do this by running the following command:
+To power the microbit using a battery pack, the application should be flashed without the debug probe attached. You can do this by running the following command:
 
 ```
 cargo flash --release --no-default-features --features panic-reset --chip nRF52833_xxAA
