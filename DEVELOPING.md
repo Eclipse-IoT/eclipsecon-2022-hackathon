@@ -55,6 +55,15 @@ develop/init.sh # only the first time and when you want to reset gateway state
 docker-compose -f develop/gateway-compose.yaml up
 ```
 
+## Start gateway in Kubernetes
+
+If you have installed local kubernetes cluster like MicroShift, you can deploy gateway (along with the mesh) with
+
+```
+kubectl create namespace eclipsecon-gateway
+kubectl apply -n eclipsecon-gateway -f deployments/gateways/gateway-daemonset.yaml
+```
+
 ## Installing softdevice on microbit (only needed first time)
 
 Download the [softdevice](https://www.nordicsemi.com/Products/Development-software/S140/Download) and unpack.

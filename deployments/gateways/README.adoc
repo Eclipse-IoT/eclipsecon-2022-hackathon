@@ -258,6 +258,16 @@ oc delete crd klusterlets.operator.open-cluster-management.io
 
 === Rollout the gateway application
 
+You can deploy gateway on each cluster in a set by creating a `placement` and appropriate work for it
+
+[source,shell]
+----
+kubectl apply -n eclipsecon-2022 -f placement.yaml
+clusteradm create work eclipsecon-gateway -f gateway-daemonset.yaml --placement gateway
+----
+
+=== Rollout the gateway application using work manifest
+
 For each gateway, create the following resource in its (gateway) namespace:
 
 [source,yaml]

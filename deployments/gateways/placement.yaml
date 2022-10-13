@@ -1,0 +1,8 @@
+apiVersion: cluster.open-cluster-management.io/v1beta1
+kind: Placement
+metadata:
+  name: gateway
+  namespace: eclipsecon-2022
+spec:
+  clusterSets:
+    - eclipsecon
