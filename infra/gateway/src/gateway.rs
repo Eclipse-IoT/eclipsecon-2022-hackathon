@@ -167,7 +167,7 @@ pub async fn run(
                                             };
                                             // TODO: Hmm, where to get this?
                                             let app_key = 0;
-                                            for i in 0..3 {
+                                            for _ in 0..3 {
                                                 match node.send(&raw, path.clone(), address, app_key).await {
                                                     Ok(_) => {
                                                         log::info!("Forwarded message to device");
