@@ -2,7 +2,7 @@
 members = [
   "sensor-model",
   "model-converter",
-  # Comment the following members if compilining on non-Linux platforms. It will work only on linux platforms with libdbus installed.
+  # Comment the following members if compiling on non-Linux platforms. It will work only on linux platforms with libdbus installed.
   "gateway",
   "simulator",
 ]
