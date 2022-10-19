@@ -17,7 +17,6 @@ metadata:
           "fieldPath":"spec.template.spec.containers[?(@.name==\"server\")].image"
         }
       ]
-    checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
 spec:
   replicas: 1
   selector:
@@ -29,6 +28,8 @@ spec:
     type: Recreate
   template:
     metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
       labels:
         app.kubernetes.io/name: twin-operator
         app.kubernetes.io/instance: eclipsecon-2022
