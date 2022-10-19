@@ -45,6 +45,8 @@ cd infra/gateway
 RUST_LOG=info cargo run --package eclipsecon-gateway -- --drogue-device gateway1 --drogue-application eclipsecon-hackathon --token dd26596e54e78fa2
 ```
 
+NOTE: If gateway fails to connect to the cloud MQTT endpoint, check the path to the file containing CA Root certificates and adjust it, e.g. `--ca-path /etc/ssl/certs/ca-certificates.crt`
+
 ## Start containerized mesh and gateway
 
 You can use docker compose to easily start both mesh daemon and gateway together

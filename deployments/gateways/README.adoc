@@ -274,3 +274,12 @@ For each gateway, create the following resource in its (gateway) namespace:
 ----
 include::work.yaml[]
 ----
+
+=== Remove gateway application
+
+To remove the application from the cluster run:
+
+[source,shell]
+----
+clusteradm delete work eclipsecon-gateway --cluster <CLUSTER_NAME>
+----
