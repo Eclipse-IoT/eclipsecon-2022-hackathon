@@ -53,6 +53,8 @@ impl Speaker {
         loop {
             // TODO Speaker
             // - Modify this section to play a riff (a collection of notes) on the speaker using the speaker instance
+            //
+            // let note = Note(Pitch::C, 100); // A note is a pitch + duration (in millis)
             Timer::after(Duration::from_secs(10)).await;
         }
     }
