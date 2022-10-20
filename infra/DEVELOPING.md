@@ -95,6 +95,7 @@ cargo run -- provision --flash-address=0x0007E000 --node-address 0x0100 --networ
 Use the same address as pre-provisioned when creating the device
 
 ```
+drg login https://api.sandbox.drogue.cloud
 drg create device mydevice --application eclipsecon-hackathon --spec '{"alias":["0100"], "gatewaySelector":{"matchNames":["gateway1","gateway2","gateway3","gateway4","gateway5"]}}'
 drg label device mydevice --application eclipsecon-hackathon role=node
 ```
