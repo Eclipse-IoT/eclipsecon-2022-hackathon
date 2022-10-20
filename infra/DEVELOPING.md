@@ -83,11 +83,14 @@ You can also use the `firmware/flashsd.sh` script for that.
 
 Choose a valid unicast network address for your device. If you wish to use the [console](https://console-eclipsecon-2022.apps.sandbox.drogue.world/) to claim the device, you must choose an address present in [idmap.json](https://github.com/Eclipse-IoT/eclipsecon-2022-hackathon/blob/main/example-apps/console/src/main/resources/META-INF/resources/idmap.json).
 
-NOTE: Make sure the address is a 2 byte hex string with the '0x' prefix.
+NOTE: Make sure the address is a 2 byte hex string with the '0x' prefix, and
+use the `devkey` value with the `--device-key` option in the following commands:
 
 ```
 cd infra/pre-provision
-cargo run -- provision --flash-address=0x0007E000 --node-address 0x0100 --network-key 0B5E6760156116BAB83115D4C1BFB480 --application-key 8E0A245C38A136E7D6E8429D562DA959  --chip nRF52833_xxAA
+cargo run -- provision --flash-address=0x7E000 --node-address 0x100 --network-key 0B5E6760156116BAB83115D4C1BFB480 --application-key 8E0A245C38A136E7D6E8429D562DA959 --device-key 505f1bd9bd5b58418e964b0fcd2aaf88 --chip nRF52833_xxAA
+cargo run -- provision --flash-address=0x7F000 --node-address 0x100 --network-key 0B5E6760156116BAB83115D4C1BFB480 --application-key 8E0A245C38A136E7D6E8429D562DA959 --device-key 505f1bd9bd5b58418e964b0fcd2aaf88 --chip nRF52833_xxAA
+```
 ```
 
 ## Create the device in Drogue Cloud
