@@ -8,7 +8,7 @@ do
 		echo "Probe ready, flashing"
 		pushd ../firmware
 		./flashsd.sh
-		cargo flash --release --chip nRF52833_xxAA
+		cargo flash --release --no-default-features --features panic-reset --chip nRF52833_xxAA
 		popd
 
 		./preprovision.sh $NAME
