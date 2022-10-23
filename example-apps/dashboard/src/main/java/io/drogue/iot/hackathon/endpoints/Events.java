@@ -89,7 +89,8 @@ public class Events {
         void tick() {
             if (this.needSend) {
                 sendContent();
-            } else if (Duration.between(Instant.now(), this.nextSend).toSeconds() > 30) {
+            } else if (Duration.between(Instant.now(), this.nextSend).toSeconds() < -30) {
+                // next send was 30 second ago, send ping
                 sendPing();
             }
 
