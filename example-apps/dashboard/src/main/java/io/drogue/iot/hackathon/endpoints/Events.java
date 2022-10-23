@@ -131,6 +131,7 @@ public class Events {
          * Send a ping.
          */
         private void sendPing() {
+            logger.info("Send ping to: {}", this.session);
             setNextSend();
 
             try {
