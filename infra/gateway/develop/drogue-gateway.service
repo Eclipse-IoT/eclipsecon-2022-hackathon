@@ -3,7 +3,7 @@ Description=Drogue Gateway service
 
 [Service]
 Environment="RUST_LOG=trace,tokio=info,runtime=info"
-ExecStart=/opt/gateway/eclipsecon-gateway --drogue-device gateway3 --drogue-application eclipsecon-hackathon --token dd26596e54e78fa2 --ca-path /etc/ssl/certs/ca-certificates.crt
+ExecStart=/opt/gateway/run_gateway.sh
 User=root
 Wants=btm.service
 Group=root
