@@ -1,11 +1,11 @@
 [Unit]
 Description=Drogue Gateway service
+After=btm.service
 
 [Service]
 Environment="RUST_LOG=trace,tokio=info,runtime=info"
 ExecStart=/opt/gateway/run_gateway.sh
 User=root
-Wants=btm.service
 Group=root
 Restart=always
 
