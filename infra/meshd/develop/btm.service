@@ -2,7 +2,7 @@
 Description=Bluetooth meshd service
 
 [Service]
-ExecStart=/usr/libexec/bluetooth/bluetooth-meshd --config /tmp/meshd/config --storage /tmp/meshd/lib --nodetach
+ExecStart=/opt/gateway/run_meshd.sh
 User=root
 Group=root
 Restart=always
