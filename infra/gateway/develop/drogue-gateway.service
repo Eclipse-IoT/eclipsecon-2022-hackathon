@@ -1,0 +1,11 @@
+[Unit]
+Description=Drogue Gateway service
+
+[Service]
+ExecStart=RUST_LOG="trace,tokio=info,runtime=info" /opt/gateway/eclipsecon-gateway --drogue-device gateway4 --drogue-application eclipsecon-hackathon --token dd26596e54e78fa2 --ca-path /etc/ssl/certs/ca-certificates.crt
+User=root
+Group=root
+Restart=always
+
+[Install]
+WantedBy=default.target

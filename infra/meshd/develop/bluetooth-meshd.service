@@ -1,0 +1,11 @@
+[Unit]
+Description=Bluetooth meshd service
+
+[Service]
+ExecStart=/usr/libexec/bluetooth/bluetooth-meshd --config /tmp/meshd/config --storage /tmp/meshd/lib --nodetach
+User=root
+Group=root
+Restart=always
+
+[Install]
+WantedBy=default.target
