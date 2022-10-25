@@ -1,6 +1,7 @@
 #![no_std]
 #![no_main]
 #![macro_use]
+#![feature(generic_associated_types)]
 #![feature(type_alias_impl_trait)]
 
 mod adc;

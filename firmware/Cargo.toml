@@ -25,7 +25,7 @@ panic-reset = { version = "0.1.1", optional = true }
 embassy-executor = { version = "0.1.0", default-features = false, features = ["integrated-timers", "nightly"] }
 embassy-time = { version = "0.1.0", default-features = false, features = ["defmt-timestamp-uptime", "defmt"] }
 embassy-sync = { version = "0.1.0", default-features = false }
-microbit-bsp = { git = "https://github.com/drogue-iot/drogue-device.git", rev = "f32c5e66f0d29d9299f674ed82babb339b448839" }
+microbit-bsp = { git = "https://github.com/drogue-iot/drogue-device.git", rev = "05ef60945cc3736eb7bcba3f2fecb247279fdffa" }
 
 embassy-nrf = { version = "0.1.0", default-features = false, features = ["nrf52833", "gpiote", "time-driver-rtc1", "nightly", "unstable-traits"] }
 embassy-futures = { version = "0.1.0", default-features = false }
@@ -58,23 +58,22 @@ opt-level = 'z'
 overflow-checks = false
 
 [patch.crates-io]
-embassy-executor = { git = "https://github.com/embassy-rs/embassy.git", rev = "99284b830455dde9cd91091e2c1f4dda92936f51" }
-embassy-nrf = { git = "https://github.com/embassy-rs/embassy.git", rev = "99284b830455dde9cd91091e2c1f4dda92936f51" }
-embassy-time = { git = "https://github.com/embassy-rs/embassy.git", rev = "99284b830455dde9cd91091e2c1f4dda92936f51" }
-embassy-futures = { git = "https://github.com/embassy-rs/embassy.git", rev = "99284b830455dde9cd91091e2c1f4dda92936f51" }
-nrf-softdevice-macro = { git = "https://github.com/embassy-rs/nrf-softdevice.git", rev = "5dabeac5d85d6ebf184b034054e827fca19a89ab" }
-nrf-softdevice-s140 = { git = "https://github.com/embassy-rs/nrf-softdevice.git", rev = "5dabeac5d85d6ebf184b034054e827fca19a89ab" }
+embassy-executor = { git = "https://github.com/embassy-rs/embassy.git", rev = "3b58ac1bf86a2373e479e8e3cf92d2df7c29e00b" }
+embassy-nrf = { git = "https://github.com/embassy-rs/embassy.git", rev = "3b58ac1bf86a2373e479e8e3cf92d2df7c29e00b" }
+embassy-time = { git = "https://github.com/embassy-rs/embassy.git", rev = "3b58ac1bf86a2373e479e8e3cf92d2df7c29e00b" }
+nrf-softdevice-macro = { git = "https://github.com/embassy-rs/nrf-softdevice.git", rev = "fb9605a108ba45eb022ac9ce7f7be7041efe9523" }
+nrf-softdevice-s140 = { git = "https://github.com/embassy-rs/nrf-softdevice.git", rev = "fb9605a108ba45eb022ac9ce7f7be7041efe9523" }
 
 # To use a local checkout of drogue-iot/btmesh comment out the following
 # patches:
-btmesh-common = { git = "https://github.com/drogue-iot/btmesh.git", rev = "684016093ad493cc52f18a68cb4d9255c6ec37c6" }
-btmesh-models = { git = "https://github.com/drogue-iot/btmesh.git", rev = "684016093ad493cc52f18a68cb4d9255c6ec37c6" }
-btmesh-device = { git = "https://github.com/drogue-iot/btmesh.git", rev = "684016093ad493cc52f18a68cb4d9255c6ec37c6" }
-btmesh-macro = { git = "https://github.com/drogue-iot/btmesh.git", rev = "684016093ad493cc52f18a68cb4d9255c6ec37c6" }
-btmesh-driver = { git = "https://github.com/drogue-iot/btmesh.git", rev = "684016093ad493cc52f18a68cb4d9255c6ec37c6" }
-btmesh-nrf-softdevice = { git = "https://github.com/drogue-iot/btmesh.git", rev = "684016093ad493cc52f18a68cb4d9255c6ec37c6" }
-embassy-sync = { git = "https://github.com/embassy-rs/embassy.git", rev = "99284b830455dde9cd91091e2c1f4dda92936f51" }
-nrf-softdevice = { git = "https://github.com/embassy-rs/nrf-softdevice.git", rev = "5dabeac5d85d6ebf184b034054e827fca19a89ab" }
+btmesh-common = { git = "https://github.com/drogue-iot/btmesh.git", branch = "main" }
+btmesh-models = { git = "https://github.com/drogue-iot/btmesh.git", branch = "main" }
+btmesh-device = { git = "https://github.com/drogue-iot/btmesh.git", branch = "main" }
+btmesh-macro = { git = "https://github.com/drogue-iot/btmesh.git", branch = "main" }
+btmesh-driver = { git = "https://github.com/drogue-iot/btmesh.git", branch = "main" }
+btmesh-nrf-softdevice = { git = "https://github.com/drogue-iot/btmesh.git", branch = "main" }
+embassy-sync = { git = "https://github.com/embassy-rs/embassy.git", rev = "3b58ac1bf86a2373e479e8e3cf92d2df7c29e00b" }
+nrf-softdevice = { git = "https://github.com/embassy-rs/nrf-softdevice.git", rev = "fb9605a108ba45eb022ac9ce7f7be7041efe9523" }
 
 # After commenting out the above patches, clone drogue-iot/btmesh:
 # git clone git@github.com:drogue-iot/btmesh.git ../../drogue-iot/btmesh
