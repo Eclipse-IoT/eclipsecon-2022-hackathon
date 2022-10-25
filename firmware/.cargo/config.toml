@@ -1,5 +1,5 @@
 [unstable]
-build-std = ["core"] #, "compiler_builtins"]
+#build-std = ["core"] #, "compiler_builtins"]
 build-std-features = ["panic_immediate_abort"]
 
 [target.'cfg(all(target_arch = "arm", target_os = "none"))']
@@ -19,3 +19,29 @@ target = "thumbv7em-none-eabihf"
 
 [env]
 DEFMT_LOG = "info"
+
+[source.crates-io]
+replace-with = "vendored-sources"
+
+[source."https://github.com/drogue-iot/btmesh.git"]
+git = "https://github.com/drogue-iot/btmesh.git"
+rev = "684016093ad493cc52f18a68cb4d9255c6ec37c6"
+replace-with = "vendored-sources"
+
+[source."https://github.com/drogue-iot/drogue-device.git"]
+git = "https://github.com/drogue-iot/drogue-device.git"
+rev = "f32c5e66f0d29d9299f674ed82babb339b448839"
+replace-with = "vendored-sources"
+
+[source."https://github.com/embassy-rs/embassy.git"]
+git = "https://github.com/embassy-rs/embassy.git"
+rev = "99284b830455dde9cd91091e2c1f4dda92936f51"
+replace-with = "vendored-sources"
+
+[source."https://github.com/embassy-rs/nrf-softdevice.git"]
+git = "https://github.com/embassy-rs/nrf-softdevice.git"
+rev = "5dabeac5d85d6ebf184b034054e827fca19a89ab"
+replace-with = "vendored-sources"
+
+[source.vendored-sources]
+directory = "vendor"

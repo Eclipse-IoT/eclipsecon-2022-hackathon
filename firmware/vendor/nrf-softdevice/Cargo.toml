@@ -1,0 +1,84 @@
+[package]
+name = "nrf-softdevice"
+version = "0.1.0"
+authors = ["Dario Nieuwenhuis <dirbaio@dirbaio.net>"]
+edition = "2021"
+
+[features]
+
+nrf52805 = ["nrf52805-pac"]
+nrf52810 = ["nrf52810-pac"]
+nrf52811 = ["nrf52811-pac"]
+nrf52820 = ["nrf52820-pac"]
+nrf52832 = ["nrf52832-pac"]
+nrf52833 = ["nrf52833-pac"]
+nrf52840 = ["nrf52840-pac"]
+
+s112 = ["nrf-softdevice-s112"]
+s113 = ["nrf-softdevice-s113"]
+s122 = ["nrf-softdevice-s122"]
+s132 = ["nrf-softdevice-s132"]
+s140 = ["nrf-softdevice-s140"]
+
+ble-rssi = []
+ble-peripheral = []
+ble-central = []
+ble-l2cap = []
+ble-gatt = []
+ble-gatt-server = ["ble-gatt"]
+ble-gatt-client = ["ble-gatt"]
+
+critical-section-impl = ["critical-section-1/restore-state-bool", "critical-section-02/custom-impl"]
+
+# Workaround l2cap credit bug. If set, infinite credits are issued
+# to the peer in batches. The `credits` config when establishing the channel is ignored.
+# https://devzone.nordicsemi.com/f/nordic-q-a/81894/s140-7-3-0-softdevice-assertion-failed-at-pc-0xa806-using-l2cap
+ble-l2cap-credit-wrokaround = []
+
+[dependencies]
+defmt = { version = "0.3", optional = true }
+log = { version = "0.4.11", optional = true }
+critical-section-02 = { package = "critical-section", version = "0.2", optional = true }
+critical-section-1 = { package = "critical-section", version = "1.0", optional = true }
+
+num_enum = { version = "0.5.1", default-features = false }
+embassy-sync = { version = "0.1.0" }
+cortex-m = "0.7.2"
+cortex-m-rt = ">=0.6.15,<0.8"
+heapless = "0.7.1"
+fixed = "1.5.0"
+futures = { version = "0.3.17", default-features = false }
+embedded-storage = "0.3.0"
+embedded-storage-async = "0.3.0"
+
+nrf52805-pac  = { version = "0.11.0", features = ["rt"], optional = true }
+nrf52810-pac  = { version = "0.11.0", features = ["rt"], optional = true }
+nrf52811-pac  = { version = "0.11.0", features = ["rt"], optional = true }
+nrf52820-pac  = { version = "0.11.0", features = ["rt"], optional = true }
+nrf52832-pac  = { version = "0.11.0", features = ["rt"], optional = true }
+nrf52833-pac  = { version = "0.11.0", features = ["rt"], optional = true }
+nrf52840-pac  = { version = "0.11.0", features = ["rt"], optional = true }
+
+nrf-softdevice-s112 = { version = "0.1.1", path = "../nrf-softdevice-s112", optional = true }
+nrf-softdevice-s113 = { version = "0.1.1", path = "../nrf-softdevice-s113", optional = true }
+nrf-softdevice-s122 = { version = "0.1.1", path = "../nrf-softdevice-s122", optional = true }
+nrf-softdevice-s132 = { version = "0.1.1", path = "../nrf-softdevice-s132", optional = true }
+nrf-softdevice-s140 = { version = "0.1.1", path = "../nrf-softdevice-s140", optional = true }
+
+nrf-softdevice-macro = { version = "0.1.0", path = "../nrf-softdevice-macro" }
+
+[package.metadata.docs.rs]
+targets = ["thumbv7em-none-eabi"]
+features = ["nrf52840", "s140", "ble-central", "ble-peripheral", "ble-l2cap", "ble-gatt-server", "ble-gatt-client", "ble-rssi"]
+
+[package.metadata.embassy_docs]
+src_base = "https://github.com/embassy-rs/nrf-softdevice/blob/nrf-softdevice-mbr-v$VERSION/nrf-softdevice-mbr/src/"
+src_base_git = "https://github.com/embassy-rs/nrf-softdevice/blob/$COMMIT/nrf-softdevice-mbr/src/"
+target = "thumbv7em-none-eabi"
+flavors = [
+    { name = "s112", features = ["nrf52832", "s112", "ble-peripheral", "ble-gatt-server", "ble-gatt-client", "ble-rssi"] },
+    { name = "s113", features = ["nrf52840", "s113", "ble-peripheral", "ble-l2cap", "ble-gatt-server", "ble-gatt-client", "ble-rssi"] },
+    { name = "s122", features = ["nrf52833", "s122", "ble-central", "ble-gatt-server", "ble-gatt-client", "ble-rssi"] },
+    { name = "s132", features = ["nrf52832", "s132", "ble-central", "ble-peripheral", "ble-l2cap", "ble-gatt-server", "ble-gatt-client", "ble-rssi"] },
+    { name = "s140", features = ["nrf52840", "s140", "ble-central", "ble-peripheral", "ble-l2cap", "ble-gatt-server", "ble-gatt-client", "ble-rssi"] },
+]
