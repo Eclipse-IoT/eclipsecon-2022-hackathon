@@ -155,7 +155,7 @@ dependencies = [
  "btmesh-common",
  "btmesh-models",
  "defmt",
- "embassy-futures 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "embassy-futures",
  "embassy-sync",
  "embassy-time",
  "futures",
@@ -176,7 +176,7 @@ dependencies = [
  "btmesh-pdu",
  "cmac",
  "defmt",
- "embassy-futures 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "embassy-futures",
  "embassy-sync",
  "embassy-time",
  "embedded-storage",
@@ -229,7 +229,7 @@ dependencies = [
  "btmesh-driver",
  "btmesh-pdu",
  "defmt",
- "embassy-futures 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "embassy-futures",
  "embassy-nrf",
  "embassy-sync",
  "embassy-time",
@@ -587,7 +587,7 @@ dependencies = [
  "defmt",
  "defmt-rtt",
  "embassy-executor",
- "embassy-futures 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "embassy-futures",
  "embassy-nrf",
  "embassy-sync",
  "embassy-time",
@@ -663,12 +663,6 @@ dependencies = [
  "futures-util",
  "static_cell",
 ]
-
-[[package]]
-name = "embassy-futures"
-version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "47e5367165d347c039360f784812f493b001583ab6a3dd8622f4ce9c30374ec3"
 
 [[package]]
 name = "embassy-futures"
@@ -753,7 +747,7 @@ name = "embassy-usb"
 version = "0.1.0"
 source = "git+https://github.com/embassy-rs/embassy.git?rev=3b58ac1bf86a2373e479e8e3cf92d2df7c29e00b#3b58ac1bf86a2373e479e8e3cf92d2df7c29e00b"
 dependencies = [
- "embassy-futures 0.1.0 (git+https://github.com/embassy-rs/embassy.git?rev=3b58ac1bf86a2373e479e8e3cf92d2df7c29e00b)",
+ "embassy-futures",
  "heapless",
 ]
 

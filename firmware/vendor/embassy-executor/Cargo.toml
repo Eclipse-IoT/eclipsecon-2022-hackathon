@@ -1,0 +1,51 @@
+[package]
+name = "embassy-executor"
+version = "0.1.0"
+edition = "2021"
+
+
+[package.metadata.embassy_docs]
+src_base = "https://github.com/embassy-rs/embassy/blob/embassy-executor-v$VERSION/embassy-executor/src/"
+src_base_git = "https://github.com/embassy-rs/embassy/blob/$COMMIT/embassy-executor/src/"
+features = ["nightly", "defmt", "unstable-traits"]
+flavors = [
+    { name = "std",                       target = "x86_64-unknown-linux-gnu",   features = ["std"] },
+    { name = "wasm",                      target = "wasm32-unknown-unknown",     features = ["wasm"] },
+    { name = "thumbv6m-none-eabi",        target = "thumbv6m-none-eabi",         features = [] },
+    { name = "thumbv7m-none-eabi",        target = "thumbv7m-none-eabi",         features = [] },
+    { name = "thumbv7em-none-eabi",       target = "thumbv7em-none-eabi",        features = [] },
+    { name = "thumbv7em-none-eabihf",     target = "thumbv7em-none-eabihf",      features = [] },
+    { name = "thumbv8m.base-none-eabi",   target = "thumbv8m.base-none-eabi",    features = [] },
+    { name = "thumbv8m.main-none-eabi",   target = "thumbv8m.main-none-eabi",    features = [] },
+    { name = "thumbv8m.main-none-eabihf", target = "thumbv8m.main-none-eabihf",  features = [] },
+]
+
+[features]
+default = []
+std = ["embassy-macros/std", "critical-section/std"]
+wasm = ["dep:wasm-bindgen", "dep:js-sys", "embassy-macros/wasm"]
+
+# Enable nightly-only features
+nightly = []
+
+integrated-timers = ["dep:embassy-time"]
+
+# Trace interrupt invocations with rtos-trace.
+rtos-trace-interrupt = ["rtos-trace", "embassy-macros/rtos-trace-interrupt"]
+
+[dependencies]
+defmt = { version = "0.3", optional = true }
+log = { version = "0.4.14", optional = true }
+rtos-trace = { version = "0.1.2", optional = true }
+
+futures-util = { version = "0.3.17", default-features = false }
+embassy-macros  = { version = "0.1.0", path = "../embassy-macros" }
+embassy-time  = { version = "0.1.0", path = "../embassy-time", optional = true}
+atomic-polyfill = "1.0.1"
+critical-section = "1.1"
+cfg-if = "1.0.0"
+static_cell = "1.0"
+
+# WASM dependencies
+wasm-bindgen = { version = "0.2.82", optional = true }
+js-sys = { version = "0.3", optional = true }
