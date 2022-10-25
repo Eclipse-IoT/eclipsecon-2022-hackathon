@@ -41,14 +41,10 @@ impl Sensor {
         let temperature: i8 = temperature_celsius(self.sd).map_err(|_| ())?.to_num();
 
         // TODO Accelerometer - Read the accelerometer data and add to the sensor payload,
-        let mut accel = Acceleration::default();
-        let status = self.xl.accel_data().map_err(|_| ())?;
-        accel.x = status.x as i16;
-        accel.y = status.y as i16;
-        accel.z = status.z as i16;
+        let accel = Acceleration::default();
 
         // TODO Microphone - Read the sound level data and add to sensor payload,
-        let noise: u8 = self.mic.sound_level().await;
+        let noise: u8 = 0;
 
         Ok(SensorPayload {
             temperature: temperature * 2,
