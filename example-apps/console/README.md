@@ -36,7 +36,7 @@ following information:
 ```shell
 MP_MESSAGING_INCOMING_TELEMETRY_CLIENT_ID=<unique id>
 DROGUE_API_USER=eclipsecon
-DROGUE_API_KEY=<drogue iot access token>
+DROGUE_API_KEY=drg_w5jU1J_1XjRGyMKmgN9kRKtV3qOgZo9odFH5Qj2XzD
 ```
 
 Then start the Quarkus application from your IDE, or using:
