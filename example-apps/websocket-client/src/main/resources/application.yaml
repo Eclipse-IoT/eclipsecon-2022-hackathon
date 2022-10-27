@@ -4,8 +4,7 @@ drogue:
 
   integration:
     websocket:
-      host: ws-integration.sandbox.drogue.cloud
-      port: 443
+      url: wss://ws-integration.sandbox.drogue.cloud:443
 
   api:
     user: <yourUserName>
