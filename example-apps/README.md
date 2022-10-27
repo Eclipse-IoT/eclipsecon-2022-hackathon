@@ -57,7 +57,9 @@ you want to pull data from. E.g `wolf/sensor` to get the sensor data.
 ## Authentication
 
 All the endpoints require authentication in order to consume data. 
-The username and token will be handed out at the start of the conference.
+You can use the following credentials :
+- username : `eclipsecon`
+- access token : `drg_w5jU1J_1XjRGyMKmgN9kRKtV3qOgZo9odFH5Qj2XzD`
 
 Note that the doppelgaenger and the MQTT/WS endpoints use differents SSO instances so the credentials will be different.
 
